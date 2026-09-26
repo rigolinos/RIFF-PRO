@@ -1,0 +1,138 @@
+@import "tailwindcss";
+
+@theme {
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+}
+
+@layer base {
+  :root {
+    /* === Riff Pro — Dark Emerald Design System === */
+    --background: 195 85% 6%;
+    --foreground: 180 19% 94%;
+
+    --card: 195 50% 10%;
+    --card-foreground: 180 19% 94%;
+
+    --popover: 195 50% 10%;
+    --popover-foreground: 180 19% 94%;
+
+    --primary: 160 84% 39%;
+    --primary-foreground: 195 85% 6%;
+
+    --secondary: 195 30% 18%;
+    --secondary-foreground: 180 19% 90%;
+
+    --muted: 195 20% 20%;
+    --muted-foreground: 195 10% 55%;
+
+    --accent: 160 60% 30%;
+    --accent-foreground: 180 19% 94%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 195 20% 18%;
+    --input: 195 20% 22%;
+    --ring: 160 84% 39%;
+
+    --radius: 0.75rem;
+
+    /* === Riff Pro Custom Tokens === */
+    --riffpro-emerald: 160 84% 39%;
+    --riffpro-emerald-hover: 160 84% 45%;
+    --riffpro-emerald-glow: 160 84% 39%;
+    --riffpro-surface: 195 50% 10%;
+    --riffpro-surface-hover: 195 50% 14%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* === Utilities === */
+@layer utilities {
+  .glow-emerald {
+    box-shadow: 0 0 20px hsl(var(--riffpro-emerald) / 0.3),
+                0 0 60px hsl(var(--riffpro-emerald) / 0.1);
+  }
+
+  .glow-emerald-strong {
+    box-shadow: 0 8px 30px hsl(var(--riffpro-emerald) / 0.4);
+  }
+
+  .glass-surface {
+    @apply bg-white/[0.05] backdrop-blur-sm border border-white/[0.08];
+  }
+
+  .glass-card {
+    @apply bg-white/[0.03] backdrop-blur-sm border border-white/[0.06] rounded-2xl;
+  }
+
+  .text-gradient-emerald {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-emerald-300;
+  }
+
+  /* Safe area padding for mobile */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
+
+/* === Scrollbar === */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(195 20% 25%);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(195 20% 35%);
+}
+
+/* === Mobile-first max width === */
+#root {
+  @apply max-w-[480px] mx-auto min-h-screen relative;
+}
+
+@layer utilities {
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
