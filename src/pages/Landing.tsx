@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Shield, MapPin, DollarSign, Star, Users, Dumbbell } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Logo } from "@/components/ui/logo";
 import { Button } from '@/components/ui/button';
 
 const Landing = () => {
