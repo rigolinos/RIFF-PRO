@@ -1,69 +1,100 @@
 @import "tailwindcss";
 
 @theme {
-  --font-display: "Bricolage Grotesque Variable", system-ui, sans-serif;
-  --font-sans: "Inter Variable", system-ui, sans-serif;
+  /* ── Riff Sports Design System · v2 ─────────────────────────────────── */
 
-  /* Riff Pro semantic colors */
-  --color-bg:          var(--bg);
-  --color-surface:     var(--surface);
-  --color-elevated:    var(--elevated);
-  --color-ink:         var(--ink);
-  --color-ink-muted:   var(--ink-muted);
-  --color-line:        var(--line);
-  --color-brand:       var(--brand);
-  --color-brand-ink:   var(--brand-ink);
-  --color-accent:      var(--accent);
-  --color-success:     var(--success);
-  --color-warning:     var(--warning);
-  --color-danger:      var(--danger);
+  /* Fontes — Chivo (títulos, preços) · Space Grotesk (corpo, rótulos) */
+  --font-display: "Chivo Variable", system-ui, sans-serif;
+  --font-sans:    "Space Grotesk Variable", system-ui, sans-serif;
 
-  /* Shadcn UI compat */
-  --color-background: var(--bg);
-  --color-foreground: var(--ink);
-  --color-card: var(--surface);
-  --color-card-foreground: var(--ink);
-  --color-popover: var(--elevated);
-  --color-popover-foreground: var(--ink);
-  --color-primary: var(--brand);
-  --color-primary-foreground: var(--brand-ink);
-  --color-secondary: var(--line);
-  --color-secondary-foreground: var(--ink);
-  --color-muted: var(--line);
-  --color-muted-foreground: var(--ink-muted);
-  --color-destructive: var(--danger);
+  /* Cores semânticas — mapeiam os custom-properties definidos em :root */
+  --color-bg:         var(--bg);
+  --color-surface:    var(--surface);
+  --color-elevated:   var(--elevated);
+  --color-line:       var(--line);
+  --color-ink:        var(--ink);
+  --color-ink-muted:  var(--ink-muted);
+  --color-brand:      var(--brand);
+  --color-brand-ink:  var(--brand-ink);
+  --color-brand-soft: var(--brand-soft);
+  --color-accent:     var(--accent);
+  --color-slate:      var(--slate);
+  --color-success:    var(--success);
+  --color-warning:    var(--accent);   /* alias — âmbar é o "warning" da marca */
+  --color-danger:     var(--danger);
+
+  /* Compatibilidade shadcn/Radix ── manter os nomes que os componentes usam */
+  --color-background:          var(--bg);
+  --color-foreground:          var(--ink);
+  --color-card:                var(--surface);
+  --color-card-foreground:     var(--ink);
+  --color-popover:             var(--elevated);
+  --color-popover-foreground:  var(--ink);
+  --color-primary:             var(--brand);
+  --color-primary-foreground:  var(--brand-ink);
+  --color-secondary:           var(--elevated);
+  --color-secondary-foreground:var(--ink);
+  --color-muted:               var(--elevated);
+  --color-muted-foreground:    var(--ink-muted);
+  --color-destructive:         var(--danger);
   --color-destructive-foreground: var(--brand-ink);
-  --color-border: var(--line);
-  --color-input: var(--line);
-  --color-ring: var(--brand);
+  --color-border:  var(--line);
+  --color-input:   var(--elevated);
+  --color-ring:    var(--brand);
 
+  /* Radii */
   --radius-control: 12px;
   --radius-card:    20px;
   --radius-sheet:   28px;
-  
-  --shadow-1: 0 1px 2px rgb(0 0 0 / .06), 0 1px 1px rgb(0 0 0 / .04);
-  --shadow-2: 0 8px 24px rgb(0 0 0 / .10);
-  --shadow-cta: 0 8px 24px color-mix(in oklab, var(--brand) 35%, transparent);
+  --radius:         0.75rem;
 
+  /* Sombras */
+  --shadow-1:   0 1px 2px rgb(0 0 0 / .35);
+  --shadow-2:   0 12px 32px rgb(0 0 0 / .45);
+  --shadow-cta: 0 8px 24px color-mix(in oklab, var(--brand) 28%, transparent);
+
+  /* Layout */
   --bottom-nav-h: 84px;
 }
 
+/* ── Temas ──────────────────────────────────────────────────────────────── */
 @layer base {
-  :root, [data-theme="dark"], .dark {
+  /* Dark-first: é o padrão. Tema claro fica para o futuro. */
+  :root,
+  [data-theme="dark"],
+  .dark {
     color-scheme: dark;
-    --bg:#04141A; --surface:#0B2129; --elevated:#13303A;
-    --ink:#E9F2F0; --ink-muted:#93A9A4; --line:#1B3A44;
-    --brand:#10B981; --brand-ink:#04141A; --accent:#FFB020;
-    --success:#34D399; --warning:#FBBF24; --danger:#F87171;
-    --radius: 0.75rem;
+    --bg:         #0F1115;
+    --surface:    #171A20;
+    --elevated:   #1F242C;
+    --line:       #2B313B;
+    --ink:        #F3EFE4;
+    --ink-muted:  #A3A9B5;
+    --brand:      #F2CE56;
+    --brand-ink:  #0F1115;   /* NUNCA branco sobre dourado */
+    --brand-soft: #FFEBB0;
+    --accent:     #FFAE1A;
+    --slate:      #94A3B8;
+    --success:    #5CCB8A;
+    --danger:     #FF7A7A;
   }
-  
+
+  /* Tema claro — reservado para o futuro; não é o padrão */
   [data-theme="light"] {
     color-scheme: light;
-    --bg:#F5F8F7; --surface:#FFFFFF; --elevated:#FFFFFF;
-    --ink:#0D1F1B; --ink-muted:#4A5F59; --line:#DCE5E2;
-    --brand:#0B6B4F; --brand-ink:#FFFFFF; --accent:#FFC533;
-    --success:#12A150; --warning:#B7791F; --danger:#C53030;
+    --bg:         #F8F6F1;
+    --surface:    #FFFFFF;
+    --elevated:   #F0EDE6;
+    --line:       #E2DDD5;
+    --ink:        #0F1115;
+    --ink-muted:  #5A5F6B;
+    --brand:      #C4A020;   /* dourado mais escuro para contraste no claro */
+    --brand-ink:  #FFFFFF;
+    --brand-soft: #FFF3CC;
+    --accent:     #D4870A;
+    --slate:      #64748B;
+    --success:    #2E9E5B;
+    --danger:     #D94F4F;
   }
 
   * {
@@ -74,32 +105,37 @@
     background-color: var(--bg);
     color: var(--ink);
     font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
+    font-weight: 800;
   }
 }
 
+/* ── Utilitários ────────────────────────────────────────────────────────── */
 @layer utilities {
   .hide-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  .hide-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
+  .hide-scrollbar::-webkit-scrollbar { display: none; }
+
   .pt-safe { padding-top: env(safe-area-inset-top, 0px); }
   .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
 }
 
-/* Glass-card and glow will be refactored, but keeping for compatibility during migration */
+/* ── Legado — manter durante migração de componentes ───────────────────── */
+/* glass-card: usar bg-surface shadow-1 rounded-card border border-line */
 .glass-card {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-1);
 }
-.glow-emerald {
+/* glow-emerald: renomear para glow-brand quando o componente for refatorado */
+.glow-brand, .glow-emerald {
   box-shadow: var(--shadow-cta);
 }
