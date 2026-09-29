@@ -687,11 +687,11 @@ CREATE POLICY "student_create_review_verified" ON public.reviews
     reviewer_id = public._profile_id()
     AND EXISTS (
       SELECT 1 FROM public.bookings b
-      WHERE b.id = NEW.booking_id
+      WHERE b.id = reviews.booking_id
         AND b.student_id = public._profile_id()
         AND b.status = 'completed'
-        AND b.professional_id = NEW.professional_id
-        AND b.session_id = NEW.session_id
+        AND b.professional_id = reviews.professional_id
+        AND b.session_id = reviews.session_id
     )
   );
 
