@@ -183,11 +183,11 @@ const MySessionsPro = () => {
 
                   <div className="flex items-center justify-between mt-3">
                     <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate(`/session/${session.id}/attendance`)}>
-                      <div className="flex items-center gap-1.5 text-[11px] text-ink-muted bg-white/5 px-2 py-1 rounded-md">
+                      <div className="flex items-center gap-1.5 text-xs text-ink-muted bg-white/5 px-2 py-1 rounded-md">
                         <Clock className="w-3.5 h-3.5" />
                         <span className="capitalize">{dateStr} • {timeStr}</span>
                       </div>
-                      <div className="flex items-center gap-1.5 text-[11px] font-medium px-2 py-1 rounded-md bg-white/5">
+                      <div className="flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-md bg-white/5">
                         <Users className="w-3.5 h-3.5 text-brand" />
                         <span>{activeBookings.length} / {session.max_participants}</span>
                       </div>
@@ -207,7 +207,7 @@ const MySessionsPro = () => {
                               toast.success('Link direto copiado!');
                             }
                           }}
-                          className="text-[11px] flex items-center gap-1 font-semibold text-brand bg-brand/10 px-2.5 py-1.5 rounded-lg hover:bg-brand/20 transition-colors"
+                          className="text-xs flex items-center gap-1 font-semibold text-brand bg-brand/10 px-2.5 py-1.5 rounded-lg hover:bg-brand/20 transition-colors"
                         >
                           <Share2 className="w-3 h-3" />
                         </button>
@@ -216,7 +216,7 @@ const MySessionsPro = () => {
                         <button
                           onClick={(e) => { e.stopPropagation(); handleDuplicateSession(session); }}
                           disabled={isDuplicating === session.id}
-                          className="text-[11px] flex items-center gap-1 font-semibold text-ink-muted bg-white/5 px-2.5 py-1.5 rounded-lg hover:bg-line transition-colors disabled:opacity-50"
+                          className="text-xs flex items-center gap-1 font-semibold text-ink-muted bg-white/5 px-2.5 py-1.5 rounded-lg hover:bg-line transition-colors disabled:opacity-50"
                         >
                           {isDuplicating === session.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Copy className="w-3 h-3" />}
                         </button>
@@ -226,7 +226,7 @@ const MySessionsPro = () => {
                             {/* Edit */}
                             <button
                               onClick={(e) => { e.stopPropagation(); navigate(`/edit-session/${session.id}`); }}
-                              className="text-[11px] flex items-center gap-1 font-semibold text-brand bg-brand/10 px-2.5 py-1.5 rounded-lg hover:bg-brand/20 transition-colors"
+                              className="text-xs flex items-center gap-1 font-semibold text-brand bg-brand/10 px-2.5 py-1.5 rounded-lg hover:bg-brand/20 transition-colors"
                             >
                               <Edit className="w-3 h-3" />
                             </button>
@@ -235,7 +235,7 @@ const MySessionsPro = () => {
                             {!isFull && (
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleCloseRegistrations(session); }}
-                                className="text-[11px] flex items-center gap-1 font-semibold text-accent bg-accent/15 px-2.5 py-1.5 rounded-lg hover:bg-accent/15 transition-colors"
+                                className="text-xs flex items-center gap-1 font-semibold text-accent bg-accent/15 px-2.5 py-1.5 rounded-lg hover:bg-accent/15 transition-colors"
                                 title="Encerrar Inscrições"
                               >
                                 <XCircle className="w-3 h-3" />
@@ -248,7 +248,7 @@ const MySessionsPro = () => {
                               <AlertDialogTrigger asChild>
                                 <button
                                   onClick={(e) => e.stopPropagation()}
-                                  className="text-[11px] flex items-center gap-1 font-semibold text-danger bg-danger/15 px-2.5 py-1.5 rounded-lg hover:bg-danger/15 transition-colors"
+                                  className="text-xs flex items-center gap-1 font-semibold text-danger bg-danger/15 px-2.5 py-1.5 rounded-lg hover:bg-danger/15 transition-colors"
                                 >
                                   <XCircle className="w-3 h-3" />
                                 </button>
@@ -275,7 +275,7 @@ const MySessionsPro = () => {
                         {canClose && (
                           <button
                             onClick={(e) => { e.stopPropagation(); navigate(`/session/${session.id}/attendance`); }}
-                            className="text-[11px] flex items-center gap-1 font-semibold text-accent bg-accent/15 px-2.5 py-1.5 rounded-lg hover:bg-accent/15 transition-colors"
+                            className="text-xs flex items-center gap-1 font-semibold text-accent bg-accent/15 px-2.5 py-1.5 rounded-lg hover:bg-accent/15 transition-colors"
                           >
                             <ClipboardCheck className="w-3 h-3" /> Encerrar
                           </button>

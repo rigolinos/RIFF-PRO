@@ -285,7 +285,7 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
                     </p>
                     <Button
                       onClick={handleWhatsApp}
-                      className="w-full h-14 bg-[#25D366] hover:bg-[#20bd5a] text-white font-semibold text-lg rounded-xl shadow-[0_8px_24px_rgba(37,211,102,0.25)] gap-2 border-0"
+                      className="w-full h-14 bg-[#25D366] hover:bg-[#20bd5a] text-bg font-semibold text-lg rounded-xl shadow-[0_8px_24px_rgba(37,211,102,0.25)] gap-2 border-0"
                     >
                       <MessageCircle className="w-6 h-6" />
                       Enviar Comprovante

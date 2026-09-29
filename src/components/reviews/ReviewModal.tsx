@@ -87,7 +87,7 @@ export function ReviewModal({ booking, isOpen, onClose, onSuccess }: ReviewModal
                   className={`w-10 h-10 transition-colors ${
                     star <= rating
                       ? 'fill-brand text-brand'
-                      : 'fill-white/5 text-white/10 hover:text-white/20'
+                      : 'fill-white/5 text-bg/10 hover:text-bg/20'
                   }`}
                 />
               </button>

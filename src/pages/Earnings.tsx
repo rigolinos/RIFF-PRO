@@ -123,7 +123,7 @@ export default function Earnings() {
                           {t.student?.full_name}
                         </p>
                         <div className="flex items-center gap-1.5 mt-0.5">
-                          <span className={`text-[9px] uppercase font-bold px-1.5 py-0.5 rounded ${isPaid ? 'bg-brand/20 text-brand' : 'bg-accent/15 text-accent'}`}>
+                          <span className={`text-xs uppercase font-bold px-1.5 py-0.5 rounded ${isPaid ? 'bg-brand/20 text-brand' : 'bg-accent/15 text-accent'}`}>
                             {isPaid ? 'Pix Recebido' : 'Pendente'}
                           </span>
                           <span className="text-xs text-muted-foreground truncate">

@@ -171,7 +171,7 @@ export default function DashboardPro() {
             <div className="bg-surface border border-line rounded-2xl p-4 flex flex-col shadow-sm">
               <div className="flex items-center gap-2 text-ink-muted mb-2">
                 <Wallet className="w-4 h-4 text-slate" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">Receita</span>
+                <span className="text-xs font-bold uppercase tracking-wider">Receita</span>
               </div>
               <div className="mt-auto">
                 <span className="text-sm text-accent font-bold mr-1">R$</span>
@@ -184,7 +184,7 @@ export default function DashboardPro() {
             <div className="bg-surface border border-line rounded-2xl p-4 flex flex-col shadow-sm">
               <div className="flex items-center gap-2 text-ink-muted mb-2">
                 <Users className="w-4 h-4 text-slate" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">Alunos Únicos</span>
+                <span className="text-xs font-bold uppercase tracking-wider">Alunos Únicos</span>
               </div>
               <div className="mt-auto">
                 <span className="text-2xl font-bold font-display text-ink tabular-nums tracking-tight">
@@ -196,7 +196,7 @@ export default function DashboardPro() {
             <div className="bg-surface border border-line rounded-2xl p-4 flex flex-col shadow-sm">
               <div className="flex items-center gap-2 text-ink-muted mb-2">
                 <CheckCircle2 className="w-4 h-4 text-slate" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">Reservas</span>
+                <span className="text-xs font-bold uppercase tracking-wider">Reservas</span>
               </div>
               <div className="mt-auto">
                 <span className="text-2xl font-bold font-display text-ink tabular-nums tracking-tight">
@@ -208,7 +208,7 @@ export default function DashboardPro() {
             <div className="bg-surface border border-line rounded-2xl p-4 flex flex-col shadow-sm">
               <div className="flex items-center gap-2 text-ink-muted mb-2">
                 <Calendar className="w-4 h-4 text-slate" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">Aulas Dadas</span>
+                <span className="text-xs font-bold uppercase tracking-wider">Aulas Dadas</span>
               </div>
               <div className="mt-auto">
                 <span className="text-2xl font-bold font-display text-ink tabular-nums tracking-tight">

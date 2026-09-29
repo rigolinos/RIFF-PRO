@@ -282,7 +282,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-ink">Título Magnético</label>
                     <Input {...register('title')} placeholder="Ex: Treino Queima Máxima (Iniciante)" className="h-12 bg-surface border-line text-base font-semibold focus:border-brand/50" />
-                    <p className="text-[11px] text-ink-muted italic">Dica: Títulos com o benefício final vendem 3x mais.</p>
+                    <p className="text-xs text-ink-muted italic">Dica: Títulos com o benefício final vendem 3x mais.</p>
                   </div>
 
                   <div className="space-y-2">
@@ -292,7 +292,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
                       <Input {...register('max_participants')} type="number" min="1" className="h-12 pl-10 bg-surface border-line text-base focus:border-brand/50" />
                     </div>
                     {formData.max_participants < 6 && (
-                      <p className="text-[11px] text-accent font-medium bg-accent/15 px-2 py-1 rounded border border-accent/20 inline-block mt-1">
+                      <p className="text-xs text-accent font-medium bg-accent/15 px-2 py-1 rounded border border-accent/20 inline-block mt-1">
                         🔥 Turmas exclusivas geram escassez e esgotam rápido.
                       </p>
                     )}
@@ -349,12 +349,12 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
                       <Input {...register('price_per_slot')} type="number" step="0.01" disabled={hasParticipants} className="h-12 pl-10 bg-surface border-line text-xl font-bold tabular-nums focus:border-brand/50 disabled:opacity-50" />
                     </div>
                     {hasParticipants && (
-                      <p className="text-[11px] text-accent font-medium bg-accent/15 px-2 py-1 rounded border border-accent/20 inline-flex items-center gap-1.5 mt-1">
+                      <p className="text-xs text-accent font-medium bg-accent/15 px-2 py-1 rounded border border-accent/20 inline-flex items-center gap-1.5 mt-1">
                         <AlertTriangle className="w-3 h-3" /> Já existem inscritos. O preço não pode ser alterado.
                       </p>
                     )}
                     {!hasParticipants && formData.price_per_slot == 0 && (
-                       <p className="text-[11px] text-brand/90 italic mt-1">Aula 100% gratuita configurada (ótimo para atrair leads).</p>
+                       <p className="text-xs text-brand/90 italic mt-1">Aula 100% gratuita configurada (ótimo para atrair leads).</p>
                     )}
                   </div>
 

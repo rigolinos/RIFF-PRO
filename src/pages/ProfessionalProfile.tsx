@@ -83,7 +83,7 @@ export default function ProfessionalProfile() {
           <Avatar src={profile.avatar_url} name={profile.full_name} className="w-28 h-28 border-[6px] border-bg text-3xl" />
           {profile.credential_verified && (
             <div className="absolute bottom-1 right-1 bg-success rounded-full p-1.5 shadow-sm border-[3px] border-bg">
-              <CheckCircle2 className="w-4 h-4 text-white" />
+              <CheckCircle2 className="w-4 h-4 text-bg" />
             </div>
           )}
         </div>
@@ -115,19 +115,19 @@ export default function ProfessionalProfile() {
                   <span className="font-bold text-ink font-display text-lg">{(profile.rating_avg ?? 0).toFixed(1).replace('.', ',')}</span>
                   <Star className="w-4 h-4 fill-brand text-brand" />
                 </div>
-                <span className="text-[10px] text-ink-muted uppercase tracking-wider font-semibold">Avaliações</span>
+                <span className="text-xs text-ink-muted uppercase tracking-wider font-semibold">Avaliações</span>
               </div>
               <div className="w-px h-8 bg-line" />
             </>
           )}
           <div className="flex flex-col items-center">
             <span className="font-bold text-ink font-display text-lg">{profile.total_sessions_given || 0}</span>
-            <span className="text-[10px] text-ink-muted uppercase tracking-wider font-semibold">Aulas Dadas</span>
+            <span className="text-xs text-ink-muted uppercase tracking-wider font-semibold">Aulas Dadas</span>
           </div>
           <div className="w-px h-8 bg-line" />
           <div className="flex flex-col items-center">
             <span className="font-bold text-ink font-display text-lg">{profile.total_students_served || 0}</span>
-            <span className="text-[10px] text-ink-muted uppercase tracking-wider font-semibold">Alunos</span>
+            <span className="text-xs text-ink-muted uppercase tracking-wider font-semibold">Alunos</span>
           </div>
         </div>
 

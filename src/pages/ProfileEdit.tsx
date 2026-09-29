@@ -2654,7 +2654,7 @@ export default function ProfileEdit() {
 
 
 
-                  className="bg-danger/15 hover:bg-danger/15 text-white font-bold"
+                  className="bg-danger/15 hover:bg-danger/15 text-bg font-bold"
 
 
 
@@ -2742,7 +2742,7 @@ export default function ProfileEdit() {
 
 
 
-            className="w-full h-12 text-muted-foreground hover:text-white hover:bg-white/5 font-semibold"
+            className="w-full h-12 text-muted-foreground hover:text-bg hover:bg-white/5 font-semibold"
 
 
 
