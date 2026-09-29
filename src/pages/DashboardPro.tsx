@@ -50,12 +50,12 @@ const DashboardPro = () => {
   const nextSession = data?.nextSession;
 
   const publicSlug = profile?.public_slug || profile?.id;
-  const publicUrl = "https://riff.pro/@ + publicSlug + ";
+  const publicUrl = `${import.meta.env.VITE_PUBLIC_URL || window.location.origin}/@${publicSlug}`;
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(publicUrl);
     setCopied(true);
-    toast.success('Link copiado para a Ã¡rea de transferÃªncia!');
+    toast.success('Link copiado para a área de transferência!');
     setTimeout(() => setCopied(false), 3000);
   };
 
@@ -63,7 +63,7 @@ const DashboardPro = () => {
     if (navigator.share) {
       navigator.share({
         title: `Aulas com ${profile?.full_name}`,
-        text: 'Garanta sua vaga nas minhas prÃ³ximas aulas!',
+        text: 'Garanta sua vaga nas minhas próximas aulas!',
         url: publicUrl,
       }).catch(console.error);
     } else {
@@ -71,10 +71,9 @@ const DashboardPro = () => {
     }
   };
 
-  // Taxa de ocupaÃ§Ã£o mÃ©dia (simplificada para o card)
-  // Como as turmas variam de max_participants, calculamos uma mÃ©dia bruta:
-  const occupancyRate = metrics.total_sessions > 0 
-    ? Math.min(100, Math.round((metrics.total_bookings / (metrics.total_sessions * 10)) * 100)) // Assuming avg 10 max slots for mockup if we don't have exact
+  // Taxa de ocupação (simplificada, usaríamos a métrica real do backend na Fase 2)
+  const occupancyRate = metrics.total_sessions > 0 && metrics.total_bookings > 0
+    ? Math.min(100, Math.round((metrics.total_bookings / (metrics.total_sessions * 10)) * 100))
     : 0;
 
   return (

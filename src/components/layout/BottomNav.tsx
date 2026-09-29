@@ -9,11 +9,10 @@ export const BottomNav = () => {
   const currentPath = location.pathname;
   const { viewMode } = useViewMode();
 
-  // Hide on auth pages and landing
-  const hiddenRoutes = ['/', '/login', '/signup', '/onboarding'];
-  const isHidden = hiddenRoutes.includes(currentPath) || currentPath.startsWith('/onboarding');
+  const APP_ROUTES = ['/feed', '/explore', '/my-bookings', '/dashboard', '/my-sessions', '/create-session', '/earnings', '/profile'];
+  const showNav = APP_ROUTES.some(p => currentPath === p || currentPath.startsWith(p + '/'));
 
-  if (isHidden || !viewMode) return null;
+  if (!showNav || !viewMode) return null;
 
   const isPro = viewMode === 'professional';
 
@@ -34,10 +33,7 @@ export const BottomNav = () => {
 
   return (
     <>
-      {/* Spacer to prevent content from hiding behind the nav */}
-      <div className="h-[80px]" />
-      
-      <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-4 px-4 pointer-events-none">
+      <nav aria-label="Principal" className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-4 px-4 pointer-events-none pb-safe">
         <div className="bg-background/80 backdrop-blur-xl border border-white/10 rounded-full flex items-center justify-around w-full max-w-md h-[68px] px-2 shadow-[0_8px_32px_rgba(0,0,0,0.5)] pointer-events-auto relative">
           {navItems.map((item, index) => {
             const isActive = currentPath === item.path || (item.path === '/profile/edit' && currentPath.startsWith('/profile'));
@@ -81,7 +77,7 @@ export const BottomNav = () => {
                 <span 
                   className={cn(
                     "text-[10px] font-medium transition-colors duration-300",
-                    isActive ? "text-emerald-400 opacity-100" : "text-muted-foreground opacity-0 group-hover:opacity-100"
+                    isActive ? "text-emerald-400" : "text-muted-foreground"
                   )}
                 >
                   {item.label}
@@ -90,7 +86,7 @@ export const BottomNav = () => {
             );
           })}
         </div>
-      </div>
+      </nav>
     </>
   );
 };

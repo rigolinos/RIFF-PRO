@@ -1,6 +1,7 @@
 import { MapPin, CalendarDays, Clock, Users, Star } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { Link } from 'react-router-dom';
 
 interface SessionCardProps {
   session: any;
@@ -20,7 +21,7 @@ export const SessionCard = ({ session, onBookClick }: SessionCardProps) => {
   const isFree = session.price_per_slot === 0;
 
   return (
-    <div className="glass-card overflow-hidden flex flex-col transition-all active:scale-[0.98]">
+    <Link to={`/session/${session.id}`} className="glass-card overflow-hidden flex flex-col transition-all active:scale-[0.98] block">
       <div className="p-4 flex gap-4">
         {/* Avatar Pro */}
         <div className="shrink-0 flex flex-col items-center">
@@ -98,7 +99,11 @@ export const SessionCard = ({ session, onBookClick }: SessionCardProps) => {
         </div>
 
         <button
-          onClick={() => onBookClick(session)}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onBookClick(session);
+          }}
           disabled={isFull}
           className={`h-11 px-6 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 ${
             isFull 
@@ -123,6 +128,6 @@ export const SessionCard = ({ session, onBookClick }: SessionCardProps) => {
           />
         </div>
       )}
-    </div>
+    </Link>
   );
 };

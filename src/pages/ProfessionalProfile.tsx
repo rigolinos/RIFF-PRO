@@ -86,7 +86,7 @@ const ProfessionalProfile = () => {
               )}
             </div>
           </div>
-          {profile.credential_number && (
+          {profile.credential_verified && (
             <div className="absolute -bottom-2 -right-2 bg-background rounded-full p-1">
               <div className="bg-emerald-500 rounded-full p-1.5 shadow-[0_0_10px_rgba(16,185,129,0.5)]">
                 <ShieldCheck className="w-4 h-4 text-black" />
@@ -95,12 +95,13 @@ const ProfessionalProfile = () => {
           )}
         </div>
 
-        <h1 className="text-2xl font-bold text-foreground leading-tight">
+        <h1 className="text-2xl font-bold text-foreground leading-tight flex items-center justify-center gap-2">
           {profile.full_name}
         </h1>
         {profile.credential_number && (
-          <p className="text-xs text-emerald-400 font-medium mt-1 uppercase tracking-wider">
+          <p className="text-xs text-muted-foreground font-medium mt-1 uppercase tracking-wider flex items-center justify-center gap-1">
             {profile.credential_type} {profile.credential_number}
+            {profile.credential_verified && <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />}
           </p>
         )}
 
@@ -114,22 +115,26 @@ const ProfessionalProfile = () => {
 
         {/* Social Proof Line */}
         <div className="flex items-center justify-center gap-4 mt-6 w-full max-w-sm">
-          <div className="flex flex-col items-center flex-1">
-            <div className="flex items-center gap-1 text-emerald-400">
-              <Star className="w-4 h-4 fill-emerald-400" />
-              <span className="font-bold">{profile.rating_avg > 0 ? profile.rating_avg.toFixed(1) : '5.0'}</span>
-            </div>
-            <span className="text-[10px] text-muted-foreground uppercase mt-0.5">{profile.total_reviews} reviews</span>
-          </div>
-          <div className="w-px h-8 bg-white/10" />
+          {profile.total_reviews > 0 && (
+            <>
+              <div className="flex flex-col items-center flex-1">
+                <div className="flex items-center gap-1 text-emerald-400">
+                  <Star className="w-4 h-4 fill-emerald-400" />
+                  <span className="font-bold">{profile.rating_avg.toFixed(1)}</span>
+                </div>
+                <span className="text-[10px] text-muted-foreground uppercase mt-0.5">{profile.total_reviews} reviews</span>
+              </div>
+              <div className="w-px h-8 bg-white/10" />
+            </>
+          )}
           <div className="flex flex-col items-center flex-1">
             <span className="font-bold text-foreground">{profile.total_sessions_given || 0}</span>
             <span className="text-[10px] text-muted-foreground uppercase mt-0.5">Aulas dadas</span>
           </div>
           <div className="w-px h-8 bg-white/10" />
           <div className="flex flex-col items-center flex-1">
-            <span className="font-bold text-foreground">98%</span>
-            <span className="text-[10px] text-muted-foreground uppercase mt-0.5">Presença</span>
+            <span className="font-bold text-foreground">{profile.total_students_served || 0}</span>
+            <span className="text-[10px] text-muted-foreground uppercase mt-0.5">Alunos</span>
           </div>
         </div>
       </div>
@@ -166,31 +171,14 @@ const ProfessionalProfile = () => {
       {/* Bento Grid: Metodologia & Socials */}
       <div className="px-6 mt-6 grid grid-cols-2 gap-3">
         {/* Bio / Metodologia */}
-        <div className="col-span-2 glass-card p-5">
-          <h3 className="text-sm font-semibold text-emerald-400 mb-2">Formação & Método</h3>
-          <p className="text-sm text-foreground/90 leading-relaxed">
-            {profile.bio || "Foco em biomecânica, treinos adaptados à sua realidade e resultados sustentáveis. Sem dor, apenas evolução constante."}
-          </p>
-        </div>
-
-        {/* O que está incluso */}
-        <div className="col-span-2 glass-card p-5 border-emerald-500/10 bg-emerald-500/5">
-          <h3 className="text-sm font-semibold text-foreground mb-3">Na aula você tem:</h3>
-          <ul className="space-y-2">
-            {[
-              "Equipamentos higienizados inclusos",
-              "Acompanhamento biomecânico",
-              "Treino adaptado para seu nível"
-            ].map((item, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                <div className="mt-0.5 shrink-0 w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                  <Check className="w-3 h-3 text-emerald-400" />
-                </div>
-                {item}
-              </li>
-            ))}
-          </ul>
-        </div>
+        {profile.bio && (
+          <div className="col-span-2 glass-card p-5">
+            <h3 className="text-sm font-semibold text-emerald-400 mb-2">Sobre</h3>
+            <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-wrap">
+              {profile.bio}
+            </p>
+          </div>
+        )}
 
         {/* Social Actions */}
         <button 
@@ -230,10 +218,12 @@ const ProfessionalProfile = () => {
             <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
               O que dizem os alunos
             </h2>
-            <div className="flex items-center gap-1 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
-              <Star className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400" />
-              <span className="text-xs font-bold text-emerald-400 tabular-nums">{profile.rating_avg > 0 ? profile.rating_avg.toFixed(1) : '5.0'}</span>
-            </div>
+            {profile.rating_avg > 0 && (
+              <div className="flex items-center gap-1 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
+                <Star className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400" />
+                <span className="text-xs font-bold text-emerald-400 tabular-nums">{profile.rating_avg.toFixed(1)}</span>
+              </div>
+            )}
           </div>
           
           <div className="flex overflow-x-auto hide-scrollbar snap-x snap-mandatory px-6 pb-6 -mx-6">

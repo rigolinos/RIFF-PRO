@@ -34,7 +34,7 @@ export class GlobalErrorBoundary extends Component<Props, State> {
           </div>
           <h1 className="text-2xl font-bold text-foreground mb-3">Ops! Algo deu errado.</h1>
           <p className="text-muted-foreground max-w-sm mb-8">
-            Tivemos um problema inesperado ao carregar esta página. Nossa equipe já foi notificada.
+            Tivemos um problema inesperado ao carregar esta página. Recarregue o aplicativo para tentar novamente.
           </p>
           <button
             onClick={() => window.location.reload()}

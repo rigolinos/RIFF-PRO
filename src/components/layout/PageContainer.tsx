@@ -23,7 +23,7 @@ export const PageContainer = ({
   headerTransparent = false,
 }: PageContainerProps) => {
   return (
-    <div className="min-h-screen bg-[#010E12] bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(16,185,129,0.12),rgba(255,255,255,0))] flex flex-col relative w-full overflow-x-hidden text-foreground">
+    <div className="min-h-[100dvh] bg-[#010E12] bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(16,185,129,0.12),rgba(255,255,255,0))] flex flex-col relative w-full overflow-x-hidden text-foreground">
       {(title || showBack || rightAction) && (
         <Header 
           title={title} 

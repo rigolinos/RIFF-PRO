@@ -95,15 +95,21 @@ export default function Explore() {
                     )}
 
                     <div className="flex items-center gap-3 mt-2">
-                      <div className="flex items-center gap-1">
-                        <Star className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400" />
-                        <span className="text-sm font-semibold text-emerald-400">
-                          {pro.rating_avg > 0 ? pro.rating_avg.toFixed(1) : '5.0'}
+                      {pro.total_reviews > 0 ? (
+                        <div className="flex items-center gap-1">
+                          <Star className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400" />
+                          <span className="text-sm font-semibold text-emerald-400">
+                            {pro.rating_avg.toFixed(1)}
+                          </span>
+                          <span className="text-xs text-muted-foreground ml-0.5">
+                            ({pro.total_reviews})
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-sm">
+                          Novo
                         </span>
-                        <span className="text-xs text-muted-foreground ml-0.5">
-                          ({pro.total_reviews})
-                        </span>
-                      </div>
+                      )}
                     </div>
                   </div>
                 </div>

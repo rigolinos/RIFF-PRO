@@ -96,10 +96,10 @@ const Landing = () => {
         </h2>
         <div className="space-y-3">
           {[
-            { icon: Shield, text: 'Crie seu perfil verificado (CREF, CREFITO)', color: 'text-emerald-400' },
+            { icon: Shield, text: 'Crie sua vitrine profissional e atraia alunos', color: 'text-emerald-400' },
             { icon: MapPin, text: 'Publique aulas em parques, praias ou estúdios', color: 'text-blue-400' },
-            { icon: DollarSign, text: 'Receba pagamento direto dos alunos', color: 'text-amber-400' },
-            { icon: Star, text: 'Construa sua reputação com avaliações', color: 'text-purple-400' },
+            { icon: DollarSign, text: 'Receba o pagamento direto dos seus alunos', color: 'text-amber-400' },
+            { icon: Star, text: 'Construa sua reputação com avaliações reais', color: 'text-purple-400' },
           ].map((step, i) => (
             <div key={i} className="glass-card p-4 flex items-center gap-4">
               <div className={`w-10 h-10 rounded-full bg-white/[0.05] flex items-center justify-center ${step.color}`}>
