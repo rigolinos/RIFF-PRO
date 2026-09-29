@@ -59,11 +59,11 @@ const Feed = () => {
             onClick={() => setSelectedCategory('all')}
             className={`shrink-0 px-4 h-10 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${
               selectedCategory === 'all'
-                ? 'bg-brand text-brand-ink font-semibold shadow-[0_0_20px_rgba(16,185,129,0.3)]'
-                : 'bg-white/5 text-slate-400 border bg-line hover:bg-line'
+                ? 'bg-brand text-brand-ink font-semibold'
+                : 'bg-surface border border-line text-ink-muted hover:bg-elevated'
             }`}
           >
-                        🔥 Todas
+            🔥 Todas
           </button>
           
           {isLoadingCategories ? (
@@ -79,8 +79,8 @@ const Feed = () => {
                 onClick={() => setSelectedCategory(cat.id)}
                 className={`shrink-0 px-4 h-10 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${
                   selectedCategory === cat.id
-                    ? 'bg-brand text-brand-ink font-semibold shadow-[0_0_20px_rgba(16,185,129,0.3)]'
-                    : 'bg-white/5 text-slate-400 border bg-line hover:bg-line'
+                    ? 'bg-brand text-brand-ink font-semibold'
+                    : 'bg-surface border border-line text-ink-muted hover:bg-elevated'
                 }`}
               >
                 <span>{cat.emoji}</span>

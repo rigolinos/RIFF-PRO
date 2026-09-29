@@ -50,7 +50,7 @@ const ProfessionalProfile = () => {
   };
 
   // Convert array of strings or raw text into tags
-  const specialties = profile.specialties || ['Funcional', 'Saúde e Bem-Estar']; 
+  const specialties = Array.isArray(profile.specialties) ? profile.specialties : []; 
   const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
 
   return (
@@ -60,7 +60,7 @@ const ProfessionalProfile = () => {
         <meta name="description" content="Confira os horários disponíveis e reserve sua vaga online." />
         <meta property="og:title" content={`${profile.full_name} | Aulas e Treinos no Riff Pro`} />
         <meta property="og:description" content="Confira os horários disponíveis e reserve sua vaga online." />
-        <meta property="og:image" content={profile.avatar_url || 'https://via.placeholder.com/600x400/061D24/10B981?text=Riff+Pro'} />
+        <meta property="og:image" content={profile.avatar_url || 'https://riff.pro/og-image.jpg'} />
         <meta property="og:url" content={currentUrl} />
         <meta property="og:type" content="profile" />
         <meta name="twitter:card" content="summary_large_image" />
