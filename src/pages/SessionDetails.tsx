@@ -10,6 +10,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { CheckoutModal } from '@/components/checkout/CheckoutModal';
 import { SessionCardSkeleton } from '@/components/skeletons/SessionCardSkeleton';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 const SessionDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -68,9 +70,9 @@ const SessionDetails = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex flex-col px-6 py-8">
+      <div className="min-h-screen bg-bg flex flex-col px-6 py-8">
         <div className="mb-8">
-          <button onClick={() => navigate(-1)} className="text-muted-foreground">
+          <button onClick={() => navigate(-1)} className="text-ink-muted">
             <ArrowLeft className="w-6 h-6" />
           </button>
         </div>
@@ -81,11 +83,11 @@ const SessionDetails = () => {
 
   if (error || !session || session.status === 'cancelled') {
     return (
-      <div className="min-h-screen bg-background flex flex-col px-6 py-8 items-center justify-center text-center">
+      <div className="min-h-screen bg-bg flex flex-col px-6 py-8 items-center justify-center text-center">
         <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-3xl mb-4">🕵️‍♂️</div>
-        <h2 className="text-xl font-bold text-foreground mb-2">Aula não encontrada</h2>
-        <p className="text-muted-foreground text-sm mb-6">Esta aula pode ter sido cancelada ou o link é inválido.</p>
-        <button onClick={() => navigate('/')} className="px-6 py-3 bg-emerald-500 text-black font-semibold rounded-xl">
+        <h2 className="text-xl font-bold text-ink mb-2">Aula não encontrada</h2>
+        <p className="text-ink-muted text-sm mb-6">Esta aula pode ter sido cancelada ou o link é inválido.</p>
+        <button onClick={() => navigate('/')} className="px-6 py-3 bg-brand text-black font-semibold rounded-xl">
           Voltar ao Início
         </button>
       </div>
@@ -99,91 +101,106 @@ const SessionDetails = () => {
   const isPast = parseISO(`${session.date}T${session.start_time}`) < new Date();
 
   return (
-    <div className="min-h-screen bg-background flex flex-col pb-safe">
+    <div className="min-h-[100dvh] bg-bg flex flex-col pb-safe">
       {/* Header Image / Pattern */}
-      <div className="h-48 bg-emerald-950/30 relative flex items-start justify-between p-6">
-        <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
-        <button onClick={() => navigate(-1)} className="relative z-10 w-10 h-10 bg-black/40 backdrop-blur rounded-full flex items-center justify-center text-white">
+      <div className="h-56 bg-surface relative flex items-start justify-between p-4 border-b border-line">
+        {session.cover_image_url ? (
+          <img src={session.cover_image_url} className="absolute inset-0 w-full h-full object-cover" />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-brand/20 to-accent/20" />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-bg via-transparent to-black/20" />
+        
+        <Button onClick={() => navigate(-1)} variant="ghost" size="icon" className="relative z-10 rounded-full bg-surface/50 backdrop-blur-md shadow-sm">
           <ArrowLeft className="w-5 h-5" />
-        </button>
-        <button onClick={handleShare} className="relative z-10 w-10 h-10 bg-black/40 backdrop-blur rounded-full flex items-center justify-center text-white">
+        </Button>
+        <Button onClick={handleShare} variant="ghost" size="icon" className="relative z-10 rounded-full bg-surface/50 backdrop-blur-md shadow-sm">
           <Share2 className="w-5 h-5" />
-        </button>
+        </Button>
       </div>
 
       {/* Content */}
       <div className="flex-1 px-6 -mt-8 relative z-10">
         <div className="glass-card p-6 mb-6">
-          <div className="flex gap-4 items-center border-b border-white/5 pb-4 mb-4">
+          <div className="flex gap-4 items-center border-b border-line pb-4 mb-4">
             <img 
               src={session.professional?.avatar_url || `https://ui-avatars.com/api/?name=${session.professional?.full_name}&background=10b981&color=000`} 
               alt="Prof" 
-              className="w-16 h-16 rounded-full border-2 border-emerald-500/20"
+              className="w-16 h-16 rounded-full border-2 border-brand/20"
             />
             <div>
-              <p className="text-sm text-emerald-400 font-semibold uppercase tracking-wider">{session.category?.name}</p>
-              <h1 className="text-xl font-bold text-foreground leading-tight mt-1">{session.title}</h1>
-              <p className="text-sm text-muted-foreground mt-1">por {session.professional?.full_name}</p>
+              <p className="text-sm text-brand font-semibold uppercase tracking-wider">{session.category?.name}</p>
+              <h1 className="text-xl font-bold text-ink leading-tight mt-1">{session.title}</h1>
+              <p className="text-sm text-ink-muted mt-1">por {session.professional?.full_name}</p>
             </div>
           </div>
 
           <div className="space-y-4">
-            <div className="flex items-center gap-3 text-sm text-foreground">
-              <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-emerald-400 shrink-0">
+            <div className="flex items-center gap-3 text-sm text-ink">
+              <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-brand shrink-0">
                 <Clock className="w-5 h-5" />
               </div>
               <div className="capitalize">
                 <p className="font-semibold">{dateStr}</p>
-                <p className="text-muted-foreground">{timeStr} • {session.duration_minutes} min</p>
+                <p className="text-ink-muted">{timeStr} • {session.duration_minutes} min</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 text-sm text-foreground">
-              <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-emerald-400 shrink-0">
+            <div className="flex items-center gap-3 text-sm text-ink">
+              <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-brand shrink-0">
                 <MapPin className="w-5 h-5" />
               </div>
               <div>
                 <p className="font-semibold">{session.location_name}</p>
-                {session.location_address && <p className="text-muted-foreground text-xs">{session.location_address}</p>}
+                {session.location_address && <p className="text-ink-muted text-xs">{session.location_address}</p>}
               </div>
             </div>
 
-            <div className="flex items-center gap-3 text-sm text-foreground">
-              <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-emerald-400 shrink-0">
+            <div className="flex items-center gap-3 text-sm text-ink">
+              <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-brand shrink-0">
                 <Users className="w-5 h-5" />
               </div>
               <div>
                 <p className="font-semibold">{session.current_participants} / {session.max_participants} confirmados</p>
-                <p className="text-muted-foreground text-xs">{session.max_participants - session.current_participants} vagas restantes</p>
+                <p className="text-ink-muted text-xs">{session.max_participants - session.current_participants} vagas restantes</p>
               </div>
             </div>
           </div>
           
+          {session.what_to_bring && (
+            <div className="mt-4 pt-4 border-t border-line">
+              <h3 className="font-semibold text-sm mb-2">O que levar</h3>
+              <p className="text-sm text-ink-muted whitespace-pre-wrap">{session.what_to_bring}</p>
+            </div>
+          )}
+          
           {session.description && (
-            <div className="mt-6 pt-4 border-t border-white/5">
+            <div className="mt-4 pt-4 border-t border-line">
               <h3 className="font-semibold text-sm mb-2">Sobre a Aula</h3>
-              <p className="text-sm text-muted-foreground whitespace-pre-wrap">{session.description}</p>
+              <p className="text-sm text-ink-muted whitespace-pre-wrap">{session.description}</p>
             </div>
           )}
         </div>
       </div>
 
       {/* Footer Checkout */}
-      <div className="sticky bottom-0 bg-background/80 backdrop-blur-xl border-t border-white/10 p-4 pb-safe flex items-center gap-4">
+      <div className="sticky bottom-0 bg-bg/80 backdrop-blur-xl border-t border-line p-4 pb-safe flex items-center gap-4 z-50">
         <div className="flex-1">
-          <p className="text-xs text-muted-foreground">Preço por vaga</p>
-          <p className="text-xl font-bold text-emerald-400">
-            {isFree ? 'Gratuito' : `R$ ${session.price_per_slot.toFixed(2).replace('.', ',')}`}
+          <p className="text-xs text-ink-muted">Preço por vaga</p>
+          <p className="text-xl font-bold text-brand">
+            {isFree ? 'Gratuito' : new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(session.price_per_slot)}
           </p>
         </div>
         
-        <button
+        <Button
+          variant={isPast || isFull ? 'secondary' : 'default'}
+          size="lg"
           onClick={handleBookClick}
           disabled={isPast || isFull}
-          className="flex-none px-8 h-12 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-xl disabled:opacity-50 transition-colors"
+          className="flex-none px-8 h-12"
         >
           {isPast ? 'Finalizada' : isFull ? 'Lotada' : 'Garantir Vaga'}
-        </button>
+        </Button>
       </div>
 
       <CheckoutModal 
