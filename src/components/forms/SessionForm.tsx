@@ -1,4 +1,8 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
+import { v4 as uuidv4 } from 'uuid';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { Camera, ImagePlus, Loader2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, ChevronLeft, Check, Sparkles, AlertTriangle, MessageCircle, MapPin, Calendar, Clock, DollarSign, Users } from 'lucide-react';
@@ -39,6 +43,8 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
   const { data: categories } = useCategories();
   const { profile } = useProfile();
   
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [step, setStep] = useState(1);
   const totalSteps = 3;
 
@@ -57,6 +63,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
       location_name: initialData?.location_name || '',
       price_per_slot: initialData?.price_per_slot || 0,
       what_to_bring: initialData?.what_to_bring || '',
+      cover_image_url: initialData?.cover_image_url || '',
     }
   });
 
@@ -90,6 +97,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
       max_participants: formData.max_participants || 10,
       current_participants: initialData?.current_participants || 0,
       status: 'active',
+      cover_image_url: formData.cover_image_url || undefined,
       category: cat ? { name: cat.name, emoji: cat.emoji } : { name: 'Categoria', emoji: '✨' },
       professional: {
         id: profile?.id,
@@ -118,6 +126,33 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
   const handleWhatsAppNotify = () => {
     const text = encodeURIComponent(`Olá turma! A aula "${initialData.title}" teve uma alteração.\n\nNova Data: ${formData.date}\nNovo Horário: ${formData.start_time}\nLocal: ${formData.location_name}\n\nQualquer dúvida, me avisem!`);
     window.open(`https://wa.me/?text=` + text, '_blank');
+  };
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${profile?.id}-${uuidv4()}.${fileExt}`;
+      const filePath = `sessions/${fileName}`;
+
+      setIsUploading(true);
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
+      setValue('cover_image_url', data.publicUrl, { shouldValidate: true });
+      toast.success('Imagem da aula atualizada!');
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao fazer upload da imagem.');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -158,6 +193,38 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
               {/* STEP 1: A EXPERIÊNCIA */}
               {step === 1 && (
                 <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
+                  
+                  {/* Image Upload */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-ink flex items-center gap-2">Capa da Aula</label>
+                    <div 
+                      onClick={() => fileInputRef.current?.click()}
+                      className="relative w-full aspect-video rounded-2xl border-2 border-dashed border-line bg-surface hover:bg-surface/80 flex flex-col items-center justify-center cursor-pointer overflow-hidden transition-colors"
+                    >
+                      {formData.cover_image_url ? (
+                        <img src={formData.cover_image_url} alt="Capa" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="flex flex-col items-center text-ink-muted">
+                          <ImagePlus className="w-8 h-8 mb-2 opacity-50" />
+                          <span className="text-sm font-medium">Adicionar Foto</span>
+                          <span className="text-xs opacity-70">Formato 16:9 ideal</span>
+                        </div>
+                      )}
+                      
+                      {isUploading && (
+                        <div className="absolute inset-0 bg-bg/60 backdrop-blur-sm flex items-center justify-center z-10">
+                          <Loader2 className="w-8 h-8 text-brand animate-spin" />
+                        </div>
+                      )}
+                      <input 
+                        type="file" 
+                        ref={fileInputRef} 
+                        onChange={handleImageUpload} 
+                        accept="image/*" 
+                        className="hidden" 
+                      />
+                    </div>
+                  </div>
                   
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-ink flex items-center gap-2">Modalidade</label>

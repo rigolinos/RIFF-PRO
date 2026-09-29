@@ -23,63 +23,66 @@ export const SessionCard = ({ session, onBookClick }: SessionCardProps) => {
   const isFree = session.price_per_slot === 0;
 
   return (
-    <Link to={`/session/${session.id}`} className="glass-card overflow-hidden flex flex-col transition-all active:scale-[0.98] block">
-      <div className="p-4 flex gap-4">
-        {/* Avatar Pro */}
-        <div className="shrink-0 flex flex-col items-center">
-          <div className="w-14 h-14 rounded-full bg-line overflow-hidden border-2 border-brand/30 flex items-center justify-center text-xl text-ink font-display">
+    <Link to={`/session/${session.id}`} className="block overflow-hidden rounded-card bg-surface shadow-1 active:scale-[.99] transition-transform">
+      <div className="relative aspect-[16/9] bg-line w-full overflow-hidden border-b border-line">
+        {session.cover_image_url ? (
+          <img src={session.cover_image_url} alt={session.title} className="w-full h-full object-cover" />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-brand/20 to-accent/20" />
+        )}
+        
+        {/* Scarcity Badge / Top Right */}
+        <div className="absolute top-3 right-3">
+          {isFull ? (
+            <Badge variant="destructive" className="shadow-sm font-bold">Lotada</Badge>
+          ) : spotsLeft <= 2 ? (
+            <Badge variant="warning" className="shadow-sm font-bold animate-pulse">{spotsLeft} VAGAS</Badge>
+          ) : null}
+        </div>
+
+        {/* Date / Top Left */}
+        <div className="absolute top-3 left-3">
+          <Badge variant="secondary" className="shadow-sm bg-surface/90 text-ink backdrop-blur-sm border-0 font-bold capitalize">
+            {dateStr}
+          </Badge>
+        </div>
+      </div>
+
+      <div className="p-4 space-y-3">
+        <div className="flex justify-between items-start gap-2">
+          <h3 className="font-display font-bold text-lg text-ink leading-tight">
+            {session.title}
+          </h3>
+          <Badge variant="pill" className="w-fit shrink-0 lowercase shadow-none border-line">
+            {category?.emoji}
+          </Badge>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 rounded-full bg-line overflow-hidden border border-brand/20 flex items-center justify-center text-[10px] text-ink font-bold">
             {pro?.avatar_url ? (
               <img src={pro.avatar_url} alt={pro.full_name} className="w-full h-full object-cover" />
             ) : (
               <span>{pro?.full_name?.charAt(0)}</span>
             )}
           </div>
-          <div className="flex items-center gap-1 mt-1.5 bg-surface shadow-sm px-2 py-0.5 rounded-full border border-line">
-            <Star className="w-3 h-3 text-accent fill-accent" />
-            <span className="text-[10px] font-bold tabular-nums text-ink">{pro?.rating_avg > 0 ? pro.rating_avg.toFixed(1) : 'Novo'}</span>
+          <span className="text-sm font-medium text-ink-muted truncate">{pro?.full_name}</span>
+          <span className="mx-1 text-line">•</span>
+          <div className="flex items-center gap-1 text-accent">
+            <Star className="w-3 h-3 fill-accent" />
+            <span className="text-xs font-bold text-ink">{pro?.rating_avg > 0 ? pro.rating_avg.toFixed(1) : 'Novo'}</span>
           </div>
         </div>
 
-        {/* Content */}
-        <div className="flex-1 min-w-0">
-          <div className="flex justify-between items-start mb-1 gap-2">
-            <Badge variant="pill" className="w-fit shrink-0 lowercase">
-              <span className="mr-1">{category?.emoji}</span>
-              {category?.name}
-            </Badge>
-            
-            {/* Scarcity Badge Top Right */}
-            {isFull ? (
-              <Badge variant="destructive" className="shrink-0">
-                Lotada
-              </Badge>
-            ) : spotsLeft <= 2 ? (
-              <Badge variant="warning" className="shrink-0 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-warning animate-pulse" />
-                <span className="tabular-nums tracking-tight font-extrabold">{spotsLeft} VAGAS</span>
-              </Badge>
-            ) : null}
+        <div className="flex items-center gap-3 text-xs text-ink-muted">
+          <div className="flex items-center gap-1">
+            <Clock className="w-3.5 h-3.5" />
+            <span className="tabular-nums">{timeStr}</span>
+            <span className="ml-1 opacity-60">({session.duration_minutes} min)</span>
           </div>
-
-          <h3 className="font-display font-semibold text-base text-ink leading-tight truncate mb-1">
-            {session.title}
-          </h3>
-          <p className="text-sm text-ink-muted truncate mb-3">
-            com {pro?.full_name}
-          </p>
-
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2 text-xs text-ink-muted">
-              <CalendarDays className="w-3.5 h-3.5" />
-              <span className="capitalize">{dateStr}</span>
-              <span className="mx-0.5">•</span>
-              <Clock className="w-3.5 h-3.5" />
-              <span className="tabular-nums">{timeStr}</span>
-            </div>
-            <div className="flex items-center gap-2 text-xs text-ink-muted truncate">
-              <MapPin className="w-3.5 h-3.5 shrink-0" />
-              <span className="truncate">{session.location_name}</span>
-            </div>
+          <div className="flex items-center gap-1 truncate">
+            <MapPin className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">{session.location_name}</span>
           </div>
         </div>
       </div>
