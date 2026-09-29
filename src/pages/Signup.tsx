@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Eye, EyeOff, Dumbbell, ArrowLeft, Users, Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -59,7 +59,7 @@ const Signup = () => {
           <span className="text-lg font-bold text-foreground">Riff <span className="text-emerald-400">Pro</span></span>
         </div>
         <h1 className="text-2xl font-bold text-foreground">Criar conta</h1>
-        <p className="text-muted-foreground text-sm mt-1">Comece a sua jornada sem intermediÃ¡rios</p>
+        <p className="text-muted-foreground text-sm mt-1">Comece a sua jornada sem intermediários</p>
       </motion.div>
 
       {/* Role Selector */}
@@ -133,7 +133,7 @@ const Signup = () => {
           <div className="relative">
             <input
               type={showPassword ? 'text' : 'password'}
-              placeholder="MÃ­nimo 6 caracteres"
+              placeholder="Mínimo 6 caracteres"
               value={password}
               onChange={e => setPassword(e.target.value)}
               required
@@ -166,7 +166,7 @@ const Signup = () => {
 
       {/* Footer */}
       <p className="text-center text-muted-foreground text-sm mt-6">
-        JÃ¡ tem conta?{' '}
+        Já tem conta?{' '}
         <Link to="/login" className="text-emerald-400 font-medium hover:text-emerald-300">
           Entrar
         </Link>

@@ -1,4 +1,4 @@
-﻿import { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Search, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -63,7 +63,7 @@ const Feed = () => {
                 : 'bg-white/5 text-slate-400 border bg-line hover:bg-line'
             }`}
           >
-            ðŸ”¥ Todas
+                        🔥 Todas
           </button>
           
           {isLoadingCategories ? (
@@ -112,8 +112,8 @@ const Feed = () => {
               <h3 className="text-lg font-semibold text-ink mb-2">Nenhuma aula encontrada</h3>
               <p className="text-ink-muted text-sm mb-6">
                 {selectedCategory === 'all' 
-                  ? 'Ainda nÃ£o hÃ¡ aulas publicadas na sua regiÃ£o.' 
-                  : 'NÃ£o encontramos aulas dessa modalidade por agora.'}
+                  ? 'Ainda não há aulas publicadas na sua região.' 
+                  : 'Não encontramos aulas dessa modalidade por agora.'}
               </p>
               <button onClick={() => setSelectedCategory('all')} className="w-full bg-white/5 hover:bg-line text-ink text-sm font-semibold py-2.5 rounded-xl transition-all">
                 Limpar Filtros
@@ -148,4 +148,3 @@ const Feed = () => {
 };
 
 export default Feed;
-
