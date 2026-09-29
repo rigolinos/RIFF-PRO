@@ -124,13 +124,13 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
     <div className="flex flex-col lg:flex-row h-full w-full max-w-6xl mx-auto overflow-hidden min-h-screen">
       
       {/* LEFT: FORM (Wizard) */}
-      <div className="flex-1 flex flex-col h-full bg-background relative z-10 lg:max-w-xl lg:border-r border-white/5 shadow-2xl">
-        <div className="p-6 border-b border-white/5 flex items-center justify-between">
+      <div className="flex-1 flex flex-col h-full bg-bg relative z-10 lg:max-w-xl lg:border-r border-line shadow-2xl">
+        <div className="p-6 border-b border-line flex items-center justify-between">
           <div className="flex flex-col">
-            <h1 className="text-xl font-bold text-foreground">
+            <h1 className="text-xl font-bold text-ink">
               {isEditMode ? 'Editar Aula' : 'Criar Nova Aula'}
             </h1>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-ink-muted mt-1">
               Passo {step} de {totalSteps}
             </p>
           </div>
@@ -138,14 +138,14 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
           {/* Progress Indicator */}
           <div className="flex gap-1.5">
             {[1, 2, 3].map(i => (
-              <div key={i} className={`h-1.5 w-6 rounded-full transition-colors ${i <= step ? 'bg-emerald-500' : 'bg-white/10'}`} />
+              <div key={i} className={`h-1.5 w-6 rounded-full transition-colors ${i <= step ? 'bg-brand' : 'bg-line'}`} />
             ))}
           </div>
         </div>
 
         {/* MOBILE PREVIEW SECTION (Only visible on small screens) */}
-        <div className="block lg:hidden px-6 pt-6 pb-2 border-b border-white/5 bg-white/[0.02]">
-           <p className="text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-3 flex items-center gap-1.5"><Sparkles className="w-3 h-3" /> Prévia ao Vivo</p>
+        <div className="block lg:hidden px-6 pt-6 pb-2 border-b border-line bg-white/[0.02]">
+           <p className="text-xs font-semibold text-brand uppercase tracking-wider mb-3 flex items-center gap-1.5"><Sparkles className="w-3 h-3" /> Prévia ao Vivo</p>
            <div className="scale-95 origin-top">
              <SessionCard session={previewSession} onBookClick={() => {}} />
            </div>
@@ -160,9 +160,9 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
                 <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
                   
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground flex items-center gap-2">Modalidade</label>
+                    <label className="text-sm font-medium text-ink flex items-center gap-2">Modalidade</label>
                     <Select onValueChange={(v) => setValue('category_id', v)} value={formData.category_id}>
-                      <SelectTrigger className="h-12 bg-black/40 border-white/10 focus:border-emerald-500/50 text-base">
+                      <SelectTrigger className="h-12 bg-surface border-line focus:border-brand/50 text-base">
                         <SelectValue placeholder="Selecione..." />
                       </SelectTrigger>
                       <SelectContent>
@@ -175,14 +175,14 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
 
                   {activeTemplates.length > 0 && (
                     <div className="space-y-3">
-                      <p className="text-xs font-semibold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                      <p className="text-xs font-semibold text-brand uppercase tracking-wider flex items-center gap-1.5">
                         <Sparkles className="w-3 h-3" /> Ideias que convertem
                       </p>
                       <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-2">
                         {activeTemplates.map((temp, idx) => (
                           <button 
                             key={idx} type="button" onClick={() => handleTemplateClick(temp)}
-                            className="shrink-0 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs rounded-full whitespace-nowrap hover:bg-emerald-500/20 transition-colors"
+                            className="shrink-0 px-3 py-1.5 bg-brand/10 border border-brand/20 text-brand-ink text-xs rounded-full whitespace-nowrap hover:bg-brand/20 transition-colors"
                           >
                             {temp.title}
                           </button>
@@ -192,16 +192,16 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
                   )}
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">Título Magnético</label>
-                    <Input {...register('title')} placeholder="Ex: Treino Queima Máxima (Iniciante)" className="h-12 bg-black/40 border-white/10 text-base font-semibold focus:border-emerald-500/50" />
-                    <p className="text-[11px] text-muted-foreground italic">Dica: Títulos com o benefício final vendem 3x mais.</p>
+                    <label className="text-sm font-medium text-ink">Título Magnético</label>
+                    <Input {...register('title')} placeholder="Ex: Treino Queima Máxima (Iniciante)" className="h-12 bg-surface border-line text-base font-semibold focus:border-brand/50" />
+                    <p className="text-[11px] text-ink-muted italic">Dica: Títulos com o benefício final vendem 3x mais.</p>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">Capacidade (Vagas)</label>
+                    <label className="text-sm font-medium text-ink">Capacidade (Vagas)</label>
                     <div className="relative">
-                      <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input {...register('max_participants')} type="number" min="1" className="h-12 pl-10 bg-black/40 border-white/10 text-base focus:border-emerald-500/50" />
+                      <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted" />
+                      <Input {...register('max_participants')} type="number" min="1" className="h-12 pl-10 bg-surface border-line text-base focus:border-brand/50" />
                     </div>
                     {formData.max_participants < 6 && (
                       <p className="text-[11px] text-amber-400/90 font-medium bg-amber-500/10 px-2 py-1 rounded border border-amber-500/20 inline-block mt-1">
@@ -219,31 +219,31 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-foreground">Data</label>
+                      <label className="text-sm font-medium text-ink">Data</label>
                       <div className="relative">
-                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                        <Input {...register('date')} type="date" className="h-12 pl-10 bg-black/40 border-white/10 focus:border-emerald-500/50 text-sm" />
+                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted" />
+                        <Input {...register('date')} type="date" className="h-12 pl-10 bg-surface border-line focus:border-brand/50 text-sm" />
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-foreground">Horário</label>
+                      <label className="text-sm font-medium text-ink">Horário</label>
                       <div className="relative">
-                        <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                        <Input {...register('start_time')} type="time" className="h-12 pl-10 bg-black/40 border-white/10 focus:border-emerald-500/50 text-sm" />
+                        <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted" />
+                        <Input {...register('start_time')} type="time" className="h-12 pl-10 bg-surface border-line focus:border-brand/50 text-sm" />
                       </div>
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">Duração (minutos)</label>
-                    <Input {...register('duration_minutes')} type="number" step="15" className="h-12 bg-black/40 border-white/10 focus:border-emerald-500/50" />
+                    <label className="text-sm font-medium text-ink">Duração (minutos)</label>
+                    <Input {...register('duration_minutes')} type="number" step="15" className="h-12 bg-surface border-line focus:border-brand/50" />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">Local</label>
+                    <label className="text-sm font-medium text-ink">Local</label>
                     <div className="relative">
-                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input {...register('location_name')} placeholder="Ex: Parque Ibirapuera - Portão 7" className="h-12 pl-10 bg-black/40 border-white/10 focus:border-emerald-500/50" />
+                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted" />
+                      <Input {...register('location_name')} placeholder="Ex: Parque Ibirapuera - Portão 7" className="h-12 pl-10 bg-surface border-line focus:border-brand/50" />
                     </div>
                   </div>
 
@@ -255,10 +255,10 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
                 <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
                   
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">Preço por Vaga (R$)</label>
+                    <label className="text-sm font-medium text-ink">Preço por Vaga (R$)</label>
                     <div className="relative">
-                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input {...register('price_per_slot')} type="number" step="0.01" disabled={hasParticipants} className="h-12 pl-10 bg-black/40 border-white/10 text-xl font-bold tabular-nums focus:border-emerald-500/50 disabled:opacity-50" />
+                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted" />
+                      <Input {...register('price_per_slot')} type="number" step="0.01" disabled={hasParticipants} className="h-12 pl-10 bg-surface border-line text-xl font-bold tabular-nums focus:border-brand/50 disabled:opacity-50" />
                     </div>
                     {hasParticipants && (
                       <p className="text-[11px] text-amber-400/90 font-medium bg-amber-500/10 px-2 py-1 rounded border border-amber-500/20 inline-flex items-center gap-1.5 mt-1">
@@ -266,13 +266,13 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
                       </p>
                     )}
                     {!hasParticipants && formData.price_per_slot == 0 && (
-                       <p className="text-[11px] text-emerald-400/90 italic mt-1">Aula 100% gratuita configurada (ótimo para atrair leads).</p>
+                       <p className="text-[11px] text-brand/90 italic mt-1">Aula 100% gratuita configurada (ótimo para atrair leads).</p>
                     )}
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">Descrição / O que levar (Opcional)</label>
-                    <Textarea {...register('description')} placeholder="Ex: Traga sua própria raquete, água e protetor solar." className="h-24 bg-black/40 border-white/10 focus:border-emerald-500/50 resize-none" />
+                    <label className="text-sm font-medium text-ink">Descrição / O que levar (Opcional)</label>
+                    <Textarea {...register('description')} placeholder="Ex: Traga sua própria raquete, água e protetor solar." className="h-24 bg-surface border-line focus:border-brand/50 resize-none" />
                   </div>
 
                   {logisticsChanged && (
@@ -280,7 +280,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
                       <h4 className="text-sm font-semibold text-amber-400 flex items-center gap-2 mb-2">
                         <AlertTriangle className="w-4 h-4" /> Alerta de Alteração
                       </h4>
-                      <p className="text-xs text-muted-foreground mb-3">
+                      <p className="text-xs text-ink-muted mb-3">
                         Você mudou a Data, Horário ou Local de uma aula que já possui <strong>{initialData.current_participants} alunos confirmados</strong>.
                       </p>
                       <button 
@@ -299,19 +299,19 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
         </ScrollArea>
 
         {/* BOTTOM NAV / WIZARD CONTROLS */}
-        <div className="p-4 border-t border-white/5 bg-background/80 backdrop-blur-xl absolute bottom-0 left-0 right-0 flex gap-3">
+        <div className="p-4 border-t border-line bg-bg/80 backdrop-blur-xl absolute bottom-0 left-0 right-0 flex gap-3">
           {step > 1 && (
-            <Button type="button" onClick={prevStep} variant="outline" className="h-12 w-12 shrink-0 rounded-xl bg-white/5 border-white/10 hover:bg-white/10">
+            <Button type="button" onClick={prevStep} variant="outline" className="h-12 w-12 shrink-0 rounded-xl bg-white/5 border-line hover:bg-line">
               <ChevronLeft className="w-5 h-5" />
             </Button>
           )}
           
           {step < totalSteps ? (
-            <Button type="button" onClick={nextStep} className="h-12 flex-1 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-base shadow-[0_8px_24px_rgba(16,185,129,0.3)]">
+            <Button type="button" onClick={nextStep} className="h-12 flex-1 rounded-xl bg-brand hover:bg-brand text-brand-ink font-bold text-base shadow-[0_8px_24px_rgba(16,185,129,0.3)]">
               Próximo <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           ) : (
-            <Button type="submit" form="session-form" disabled={isSubmitting} className="h-12 flex-1 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-base shadow-[0_8px_24px_rgba(16,185,129,0.3)]">
+            <Button type="submit" form="session-form" disabled={isSubmitting} className="h-12 flex-1 rounded-xl bg-brand hover:bg-brand text-brand-ink font-bold text-base shadow-[0_8px_24px_rgba(16,185,129,0.3)]">
               {isSubmitting ? 'Salvando...' : (isEditMode ? 'Salvar Alterações' : 'Publicar Aula')} 
               {!isSubmitting && <Check className="w-4 h-4 ml-1.5" />}
             </Button>
@@ -325,7 +325,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.05)_0%,transparent_100%)] pointer-events-none" />
         
         <div className="w-full max-w-[340px] relative z-10">
-          <div className="mb-6 flex items-center justify-center gap-2 text-emerald-400/60 uppercase tracking-widest text-xs font-bold">
+          <div className="mb-6 flex items-center justify-center gap-2 text-brand/60 uppercase tracking-widest text-xs font-bold">
             <Sparkles className="w-4 h-4" /> Prévia ao vivo
           </div>
           
@@ -333,7 +333,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
             <SessionCard session={previewSession} onBookClick={() => {}} />
           </div>
 
-          <p className="text-center text-xs text-muted-foreground mt-8 px-6">
+          <p className="text-center text-xs text-ink-muted mt-8 px-6">
             É exatamente assim que os alunos verão sua aula no Feed e no seu perfil público.
           </p>
         </div>

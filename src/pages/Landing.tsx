@@ -1,12 +1,13 @@
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Shield, MapPin, DollarSign, Star, Users, Dumbbell } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
 
 const Landing = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-bg flex flex-col">
       {/* Hero Section */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 pt-16 pb-8">
         {/* Logo */}
@@ -17,11 +18,11 @@ const Landing = () => {
           className="mb-8"
         >
           <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center glow-emerald">
-              <Dumbbell className="w-6 h-6 text-black" />
+            <div className="w-10 h-10 rounded-xl bg-brand flex items-center justify-center glow-emerald">
+              <Dumbbell className="w-6 h-6 text-brand-ink" />
             </div>
-            <span className="text-2xl font-bold text-foreground">
-              Riff <span className="text-emerald-400">Pro</span>
+            <span className="text-2xl font-bold text-ink">
+              Riff <span className="text-brand">Pro</span>
             </span>
           </div>
         </motion.div>
@@ -95,12 +96,12 @@ const Landing = () => {
         transition={{ duration: 0.6, delay: 0.8 }}
         className="px-6 pb-10"
       >
-        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 text-center">
+        <h2 className="text-sm font-semibold text-ink-muted uppercase tracking-wider mb-4 text-center">
           Como funciona
         </h2>
         <div className="space-y-3">
           {[
-            { icon: Shield, text: 'Crie sua vitrine profissional e atraia alunos', color: 'text-emerald-400' },
+            { icon: Shield, text: 'Crie sua vitrine profissional e atraia alunos', color: 'text-brand' },
             { icon: MapPin, text: 'Publique aulas em parques, praias ou estúdios', color: 'text-blue-400' },
             { icon: DollarSign, text: 'Receba o pagamento direto dos seus alunos', color: 'text-amber-400' },
             { icon: Star, text: 'Construa sua reputação com avaliações reais', color: 'text-purple-400' },
@@ -109,7 +110,7 @@ const Landing = () => {
               <div className={`w-10 h-10 rounded-full bg-white/[0.05] flex items-center justify-center ${step.color}`}>
                 <step.icon className="w-5 h-5" />
               </div>
-              <p className="text-foreground text-sm font-medium flex-1">{step.text}</p>
+              <p className="text-ink text-sm font-medium flex-1">{step.text}</p>
             </div>
           ))}
         </div>

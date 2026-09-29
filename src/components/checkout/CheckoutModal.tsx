@@ -156,9 +156,9 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
                     {session.category?.emoji || '🤸'}
                   </div>
                   <div>
-                    <h4 className="font-semibold text-foreground">{session.title}</h4>
-                    <p className="text-sm text-muted-foreground">Com {session.professional?.full_name}</p>
-                    <p className="text-sm text-emerald-400 font-medium mt-1">
+                    <h4 className="font-semibold text-ink">{session.title}</h4>
+                    <p className="text-sm text-ink-muted">Com {session.professional?.full_name}</p>
+                    <p className="text-sm text-brand font-medium mt-1">
                       {isFree ? 'Gratuito' : `R$ ${session.price_per_slot.toFixed(2).replace('.', ',')}`}
                     </p>
                   </div>
@@ -169,7 +169,7 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
                 <Button
                   onClick={handleBook}
                   disabled={isBooking}
-                  className="w-full h-14 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-lg rounded-xl glow-emerald"
+                  className="w-full h-14 bg-brand hover:bg-brand text-black font-semibold text-lg rounded-xl glow-emerald"
                 >
                   {isBooking ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Garantir Vaga'}
                 </Button>
@@ -181,10 +181,10 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
           ) : (
             <>
               <DrawerHeader className="text-center pb-2">
-                <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle2 className="w-8 h-8 text-emerald-500" />
+                <div className="w-16 h-16 rounded-full bg-brand/20 flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle2 className="w-8 h-8 text-brand" />
                 </div>
-                <DrawerTitle className="text-2xl text-emerald-400">Vaga Garantida!</DrawerTitle>
+                <DrawerTitle className="text-2xl text-brand">Vaga Garantida!</DrawerTitle>
                 <DrawerDescription className="text-base mt-2">
                   Sua reserva foi registrada no sistema.
                 </DrawerDescription>
@@ -192,23 +192,23 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
 
               {!isFree && paymentInfo?.pix_key && (
                 <div className="p-6 space-y-6">
-                  <div className="bg-white/5 rounded-2xl p-5 border border-emerald-500/20 text-center space-y-3 relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500/0 via-emerald-500 to-emerald-500/0 opacity-50" />
+                  <div className="bg-white/5 rounded-2xl p-5 border border-brand/20 text-center space-y-3 relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand/0 via-brand to-brand/0 opacity-50" />
 
-                    <p className="text-sm text-muted-foreground">Faça o Pix de</p>
-                    <p className="text-3xl font-bold text-foreground">
+                    <p className="text-sm text-ink-muted">Faça o Pix de</p>
+                    <p className="text-3xl font-bold text-ink">
                       R$ {session.price_per_slot.toFixed(2).replace('.', ',')}
                     </p>
 
                     <div className="pt-2">
-                      <p className="text-xs text-muted-foreground mb-2">Chave Pix do Profissional:</p>
+                      <p className="text-xs text-ink-muted mb-2">Chave Pix do Profissional:</p>
                       <div className="flex gap-2">
-                        <div className="h-12 bg-black/40 rounded-xl px-4 flex items-center flex-1 font-mono text-sm border border-white/10 truncate select-all">
+                        <div className="h-12 bg-surface rounded-xl px-4 flex items-center flex-1 font-mono text-sm border border-line truncate select-all">
                           {paymentInfo.pix_key}
                         </div>
                         <Button
                           onClick={handleCopyPix}
-                          className="h-12 w-12 shrink-0 bg-emerald-500 hover:bg-emerald-400 text-black rounded-xl"
+                          className="h-12 w-12 shrink-0 bg-brand hover:bg-brand text-black rounded-xl"
                         >
                           {copied ? <CheckCircle2 className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
                         </Button>
@@ -217,7 +217,7 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
                   </div>
 
                   <div className="space-y-3">
-                    <p className="text-sm text-center text-muted-foreground">
+                    <p className="text-sm text-center text-ink-muted">
                       Após o pagamento, avise o profissional:
                     </p>
                     <Button
@@ -235,7 +235,7 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
                 <div className="p-6">
                   <Button
                     onClick={onClose}
-                    className="w-full h-14 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-lg rounded-xl glow-emerald"
+                    className="w-full h-14 bg-brand hover:bg-brand text-black font-semibold text-lg rounded-xl glow-emerald"
                   >
                     Voltar ao Feed
                   </Button>
