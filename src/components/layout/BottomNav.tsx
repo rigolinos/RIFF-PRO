@@ -34,7 +34,7 @@ export const BottomNav = () => {
   return (
     <>
       <nav aria-label="Principal" className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-4 px-4 pointer-events-none pb-safe">
-        <div className="bg-background/80 backdrop-blur-xl border border-white/10 rounded-full flex items-center justify-around w-full max-w-md h-[68px] px-2 shadow-[0_8px_32px_rgba(0,0,0,0.5)] pointer-events-auto relative">
+        <div className="bg-surface/90 backdrop-blur-xl border border-line rounded-full flex items-center justify-around w-full max-w-md h-[68px] px-2 shadow-2 pointer-events-auto relative">
           {navItems.map((item, index) => {
             const isActive = currentPath === item.path || (item.path === '/profile/edit' && currentPath.startsWith('/profile'));
 
@@ -43,7 +43,7 @@ export const BottomNav = () => {
                 <div key={item.path} className="relative -top-6 mx-2">
                   <Link
                     to={item.path}
-                    className="w-[52px] h-[52px] bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-full flex items-center justify-center shadow-[0_8px_24px_rgba(16,185,129,0.35)] active:scale-95 transition-all z-10"
+                    className="w-[52px] h-[52px] bg-brand hover:bg-brand/90 text-brand-ink rounded-full flex items-center justify-center shadow-cta active:scale-95 transition-all z-10"
                   >
                     <Plus size={28} strokeWidth={3} />
                   </Link>
@@ -60,7 +60,7 @@ export const BottomNav = () => {
                 <div
                   className={cn(
                     'transition-all duration-300',
-                    isActive ? 'text-emerald-400 -translate-y-0.5' : 'text-muted-foreground group-hover:text-foreground'
+                    isActive ? 'text-brand -translate-y-0.5' : 'text-ink-muted group-hover:text-ink'
                   )}
                 >
                   <item.icon size={22} strokeWidth={isActive ? 2.5 : 2} />
@@ -69,15 +69,15 @@ export const BottomNav = () => {
                 {isActive && (
                   <motion.div
                     layoutId="bottomNavIndicator"
-                    className="absolute -bottom-2 w-1.5 h-1.5 rounded-full bg-emerald-400"
+                    className="absolute -bottom-2 w-1.5 h-1.5 rounded-full bg-brand"
                     transition={{ type: "spring", stiffness: 400, damping: 30 }}
                   />
                 )}
                 
                 <span 
                   className={cn(
-                    "text-[10px] font-medium transition-colors duration-300",
-                    isActive ? "text-emerald-400" : "text-muted-foreground"
+                    "text-[10px] font-bold transition-colors duration-300 tracking-wide",
+                    isActive ? "text-brand" : "text-ink-muted"
                   )}
                 >
                   {item.label}
