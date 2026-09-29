@@ -110,11 +110,30 @@ export function useProSessions() {
     },
   });
 
+  // Update session status directly (e.g. 'full' to close registrations)
+  const updateSessionStatus = useMutation({
+    mutationFn: async ({ sessionId, status }: { sessionId: string; status: 'active' | 'full' | 'cancelled' | 'completed' | 'draft' }) => {
+      const { data, error } = await supabase
+        .from('sessions')
+        .update({ status })
+        .eq('id', sessionId)
+        .select('id');
+      
+      if (error) throw error;
+      if (!data || data.length === 0) throw new Error("Ação não permitida ou sessão não encontrada.");
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
+    },
+  });
+
   return {
     sessions: proSessionsQuery.data,
     isLoading: proSessionsQuery.isLoading,
     confirmPayment: confirmPayment.mutateAsync,
     cancelSession: cancelSession.mutateAsync,
     closeSession: closeSession.mutateAsync,
+    updateSessionStatus: updateSessionStatus.mutateAsync,
   };
 }

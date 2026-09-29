@@ -18,7 +18,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 const MySessionsPro = () => {
-  const { sessions, isLoading, cancelSession, closeSession } = useProSessions();
+  const { sessions, isLoading, cancelSession, closeSession, updateSessionStatus } = useProSessions();
   const { createSession } = useSessions();
   const [selectedSession, setSelectedSession] = useState<any>(null);
   const [isDuplicating, setIsDuplicating] = useState<string | null>(null);
@@ -92,6 +92,15 @@ const MySessionsPro = () => {
     }
   };
 
+  const handleCloseRegistrations = async (session: any) => {
+    try {
+      await updateSessionStatus({ sessionId: session.id, status: 'full' });
+      toast.success('Inscrições encerradas antecipadamente.');
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao encerrar inscrições.');
+    }
+  };
+
   const handleDuplicateSession = async (session: any) => {
     setIsDuplicating(session.id);
     try {
@@ -127,13 +136,13 @@ const MySessionsPro = () => {
       <div className="px-6 py-6 flex-1 flex flex-col">
         {isLoading ? (
           <div className="flex-1 flex items-center justify-center">
-            <Loader2 className="w-8 h-8 text-emerald-500 animate-spin" />
+            <Loader2 className="w-8 h-8 text-brand animate-spin" />
           </div>
         ) : !sessions || sessions.length === 0 ? (
           <div className="text-center py-12">
             <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-3xl mx-auto mb-4">📝</div>
-            <h3 className="text-lg font-semibold text-foreground mb-1">Nenhuma aula criada</h3>
-            <p className="text-muted-foreground text-sm">Crie sua primeira turma e comece a receber alunos.</p>
+            <h3 className="text-lg font-semibold text-ink mb-1">Nenhuma aula criada</h3>
+            <p className="text-ink-muted text-sm">Crie sua primeira turma e comece a receber alunos.</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -162,11 +171,11 @@ const MySessionsPro = () => {
                     {cancelled ? (
                       <span className="text-[10px] uppercase font-bold text-red-400 bg-red-400/10 border border-red-400/20 px-2 py-1 rounded shrink-0">Cancelada</span>
                     ) : completed ? (
-                      <span className="text-[10px] uppercase font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded shrink-0">Encerrada</span>
+                      <span className="text-[10px] uppercase font-bold text-brand bg-brand/10 border border-brand/20 px-2 py-1 rounded shrink-0">Encerrada</span>
                     ) : past ? (
                       <span className="text-[10px] uppercase font-bold text-amber-400 bg-amber-400/10 border border-amber-400/20 px-2 py-1 rounded shrink-0">Encerrar</span>
                     ) : isFull ? (
-                      <span className="text-[10px] uppercase font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded shrink-0">Lotada</span>
+                      <span className="text-[10px] uppercase font-bold text-brand bg-brand/10 border border-brand/20 px-2 py-1 rounded shrink-0">Lotada</span>
                     ) : (
                       <span className="text-[10px] uppercase font-bold text-amber-400 bg-amber-400/10 border border-amber-400/20 px-2 py-1 rounded shrink-0">Ativa</span>
                     )}
@@ -174,12 +183,12 @@ const MySessionsPro = () => {
 
                   <div className="flex items-center justify-between mt-3">
                     <div className="flex items-center gap-3 cursor-pointer" onClick={() => openAttendanceSheet(session)}>
-                      <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground bg-white/5 px-2 py-1 rounded-md">
+                      <div className="flex items-center gap-1.5 text-[11px] text-ink-muted bg-white/5 px-2 py-1 rounded-md">
                         <Clock className="w-3.5 h-3.5" />
                         <span className="capitalize">{dateStr} • {timeStr}</span>
                       </div>
                       <div className="flex items-center gap-1.5 text-[11px] font-medium px-2 py-1 rounded-md bg-white/5">
-                        <Users className="w-3.5 h-3.5 text-emerald-400" />
+                        <Users className="w-3.5 h-3.5 text-brand" />
                         <span>{activeBookings.length} / {session.max_participants}</span>
                       </div>
                     </div>
@@ -198,7 +207,7 @@ const MySessionsPro = () => {
                               toast.success('Link direto copiado!');
                             }
                           }}
-                          className="text-[11px] flex items-center gap-1 font-semibold text-emerald-400 bg-emerald-500/10 px-2.5 py-1.5 rounded-lg hover:bg-emerald-500/20 transition-colors"
+                          className="text-[11px] flex items-center gap-1 font-semibold text-brand bg-brand/10 px-2.5 py-1.5 rounded-lg hover:bg-brand/20 transition-colors"
                         >
                           <Share2 className="w-3 h-3" />
                         </button>
@@ -207,7 +216,7 @@ const MySessionsPro = () => {
                         <button
                           onClick={(e) => { e.stopPropagation(); handleDuplicateSession(session); }}
                           disabled={isDuplicating === session.id}
-                          className="text-[11px] flex items-center gap-1 font-semibold text-muted-foreground bg-white/5 px-2.5 py-1.5 rounded-lg hover:bg-white/10 transition-colors disabled:opacity-50"
+                          className="text-[11px] flex items-center gap-1 font-semibold text-ink-muted bg-white/5 px-2.5 py-1.5 rounded-lg hover:bg-line transition-colors disabled:opacity-50"
                         >
                           {isDuplicating === session.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Copy className="w-3 h-3" />}
                         </button>
@@ -217,10 +226,22 @@ const MySessionsPro = () => {
                             {/* Edit */}
                             <button
                               onClick={(e) => { e.stopPropagation(); navigate(`/edit-session/${session.id}`); }}
-                              className="text-[11px] flex items-center gap-1 font-semibold text-emerald-400 bg-emerald-500/10 px-2.5 py-1.5 rounded-lg hover:bg-emerald-500/20 transition-colors"
+                              className="text-[11px] flex items-center gap-1 font-semibold text-brand bg-brand/10 px-2.5 py-1.5 rounded-lg hover:bg-brand/20 transition-colors"
                             >
                               <Edit className="w-3 h-3" />
                             </button>
+                            
+                            {/* Close Registrations Early */}
+                            {!isFull && (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleCloseRegistrations(session); }}
+                                className="text-[11px] flex items-center gap-1 font-semibold text-amber-400 bg-amber-400/10 px-2.5 py-1.5 rounded-lg hover:bg-amber-400/20 transition-colors"
+                                title="Encerrar Inscrições"
+                              >
+                                <XCircle className="w-3 h-3" />
+                              </button>
+                            )}
+
 
                             {/* Cancel with AlertDialog */}
                             <AlertDialog>
@@ -232,7 +253,7 @@ const MySessionsPro = () => {
                                   <XCircle className="w-3 h-3" />
                                 </button>
                               </AlertDialogTrigger>
-                              <AlertDialogContent className="bg-background border-white/10">
+                              <AlertDialogContent className="bg-bg border-line">
                                 <AlertDialogHeader>
                                   <AlertDialogTitle>Cancelar turma "{session.title}"?</AlertDialogTitle>
                                   <AlertDialogDescription>
@@ -240,8 +261,8 @@ const MySessionsPro = () => {
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                  <AlertDialogCancel className="bg-white/5 hover:bg-white/10 border-0">Manter</AlertDialogCancel>
-                                  <AlertDialogAction onClick={() => handleCancelSession(session)} className="bg-red-500 hover:bg-red-600 text-white">
+                                  <AlertDialogCancel className="bg-white/5 hover:bg-line border-0">Manter</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handleCancelSession(session)} className="bg-red-500 hover:bg-red-600 text-ink">
                                     Sim, cancelar turma
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
@@ -271,10 +292,10 @@ const MySessionsPro = () => {
 
       {/* Attendance / Close Session Sheet */}
       <Sheet open={!!selectedSession} onOpenChange={(open) => !open && setSelectedSession(null)}>
-        <SheetContent side="bottom" className="h-[85vh] bg-background border-t border-white/10 p-0 flex flex-col rounded-t-3xl">
-          <SheetHeader className="p-6 border-b border-white/5 text-left">
+        <SheetContent side="bottom" className="h-[85vh] bg-bg border-t border-line p-0 flex flex-col rounded-t-3xl">
+          <SheetHeader className="p-6 border-b border-line text-left">
             <SheetTitle className="text-xl">{selectedSession?.title}</SheetTitle>
-            <SheetDescription className="text-muted-foreground mt-1">
+            <SheetDescription className="text-ink-muted mt-1">
               {isPast(selectedSession || { date: '2099-01-01', start_time: '00:00' }) && !isCancelled(selectedSession || {}) && !isCompleted(selectedSession || {})
                 ? 'Registre a presença e encerre a aula'
                 : `${selectedSession?.current_participants || 0} de ${selectedSession?.max_participants} inscritos`
@@ -285,7 +306,7 @@ const MySessionsPro = () => {
           <ScrollArea className="flex-1 p-6">
             <div className="space-y-4">
               {selectedSession?.bookings?.filter((b: any) => !b.status.startsWith('cancelled')).length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground text-sm">
+                <div className="text-center py-8 text-ink-muted text-sm">
                   Nenhum aluno inscrito ainda.
                 </div>
               ) : (
@@ -294,28 +315,28 @@ const MySessionsPro = () => {
                   const att = attendance[booking.id];
 
                   return (
-                    <div key={booking.id} className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-3">
+                    <div key={booking.id} className="p-4 rounded-2xl bg-white/[0.02] border border-line space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-white/10 overflow-hidden">
+                          <div className="w-10 h-10 rounded-full bg-line overflow-hidden">
                             {booking.student?.avatar_url ? (
                               <img src={booking.student.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
                             ) : (
-                              <div className="w-full h-full flex items-center justify-center font-bold text-muted-foreground">
+                              <div className="w-full h-full flex items-center justify-center font-bold text-ink-muted">
                                 {booking.student?.full_name?.charAt(0) || '?'}
                               </div>
                             )}
                           </div>
                           <div>
-                            <p className="text-sm font-semibold text-foreground">{booking.student?.full_name}</p>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-sm font-semibold text-ink">{booking.student?.full_name}</p>
+                            <p className="text-xs text-ink-muted">
                               {booking.status === 'completed' ? '✅ Presente' : booking.status === 'no_show' ? '❌ Faltou' : booking.payment_status === 'paid' ? '💰 Pago' : '⏳ Pendente'}
                             </p>
                           </div>
                         </div>
 
                         {!canEdit && booking.payment_status === 'paid' && (
-                          <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-500">
+                          <div className="w-8 h-8 rounded-full bg-brand/20 flex items-center justify-center text-brand">
                             <CheckCircle2 className="w-5 h-5" />
                           </div>
                         )}
@@ -326,13 +347,13 @@ const MySessionsPro = () => {
                         <div className="flex flex-wrap gap-2">
                           <button
                             onClick={() => setAttendance(prev => ({ ...prev, [booking.id]: { ...prev[booking.id], attended: !prev[booking.id].attended } }))}
-                            className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-colors ${att.attended ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-400/10 text-red-400'}`}
+                            className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-colors ${att.attended ? 'bg-brand/20 text-brand' : 'bg-red-400/10 text-red-400'}`}
                           >
                             {att.attended ? '✅ Presente' : '❌ Faltou'}
                           </button>
                           <button
                             onClick={() => setAttendance(prev => ({ ...prev, [booking.id]: { ...prev[booking.id], paid: !prev[booking.id].paid } }))}
-                            className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-colors ${att.paid ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-400/10 text-amber-400'}`}
+                            className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-colors ${att.paid ? 'bg-brand/20 text-brand' : 'bg-amber-400/10 text-amber-400'}`}
                           >
                             {att.paid ? '💰 Pago' : '⏳ Pendente'}
                           </button>
@@ -341,7 +362,7 @@ const MySessionsPro = () => {
                             placeholder="Nota privada..."
                             value={att.note}
                             onChange={(e) => setAttendance(prev => ({ ...prev, [booking.id]: { ...prev[booking.id], note: e.target.value } }))}
-                            className="flex-1 min-w-[120px] text-xs bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-foreground placeholder:text-muted-foreground"
+                            className="flex-1 min-w-[120px] text-xs bg-white/5 border border-line rounded-lg px-3 py-1.5 text-ink placeholder:text-ink-muted"
                           />
                         </div>
                       )}
@@ -352,16 +373,16 @@ const MySessionsPro = () => {
 
               {/* Session notes + Close button */}
               {selectedSession && isPast(selectedSession) && !isCancelled(selectedSession) && !isCompleted(selectedSession) && (
-                <div className="space-y-4 pt-4 border-t border-white/10">
+                <div className="space-y-4 pt-4 border-t border-line">
                   <div className="space-y-2">
-                    <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    <label className="text-xs font-semibold uppercase tracking-wider text-ink-muted">
                       Observação da sessão (opcional)
                     </label>
                     <textarea
                       value={sessionNotes}
                       onChange={(e) => setSessionNotes(e.target.value)}
                       placeholder="Algo sobre a aula de hoje..."
-                      className="w-full h-20 text-sm bg-white/5 border border-white/10 rounded-xl px-4 py-3 resize-none text-foreground placeholder:text-muted-foreground"
+                      className="w-full h-20 text-sm bg-white/5 border border-line rounded-xl px-4 py-3 resize-none text-ink placeholder:text-ink-muted"
                     />
                   </div>
 
@@ -372,7 +393,7 @@ const MySessionsPro = () => {
                           Aula não aconteceu
                         </Button>
                       </AlertDialogTrigger>
-                      <AlertDialogContent className="bg-background border-white/10">
+                      <AlertDialogContent className="bg-bg border-line">
                         <AlertDialogHeader>
                           <AlertDialogTitle>A aula não aconteceu?</AlertDialogTitle>
                           <AlertDialogDescription>
@@ -380,7 +401,7 @@ const MySessionsPro = () => {
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel className="bg-white/5 hover:bg-white/10 border-0">Voltar</AlertDialogCancel>
+                          <AlertDialogCancel className="bg-white/5 hover:bg-line border-0">Voltar</AlertDialogCancel>
                           <AlertDialogAction
                             onClick={async () => {
                               try {
@@ -391,7 +412,7 @@ const MySessionsPro = () => {
                                 toast.error(e.message);
                               }
                             }}
-                            className="bg-red-500 hover:bg-red-600 text-white"
+                            className="bg-red-500 hover:bg-red-600 text-ink"
                           >
                             Confirmar
                           </AlertDialogAction>
@@ -402,7 +423,7 @@ const MySessionsPro = () => {
                     <Button
                       onClick={handleCloseSession}
                       disabled={isClosing}
-                      className="flex-1 h-12 bg-emerald-500 hover:bg-emerald-400 text-black font-bold glow-emerald"
+                      className="flex-1 h-12 bg-brand hover:bg-brand text-black font-bold glow-emerald"
                     >
                       {isClosing ? <Loader2 className="w-5 h-5 animate-spin" /> : '✅ Encerrar Aula'}
                     </Button>

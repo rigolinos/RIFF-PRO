@@ -120,10 +120,10 @@ const MyBookings = () => {
 
     if (effectiveStatus === 'cancelled_by_student') { statusText = 'Cancelada por você'; statusColor = 'text-red-400 bg-red-400/10 border-red-400/20'; }
     else if (effectiveStatus === 'cancelled_by_pro') { statusText = 'Aula cancelada'; statusColor = 'text-red-400 bg-red-400/10 border-red-400/20'; }
-    else if (effectiveStatus === 'completed') { statusText = 'Concluída'; statusColor = 'text-muted-foreground bg-white/5 border-white/10'; }
+    else if (effectiveStatus === 'completed') { statusText = 'Concluída'; statusColor = 'text-ink-muted bg-white/5 border-line'; }
     else if (booking.payment_status === 'pending') { statusText = 'Aguardando Pagamento'; statusColor = 'text-amber-400 bg-amber-400/10 border-amber-400/20'; }
-    else if (booking.payment_status === 'paid') { statusText = 'Confirmada'; statusColor = 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'; }
-    else { statusText = effectiveStatus; statusColor = 'text-muted-foreground bg-white/5 border-white/10'; }
+    else if (booking.payment_status === 'paid') { statusText = 'Confirmada'; statusColor = 'text-brand bg-brand/10 border-brand/20'; }
+    else { statusText = effectiveStatus; statusColor = 'text-ink-muted bg-white/5 border-line'; }
 
 
     return (
@@ -131,10 +131,10 @@ const MyBookings = () => {
         <div className="p-4">
           <div className="flex justify-between items-start mb-3">
             <div>
-              <h3 className="font-semibold text-lg text-foreground leading-tight">
+              <h3 className="font-semibold text-lg text-ink leading-tight">
                 {booking.session.category?.emoji} {booking.session.title}
               </h3>
-              <p className="text-sm text-muted-foreground mt-0.5">
+              <p className="text-sm text-ink-muted mt-0.5">
                 com {booking.professional?.full_name}
               </p>
             </div>
@@ -143,18 +143,18 @@ const MyBookings = () => {
             </span>
           </div>
 
-          <div className="flex gap-4 items-center bg-white/[0.03] p-3 rounded-xl border border-white/5">
-            <div className="flex-1 border-r border-white/10">
-              <p className="text-xs text-muted-foreground mb-0.5">Quando</p>
+          <div className="flex gap-4 items-center bg-white/[0.03] p-3 rounded-xl border border-line">
+            <div className="flex-1 border-r border-line">
+              <p className="text-xs text-ink-muted mb-0.5">Quando</p>
               <p className="text-sm font-medium capitalize">{dateStr}</p>
-              <p className="text-xs font-semibold text-emerald-400">{timeStr}</p>
+              <p className="text-xs font-semibold text-brand">{timeStr}</p>
             </div>
             <div className="flex-1">
-              <p className="text-xs text-muted-foreground mb-0.5">Onde</p>
+              <p className="text-xs text-ink-muted mb-0.5">Onde</p>
               <p className="text-sm font-medium truncate">{booking.session.location_name}</p>
               <button 
                 onClick={() => handleOpenMap(booking)}
-                className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 mt-0.5"
+                className="text-xs font-semibold text-brand hover:text-brand-ink flex items-center gap-1 mt-0.5"
               >
                 <MapPin className="w-3 h-3" /> Ver Mapa
               </button>
@@ -163,7 +163,7 @@ const MyBookings = () => {
         </div>
 
         {!isHistory ? (
-          <div className="border-t border-white/5 bg-white/[0.02] p-3 flex gap-2">
+          <div className="border-t border-line bg-white/[0.02] p-3 flex gap-2">
             <button
               onClick={() => handleWhatsApp(booking)}
               className="flex-1 h-10 rounded-lg bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 font-medium text-sm transition-colors flex items-center justify-center gap-2"
@@ -182,11 +182,11 @@ const MyBookings = () => {
             </button>
           </div>
         ) : (
-          booking.status === 'completed' && (
-            <div className="border-t border-white/5 bg-white/[0.02] p-3 flex">
+          effectiveStatus === 'completed' && (
+            <div className="border-t border-line bg-white/[0.02] p-3 flex">
               <button
                 onClick={() => setReviewBooking(booking)}
-                className="flex-1 h-10 rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 font-medium text-sm transition-colors flex items-center justify-center gap-2"
+                className="flex-1 h-10 rounded-lg bg-brand/10 text-brand hover:bg-brand/20 font-medium text-sm transition-colors flex items-center justify-center gap-2"
               >
                 Avaliar Aula
               </button>
@@ -202,15 +202,15 @@ const MyBookings = () => {
       <div className="px-6 py-6 flex-1 flex flex-col">
         {isLoading ? (
           <div className="flex-1 flex items-center justify-center">
-            <Loader2 className="w-8 h-8 text-emerald-500 animate-spin" />
+            <Loader2 className="w-8 h-8 text-brand animate-spin" />
           </div>
         ) : (
           <Tabs defaultValue="upcoming" className="w-full">
-            <TabsList className="w-full bg-white/[0.05] border border-white/10 h-12 rounded-xl mb-6 p-1">
-              <TabsTrigger value="upcoming" className="flex-1 rounded-lg data-[state=active]:bg-emerald-500 data-[state=active]:text-black text-muted-foreground font-medium transition-all">
+            <TabsList className="w-full bg-white/[0.05] border border-line h-12 rounded-xl mb-6 p-1">
+              <TabsTrigger value="upcoming" className="flex-1 rounded-lg data-[state=active]:bg-brand data-[state=active]:text-black text-ink-muted font-medium transition-all">
                 Próximas Aulas
               </TabsTrigger>
-              <TabsTrigger value="history" className="flex-1 rounded-lg data-[state=active]:bg-white/10 data-[state=active]:text-foreground text-muted-foreground font-medium transition-all">
+              <TabsTrigger value="history" className="flex-1 rounded-lg data-[state=active]:bg-line data-[state=active]:text-ink text-ink-muted font-medium transition-all">
                 Histórico
               </TabsTrigger>
             </TabsList>
@@ -221,8 +221,8 @@ const MyBookings = () => {
                   {upcoming.length === 0 ? (
                     <div className="text-center py-12">
                       <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-3xl mx-auto mb-4">📅</div>
-                      <h3 className="text-lg font-semibold text-foreground mb-1">Nenhuma aula agendada</h3>
-                      <p className="text-muted-foreground text-sm">Que tal explorar novas turmas e agendar seu próximo treino?</p>
+                      <h3 className="text-lg font-semibold text-ink mb-1">Nenhuma aula agendada</h3>
+                      <p className="text-ink-muted text-sm">Que tal explorar novas turmas e agendar seu próximo treino?</p>
                     </div>
                   ) : (
                     upcoming.map(b => renderBookingCard(b, false))
@@ -233,7 +233,7 @@ const MyBookings = () => {
               <TabsContent value="history" className="mt-0">
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                   {history.length === 0 ? (
-                    <div className="text-center py-12 text-muted-foreground">
+                    <div className="text-center py-12 text-ink-muted">
                       Seu histórico de aulas aparecerá aqui.
                     </div>
                   ) : (
