@@ -1,66 +1,69 @@
 @import "tailwindcss";
 
 @theme {
-  --color-border: hsl(var(--border));
-  --color-input: hsl(var(--input));
-  --color-ring: hsl(var(--ring));
-  --color-background: hsl(var(--background));
-  --color-foreground: hsl(var(--foreground));
-  --color-primary: hsl(var(--primary));
-  --color-primary-foreground: hsl(var(--primary-foreground));
-  --color-secondary: hsl(var(--secondary));
-  --color-secondary-foreground: hsl(var(--secondary-foreground));
-  --color-destructive: hsl(var(--destructive));
-  --color-destructive-foreground: hsl(var(--destructive-foreground));
-  --color-muted: hsl(var(--muted));
-  --color-muted-foreground: hsl(var(--muted-foreground));
-  --color-accent: hsl(var(--accent));
-  --color-accent-foreground: hsl(var(--accent-foreground));
-  --color-popover: hsl(var(--popover));
-  --color-popover-foreground: hsl(var(--popover-foreground));
-  --color-card: hsl(var(--card));
-  --color-card-foreground: hsl(var(--card-foreground));
+  --font-display: "Bricolage Grotesque Variable", system-ui, sans-serif;
+  --font-sans: "Inter Variable", system-ui, sans-serif;
+
+  /* Riff Pro semantic colors */
+  --color-bg:          var(--bg);
+  --color-surface:     var(--surface);
+  --color-elevated:    var(--elevated);
+  --color-ink:         var(--ink);
+  --color-ink-muted:   var(--ink-muted);
+  --color-line:        var(--line);
+  --color-brand:       var(--brand);
+  --color-brand-ink:   var(--brand-ink);
+  --color-accent:      var(--accent);
+  --color-success:     var(--success);
+  --color-warning:     var(--warning);
+  --color-danger:      var(--danger);
+
+  /* Shadcn UI compat */
+  --color-background: var(--bg);
+  --color-foreground: var(--ink);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--ink);
+  --color-popover: var(--elevated);
+  --color-popover-foreground: var(--ink);
+  --color-primary: var(--brand);
+  --color-primary-foreground: var(--brand-ink);
+  --color-secondary: var(--line);
+  --color-secondary-foreground: var(--ink);
+  --color-muted: var(--line);
+  --color-muted-foreground: var(--ink-muted);
+  --color-destructive: var(--danger);
+  --color-destructive-foreground: var(--brand-ink);
+  --color-border: var(--line);
+  --color-input: var(--line);
+  --color-ring: var(--brand);
+
+  --radius-control: 12px;
+  --radius-card:    20px;
+  --radius-sheet:   28px;
+  
+  --shadow-1: 0 1px 2px rgb(0 0 0 / .06), 0 1px 1px rgb(0 0 0 / .04);
+  --shadow-2: 0 8px 24px rgb(0 0 0 / .10);
+  --shadow-cta: 0 8px 24px color-mix(in oklab, var(--brand) 35%, transparent);
+
+  --bottom-nav-h: 84px;
 }
 
 @layer base {
-  :root {
-    /* === Riff Pro — Dark Emerald Design System === */
-    --background: 195 85% 6%;
-    --foreground: 180 19% 94%;
-
-    --card: 195 50% 10%;
-    --card-foreground: 180 19% 94%;
-
-    --popover: 195 50% 10%;
-    --popover-foreground: 180 19% 94%;
-
-    --primary: 160 84% 39%;
-    --primary-foreground: 195 85% 6%;
-
-    --secondary: 195 30% 18%;
-    --secondary-foreground: 180 19% 90%;
-
-    --muted: 195 20% 20%;
-    --muted-foreground: 195 10% 55%;
-
-    --accent: 160 60% 30%;
-    --accent-foreground: 180 19% 94%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 195 20% 18%;
-    --input: 195 20% 22%;
-    --ring: 160 84% 39%;
-
+  :root, [data-theme="light"] {
+    color-scheme: light;
+    --bg:#F5F8F7; --surface:#FFFFFF; --elevated:#FFFFFF;
+    --ink:#0D1F1B; --ink-muted:#4A5F59; --line:#DCE5E2;
+    --brand:#0B6B4F; --brand-ink:#FFFFFF; --accent:#FFC533;
+    --success:#12A150; --warning:#B7791F; --danger:#C53030;
     --radius: 0.75rem;
-
-    /* === Riff Pro Custom Tokens === */
-    --riffpro-emerald: 160 84% 39%;
-    --riffpro-emerald-hover: 160 84% 45%;
-    --riffpro-emerald-glow: 160 84% 39%;
-    --riffpro-surface: 195 50% 10%;
-    --riffpro-surface-hover: 195 50% 14%;
+  }
+  
+  [data-theme="dark"], .dark {
+    color-scheme: dark;
+    --bg:#04141A; --surface:#0B2129; --elevated:#13303A;
+    --ink:#E9F2F0; --ink-muted:#93A9A4; --line:#1B3A44;
+    --brand:#10B981; --brand-ink:#04141A; --accent:#FFB020;
+    --success:#34D399; --warning:#FBBF24; --danger:#F87171;
   }
 
   * {
@@ -68,63 +71,14 @@
   }
 
   body {
-    @apply bg-background text-foreground;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-}
-
-/* === Utilities === */
-@layer utilities {
-  .glow-emerald {
-    box-shadow: 0 0 20px hsl(var(--riffpro-emerald) / 0.3),
-                0 0 60px hsl(var(--riffpro-emerald) / 0.1);
+    background-color: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
   }
 
-  .glow-emerald-strong {
-    box-shadow: 0 8px 30px hsl(var(--riffpro-emerald) / 0.4);
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
   }
-
-  .glass-surface {
-    @apply bg-white/[0.05] backdrop-blur-sm border border-white/[0.08];
-  }
-
-  .glass-card {
-    @apply bg-white/[0.03] backdrop-blur-sm border border-white/[0.06] rounded-2xl;
-  }
-
-  .text-gradient-emerald {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-emerald-300;
-  }
-
-  /* Safe area padding for mobile */
-  .pb-safe {
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-  }
-}
-
-/* === Scrollbar === */
-::-webkit-scrollbar {
-  width: 4px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: hsl(195 20% 25%);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: hsl(195 20% 35%);
-}
-
-/* === Mobile-first max width === */
-#root {
-  @apply max-w-[480px] mx-auto min-h-screen relative;
 }
 
 @layer utilities {
@@ -135,10 +89,17 @@
   .hide-scrollbar::-webkit-scrollbar {
     display: none;
   }
-  .pt-safe {
-    padding-top: env(safe-area-inset-top, 0px);
-  }
-  .pb-safe {
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-  }
+  .pt-safe { padding-top: env(safe-area-inset-top, 0px); }
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
+}
+
+/* Glass-card and glow will be refactored, but keeping for compatibility during migration */
+.glass-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-1);
+}
+.glow-emerald {
+  box-shadow: var(--shadow-cta);
 }

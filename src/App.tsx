@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Toaster as ShadcnToaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from '@/components/ui/sonner';
+import { MotionConfig } from 'framer-motion';
 
 // Config
 import { ProtectedRoute } from '@/components/ProtectedRoute';
@@ -49,10 +49,10 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <ViewModeProvider>
-            {/* Global UI Components */}
-            <ShadcnToaster />
-            <SonnerToaster theme="dark" position="top-center" />
-            <ModeBanner />
+            <MotionConfig reducedMotion="user" transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}>
+              {/* Global UI Components */}
+              <SonnerToaster theme="system" position="top-center" />
+              <ModeBanner />
 
             <Routes>
               {/* Public Routes */}
@@ -90,6 +90,7 @@ function App() {
             
             {/* Navigation */}
             <BottomNav />
+            </MotionConfig>
           </ViewModeProvider>
         </BrowserRouter>
       </QueryClientProvider>
