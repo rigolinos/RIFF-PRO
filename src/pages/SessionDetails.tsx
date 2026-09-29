@@ -87,7 +87,7 @@ const SessionDetails = () => {
         <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-3xl mb-4">🕵️‍♂️</div>
         <h2 className="text-xl font-bold text-ink mb-2">Aula não encontrada</h2>
         <p className="text-ink-muted text-sm mb-6">Esta aula pode ter sido cancelada ou o link é inválido.</p>
-        <button onClick={() => navigate('/')} className="px-6 py-3 bg-brand text-black font-semibold rounded-xl">
+        <button onClick={() => navigate('/')} className="px-6 py-3 bg-brand text-brand-ink font-semibold rounded-xl">
           Voltar ao Início
         </button>
       </div>
@@ -96,7 +96,7 @@ const SessionDetails = () => {
 
   const dateStr = format(parseISO(session.date), "EEEE, d 'de' MMMM", { locale: ptBR });
   const timeStr = session.start_time.substring(0, 5);
-  const isFull = session.current_participants >= session.max_participants;
+  const isFull = (session.current_participants ?? 0) >= (session.max_participants ?? 0);
   const isFree = session.price_per_slot === 0;
   const isPast = parseISO(`${session.date}T${session.start_time}`) < new Date();
 
@@ -161,8 +161,8 @@ const SessionDetails = () => {
                 <Users className="w-5 h-5" />
               </div>
               <div>
-                <p className="font-semibold">{session.current_participants} / {session.max_participants} confirmados</p>
-                <p className="text-ink-muted text-xs">{session.max_participants - session.current_participants} vagas restantes</p>
+                <p className="font-semibold">{(session.current_participants ?? 0)} / {(session.max_participants ?? 0)} confirmados</p>
+                <p className="text-ink-muted text-xs">{(session.max_participants ?? 0) - (session.current_participants ?? 0)} vagas restantes</p>
               </div>
             </div>
           </div>

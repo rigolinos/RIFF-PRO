@@ -76,7 +76,7 @@ export const BottomNav = () => {
                 
                 <span 
                   className={cn(
-                    "text-[10px] font-bold transition-colors duration-300 tracking-wide",
+                    "text-xs font-bold transition-colors duration-300 tracking-wide",
                     isActive ? "text-brand" : "text-ink-muted"
                   )}
                 >

@@ -106,7 +106,7 @@ const Feed = () => {
             className="flex-1 flex flex-col items-center justify-center text-center mt-12"
           >
             <div className="bg-white/[0.02] border bg-line rounded-3xl p-8 max-w-xs text-center backdrop-blur-md">
-              <div className="w-16 h-16 rounded-full bg-brand/10 border border-brand/20 text-brand flex items-center justify-center text-3xl mb-4 mx-auto shadow-[0_0_15px_rgba(16,185,129,0.15)]">
+              <div className="w-16 h-16 rounded-full bg-brand/10 border border-brand/20 text-brand flex items-center justify-center text-3xl mb-4 mx-auto shadow-[0_0_15px_var(--brand-soft)]">
                 <Search className="w-8 h-8" />
               </div>
               <h3 className="text-lg font-semibold text-ink mb-2">Nenhuma aula encontrada</h3>

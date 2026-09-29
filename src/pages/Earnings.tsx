@@ -50,7 +50,7 @@ export default function Earnings() {
     return (
       <PageContainer title="Meus Ganhos" withBottomNav>
         <div className="flex-1 flex items-center justify-center">
-          <Loader2 className="w-8 h-8 text-emerald-500 animate-spin" />
+          <Loader2 className="w-8 h-8 text-brand animate-spin" />
         </div>
       </PageContainer>
     );
@@ -62,33 +62,33 @@ export default function Earnings() {
         
         {/* Balance Cards */}
         <div className="grid grid-cols-2 gap-3">
-          <div className="glass-card p-4 relative overflow-hidden bg-emerald-500/10 border-emerald-500/20">
+          <div className="glass-card p-4 relative overflow-hidden bg-brand/10 border-brand/20">
             <div className="absolute top-0 right-0 p-3 opacity-20">
-              <DollarSign className="w-12 h-12 text-emerald-500" />
+              <DollarSign className="w-12 h-12 text-brand" />
             </div>
-            <div className="flex items-center gap-1.5 text-emerald-400 mb-2">
+            <div className="flex items-center gap-1.5 text-brand mb-2">
               <ArrowDownLeft className="w-4 h-4" />
-              <span className="text-[10px] font-bold uppercase tracking-wider">Saldo Recebido</span>
+              <span className="text-xs font-bold uppercase tracking-wider">Saldo Recebido</span>
             </div>
             <div className="flex items-baseline gap-1 relative z-10">
-              <span className="text-sm font-semibold text-emerald-400">R$</span>
-              <span className="text-2xl font-bold text-emerald-500">
+              <span className="text-sm font-semibold text-brand">R$</span>
+              <span className="text-2xl font-bold text-brand">
                 {totalPaid.toFixed(2).replace('.', ',')}
               </span>
             </div>
           </div>
 
-          <div className="glass-card p-4 relative overflow-hidden border-amber-400/20 bg-amber-400/5">
+          <div className="glass-card p-4 relative overflow-hidden border-accent/20 bg-accent/15">
             <div className="absolute top-0 right-0 p-3 opacity-10">
-              <Clock className="w-12 h-12 text-amber-400" />
+              <Clock className="w-12 h-12 text-accent" />
             </div>
-            <div className="flex items-center gap-1.5 text-amber-400 mb-2">
+            <div className="flex items-center gap-1.5 text-accent mb-2">
               <ArrowUpRight className="w-4 h-4" />
-              <span className="text-[10px] font-bold uppercase tracking-wider">A Receber</span>
+              <span className="text-xs font-bold uppercase tracking-wider">A Receber</span>
             </div>
             <div className="flex items-baseline gap-1 relative z-10">
-              <span className="text-sm font-semibold text-amber-400">R$</span>
-              <span className="text-2xl font-bold text-amber-400">
+              <span className="text-sm font-semibold text-accent">R$</span>
+              <span className="text-2xl font-bold text-accent">
                 {totalPending.toFixed(2).replace('.', ',')}
               </span>
             </div>
@@ -115,7 +115,7 @@ export default function Earnings() {
                 return (
                   <div key={t.id} className="glass-card p-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${isPaid ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-400/10 text-amber-400'}`}>
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${isPaid ? 'bg-brand/10 text-brand' : 'bg-accent/15 text-accent'}`}>
                         {isPaid ? <ArrowDownLeft className="w-5 h-5" /> : <Clock className="w-5 h-5" />}
                       </div>
                       <div className="min-w-0">
@@ -123,7 +123,7 @@ export default function Earnings() {
                           {t.student?.full_name}
                         </p>
                         <div className="flex items-center gap-1.5 mt-0.5">
-                          <span className={`text-[9px] uppercase font-bold px-1.5 py-0.5 rounded ${isPaid ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-400/20 text-amber-400'}`}>
+                          <span className={`text-[9px] uppercase font-bold px-1.5 py-0.5 rounded ${isPaid ? 'bg-brand/20 text-brand' : 'bg-accent/15 text-accent'}`}>
                             {isPaid ? 'Pix Recebido' : 'Pendente'}
                           </span>
                           <span className="text-xs text-muted-foreground truncate">
@@ -134,10 +134,10 @@ export default function Earnings() {
                     </div>
                     
                     <div className="text-right shrink-0 ml-3">
-                      <p className={`font-bold text-sm ${isPaid ? 'text-emerald-400' : 'text-foreground'}`}>
+                      <p className={`font-bold text-sm ${isPaid ? 'text-brand' : 'text-foreground'}`}>
                         + R$ {price.toFixed(2).replace('.', ',')}
                       </p>
-                      <p className="text-[10px] text-muted-foreground mt-1">
+                      <p className="text-xs text-muted-foreground mt-1">
                         {format(parseISO(t.created_at), "dd MMM, HH:mm", { locale: ptBR })}
                       </p>
                     </div>

@@ -21,7 +21,7 @@ const ProfessionalProfile = () => {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
   if (isLoading) {
-    return <div className="min-h-screen bg-background flex items-center justify-center"><Loader2 className="w-8 h-8 text-emerald-500 animate-spin" /></div>;
+    return <div className="min-h-screen bg-background flex items-center justify-center"><Loader2 className="w-8 h-8 text-brand animate-spin" /></div>;
   }
 
   if (error || !data?.profile) {
@@ -119,26 +119,26 @@ const ProfessionalProfile = () => {
 
         {/* Social Proof Line */}
         <div className="flex items-center justify-center gap-4 mt-6 w-full max-w-sm">
-          {profile.total_reviews > 0 && (
+          {(profile.total_reviews ?? 0) > 0 && (
             <>
               <div className="flex flex-col items-center flex-1">
                 <div className="flex items-center gap-1 text-accent">
                   <Star className="w-4 h-4 fill-accent" />
-                  <span className="font-bold text-ink font-display">{profile.rating_avg.toFixed(1)}</span>
+                  <span className="font-bold text-ink font-display">{(profile.rating_avg ?? 0).toFixed(1)}</span>
                 </div>
-                <span className="text-[10px] text-ink-muted uppercase mt-0.5">{profile.total_reviews} reviews</span>
+                <span className="text-xs text-ink-muted uppercase mt-0.5">{profile.total_reviews} reviews</span>
               </div>
               <div className="w-px h-8 bg-line" />
             </>
           )}
           <div className="flex flex-col items-center flex-1">
             <span className="font-bold text-ink font-display">{profile.total_sessions_given || 0}</span>
-            <span className="text-[10px] text-ink-muted uppercase mt-0.5">Aulas dadas</span>
+            <span className="text-xs text-ink-muted uppercase mt-0.5">Aulas dadas</span>
           </div>
           <div className="w-px h-8 bg-line" />
           <div className="flex flex-col items-center flex-1">
             <span className="font-bold text-ink font-display">{profile.total_students_served || 0}</span>
-            <span className="text-[10px] text-ink-muted uppercase mt-0.5">Alunos</span>
+            <span className="text-xs text-ink-muted uppercase mt-0.5">Alunos</span>
           </div>
         </div>
       </div>
@@ -149,7 +149,7 @@ const ProfessionalProfile = () => {
           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
             Turmas Abertas
           </h2>
-          <span className="text-xs text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md font-medium">
+          <span className="text-xs text-success bg-success/15 px-2 py-0.5 rounded-md font-medium">
             {sessions.length} ativas
           </span>
         </div>
@@ -208,10 +208,10 @@ const ProfessionalProfile = () => {
           disabled={!profile.instagram_handle}
           className="bg-surface border border-line rounded-2xl p-4 flex flex-col items-center justify-center gap-2 hover:bg-bg transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-1"
         >
-          <div className="w-10 h-10 rounded-full bg-pink-500/10 flex items-center justify-center text-pink-500">
+          <div className="w-10 h-10 rounded-full bg-elevated flex items-center justify-center text-ink-muted">
             <Camera className="w-5 h-5" />
           </div>
-          <span className="text-xs font-semibold text-pink-500">Instagram</span>
+          <span className="text-xs font-semibold text-ink-muted">Instagram</span>
         </button>
       </div>
 
@@ -222,10 +222,10 @@ const ProfessionalProfile = () => {
             <h2 className="text-sm font-semibold text-ink-muted uppercase tracking-wider">
               O que dizem os alunos
             </h2>
-            {profile.rating_avg > 0 && (
+            {(profile.rating_avg ?? 0) > 0 && (
               <Badge variant="pill" className="flex items-center gap-1">
                 <Star className="w-3 h-3 fill-brand" />
-                <span className="tabular-nums">{profile.rating_avg.toFixed(1)}</span>
+                <span className="tabular-nums">{(profile.rating_avg ?? 0).toFixed(1)}</span>
               </Badge>
             )}
           </div>
@@ -247,12 +247,12 @@ const ProfessionalProfile = () => {
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-ink leading-none">{review.reviewer?.full_name?.split(' ')[0]}</p>
-                        <p className="text-[10px] text-ink-muted mt-1.5 uppercase">{format(parseISO(review.created_at), "MMM yyyy", { locale: ptBR })}</p>
+                        <p className="text-xs text-ink-muted mt-1.5 uppercase">{format(parseISO(review.created_at), "MMM yyyy", { locale: ptBR })}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-1 mt-1.5 bg-surface shadow-sm px-2 py-0.5 rounded-full border border-line">
                       <Star className="w-3 h-3 fill-accent text-accent" />
-                      <span className="text-[10px] font-bold text-ink">{review.rating.toFixed(1)}</span>
+                      <span className="text-xs font-bold text-ink">{review.rating.toFixed(1)}</span>
                     </div>
                   </div>
                   

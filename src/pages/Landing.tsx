@@ -17,14 +17,7 @@ const Landing = () => {
           transition={{ duration: 0.6 }}
           className="mb-8"
         >
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-brand flex items-center justify-center glow-emerald">
-              <Dumbbell className="w-6 h-6 text-brand-ink" />
-            </div>
-            <span className="text-2xl font-bold text-ink">
-              Riff <span className="text-brand">Pro</span>
-            </span>
-          </div>
+          <Logo variant="full-color" size="xl" className="justify-start" />
         </motion.div>
 
         {/* Headline */}
@@ -102,9 +95,9 @@ const Landing = () => {
         <div className="space-y-3">
           {[
             { icon: Shield, text: 'Crie sua vitrine profissional e atraia alunos', color: 'text-brand' },
-            { icon: MapPin, text: 'Publique aulas em parques, praias ou estúdios', color: 'text-blue-400' },
-            { icon: DollarSign, text: 'Receba o pagamento direto dos seus alunos', color: 'text-amber-400' },
-            { icon: Star, text: 'Construa sua reputação com avaliações reais', color: 'text-purple-400' },
+            { icon: MapPin, text: 'Publique aulas em parques, praias ou estúdios', color: 'text-brand' },
+            { icon: DollarSign, text: 'Receba o pagamento direto dos seus alunos', color: 'text-accent' },
+            { icon: Star, text: 'Construa sua reputação com avaliações reais', color: 'text-slate' },
           ].map((step, i) => (
             <div key={i} className="glass-card p-4 flex items-center gap-4">
               <div className={`w-10 h-10 rounded-full bg-white/[0.05] flex items-center justify-center ${step.color}`}>

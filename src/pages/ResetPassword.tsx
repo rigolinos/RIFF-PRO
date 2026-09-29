@@ -1,3 +1,4 @@
+import { Logo } from "@/components/ui/logo";
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Loader2, Dumbbell } from 'lucide-react';
@@ -63,10 +64,10 @@ const ResetPassword = () => {
     <div className="min-h-screen bg-background flex flex-col px-6 py-8">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-8 mt-12">
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center">
-            <Dumbbell className="w-5 h-5 text-black" />
+          <div className="w-8 h-8 rounded-lg bg-brand flex items-center justify-center">
+            <Dumbbell className="w-5 h-5 text-brand-ink" />
           </div>
-          <span className="text-lg font-bold text-foreground">Riff <span className="text-emerald-400">Pro</span></span>
+          <span className="text-lg font-bold text-foreground">Riff <span className="text-brand">Pro</span></span>
         </div>
         <h1 className="text-2xl font-bold text-foreground">Definir Nova Senha</h1>
         <p className="text-muted-foreground text-sm mt-1">
@@ -91,7 +92,7 @@ const ResetPassword = () => {
               onChange={e => setPassword(e.target.value)}
               required
               minLength={6}
-              className="w-full h-12 rounded-xl bg-white/[0.05] border border-white/10 px-4 pr-12 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-emerald-500 transition-colors"
+              className="w-full h-12 rounded-xl bg-white/[0.05] border border-white/10 px-4 pr-12 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-brand transition-colors"
             />
             <button
               type="button"
@@ -112,14 +113,14 @@ const ResetPassword = () => {
             onChange={e => setConfirmPassword(e.target.value)}
             required
             minLength={6}
-            className="w-full h-12 rounded-xl bg-white/[0.05] border border-white/10 px-4 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-emerald-500 transition-colors"
+            className="w-full h-12 rounded-xl bg-white/[0.05] border border-white/10 px-4 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-brand transition-colors"
           />
         </div>
 
         <button
           type="submit"
           disabled={isLoading || !password || !confirmPassword}
-          className="w-full h-12 mt-4 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-black font-semibold rounded-xl flex items-center justify-center gap-2 transition-all glow-emerald"
+          className="w-full h-12 mt-4 bg-brand hover:brightness-105 disabled:opacity-50 text-brand-ink font-semibold rounded-xl flex items-center justify-center gap-2 transition-all glow-emerald"
         >
           {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Salvar Nova Senha'}
         </button>

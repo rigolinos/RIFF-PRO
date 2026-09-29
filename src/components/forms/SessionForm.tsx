@@ -271,7 +271,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
                       <Input {...register('max_participants')} type="number" min="1" className="h-12 pl-10 bg-surface border-line text-base focus:border-brand/50" />
                     </div>
                     {formData.max_participants < 6 && (
-                      <p className="text-[11px] text-amber-400/90 font-medium bg-amber-500/10 px-2 py-1 rounded border border-amber-500/20 inline-block mt-1">
+                      <p className="text-[11px] text-accent font-medium bg-accent/15 px-2 py-1 rounded border border-accent/20 inline-block mt-1">
                         🔥 Turmas exclusivas geram escassez e esgotam rápido.
                       </p>
                     )}
@@ -328,7 +328,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
                       <Input {...register('price_per_slot')} type="number" step="0.01" disabled={hasParticipants} className="h-12 pl-10 bg-surface border-line text-xl font-bold tabular-nums focus:border-brand/50 disabled:opacity-50" />
                     </div>
                     {hasParticipants && (
-                      <p className="text-[11px] text-amber-400/90 font-medium bg-amber-500/10 px-2 py-1 rounded border border-amber-500/20 inline-flex items-center gap-1.5 mt-1">
+                      <p className="text-[11px] text-accent font-medium bg-accent/15 px-2 py-1 rounded border border-accent/20 inline-flex items-center gap-1.5 mt-1">
                         <AlertTriangle className="w-3 h-3" /> Já existem inscritos. O preço não pode ser alterado.
                       </p>
                     )}
@@ -343,8 +343,8 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
                   </div>
 
                   {logisticsChanged && (
-                    <div className="glass-card p-4 border-amber-500/30 bg-amber-500/5 rounded-xl">
-                      <h4 className="text-sm font-semibold text-amber-400 flex items-center gap-2 mb-2">
+                    <div className="glass-card p-4 border-accent/20 bg-accent/15 rounded-xl">
+                      <h4 className="text-sm font-semibold text-accent flex items-center gap-2 mb-2">
                         <AlertTriangle className="w-4 h-4" /> Alerta de Alteração
                       </h4>
                       <p className="text-xs text-ink-muted mb-3">
@@ -374,11 +374,11 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
           )}
           
           {step < totalSteps ? (
-            <Button type="button" onClick={nextStep} className="h-12 flex-1 rounded-xl bg-brand hover:bg-brand text-brand-ink font-bold text-base shadow-[0_8px_24px_rgba(16,185,129,0.3)]">
+            <Button type="button" onClick={nextStep} className="h-12 flex-1 rounded-xl bg-brand hover:bg-brand text-brand-ink font-bold text-base shadow-[0_8px_24px_var(--shadow-cta)]">
               Próximo <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           ) : (
-            <Button type="submit" form="session-form" disabled={isSubmitting} className="h-12 flex-1 rounded-xl bg-brand hover:bg-brand text-brand-ink font-bold text-base shadow-[0_8px_24px_rgba(16,185,129,0.3)]">
+            <Button type="submit" form="session-form" disabled={isSubmitting} className="h-12 flex-1 rounded-xl bg-brand hover:bg-brand text-brand-ink font-bold text-base shadow-[0_8px_24px_var(--shadow-cta)]">
               {isSubmitting ? 'Salvando...' : (isEditMode ? 'Salvar Alterações' : 'Publicar Aula')} 
               {!isSubmitting && <Check className="w-4 h-4 ml-1.5" />}
             </Button>
@@ -387,16 +387,16 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
       </div>
 
       {/* RIGHT: LIVE PREVIEW (Desktop) / TOP (Mobile handled via visual stacking, but for now we render it alongside and use CSS) */}
-      <div className="hidden lg:flex flex-1 flex-col items-center justify-center bg-[#010E12] p-8 relative overflow-hidden">
+      <div className="hidden lg:flex flex-1 flex-col items-center justify-center bg-bg p-8 relative overflow-hidden">
         {/* Decorative Grid / Glow */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.05)_0%,transparent_100%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--brand-soft)_0%,transparent_100%)] pointer-events-none" />
         
         <div className="w-full max-w-[340px] relative z-10">
           <div className="mb-6 flex items-center justify-center gap-2 text-brand/60 uppercase tracking-widest text-xs font-bold">
             <Sparkles className="w-4 h-4" /> Prévia ao vivo
           </div>
           
-          <div className="scale-105 shadow-[0_20px_60px_rgba(0,0,0,0.5),0_0_40px_rgba(16,185,129,0.1)] rounded-3xl">
+          <div className="scale-105 shadow-[0_20px_60px_rgba(0,0,0,0.5),0_0_40px_var(--brand-soft)] rounded-3xl">
             <SessionCard session={previewSession} onBookClick={() => {}} />
           </div>
 

@@ -53,10 +53,10 @@ const Signup = () => {
         className="mb-8"
       >
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center">
-            <Dumbbell className="w-5 h-5 text-black" />
+          <div className="w-8 h-8 rounded-lg bg-brand flex items-center justify-center">
+            <Dumbbell className="w-5 h-5 text-brand-ink" />
           </div>
-          <span className="text-lg font-bold text-foreground">Riff <span className="text-emerald-400">Pro</span></span>
+          <span className="text-lg font-bold text-foreground">Riff <span className="text-brand">Pro</span></span>
         </div>
         <h1 className="text-2xl font-bold text-foreground">Criar conta</h1>
         <p className="text-muted-foreground text-sm mt-1">Comece a sua jornada sem intermediários</p>
@@ -74,7 +74,7 @@ const Signup = () => {
           onClick={() => setRole('professional')}
           className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${
             role === 'professional'
-              ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400'
+              ? 'border-brand bg-brand/10 text-brand'
               : 'border-white/10 bg-white/[0.03] text-muted-foreground hover:border-white/20'
           }`}
         >
@@ -86,7 +86,7 @@ const Signup = () => {
           onClick={() => setRole('student')}
           className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${
             role === 'student'
-              ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400'
+              ? 'border-brand bg-brand/10 text-brand'
               : 'border-white/10 bg-white/[0.03] text-muted-foreground hover:border-white/20'
           }`}
         >
@@ -111,7 +111,7 @@ const Signup = () => {
             value={fullName}
             onChange={e => setFullName(e.target.value)}
             required
-            className="w-full h-12 rounded-xl bg-white/[0.05] border border-white/10 px-4 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-emerald-500 transition-colors"
+            className="w-full h-12 rounded-xl bg-white/[0.05] border border-white/10 px-4 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-brand transition-colors"
           />
         </div>
 
@@ -124,7 +124,7 @@ const Signup = () => {
             onChange={e => setEmail(e.target.value)}
             required
             autoComplete="email"
-            className="w-full h-12 rounded-xl bg-white/[0.05] border border-white/10 px-4 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-emerald-500 transition-colors"
+            className="w-full h-12 rounded-xl bg-white/[0.05] border border-white/10 px-4 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-brand transition-colors"
           />
         </div>
 
@@ -139,7 +139,7 @@ const Signup = () => {
               required
               minLength={6}
               autoComplete="new-password"
-              className="w-full h-12 rounded-xl bg-white/[0.05] border border-white/10 px-4 pr-12 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-emerald-500 transition-colors"
+              className="w-full h-12 rounded-xl bg-white/[0.05] border border-white/10 px-4 pr-12 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-brand transition-colors"
             />
             <button
               type="button"
@@ -154,7 +154,7 @@ const Signup = () => {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full h-12 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-black font-semibold rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] mt-4 glow-emerald"
+          className="w-full h-12 bg-brand hover:brightness-105 disabled:opacity-50 text-brand-ink font-semibold rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] mt-4 glow-emerald"
         >
           {isLoading ? (
             <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
@@ -167,7 +167,7 @@ const Signup = () => {
       {/* Footer */}
       <p className="text-center text-muted-foreground text-sm mt-6">
         Já tem conta?{' '}
-        <Link to="/login" className="text-emerald-400 font-medium hover:text-emerald-300">
+        <Link to="/login" className="text-brand font-medium hover:text-brand">
           Entrar
         </Link>
       </p>

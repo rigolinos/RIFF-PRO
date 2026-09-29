@@ -61,9 +61,9 @@ export function useProSessions() {
   // Cancel session via RPC
   const cancelSession = useMutation({
     mutationFn: async ({ sessionId, reason }: { sessionId: string; reason?: string }) => {
-      const { error } = await (supabase.rpc as any)('cancel_session', {
+      const { error } = await supabase.rpc('cancel_session', {
         p_session_id: sessionId,
-        p_reason: reason || null,
+        p_reason: reason ?? undefined,
       });
       if (error) throw error;
     },
@@ -86,11 +86,11 @@ export function useProSessions() {
       happened?: boolean;
       notes?: string;
     }) => {
-      const { error } = await (supabase.rpc as any)('close_session', {
+      const { error } = await supabase.rpc('close_session', {
         p_session_id: sessionId,
         p_attendance: attendance,
         p_happened: happened,
-        p_notes: notes || null,
+        p_notes: notes ?? undefined,
       });
 
       if (error) {

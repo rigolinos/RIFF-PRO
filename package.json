@@ -3,12 +3,6 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "oxlint",
-    "preview": "vite preview"
-  },
   "dependencies": {
     "@fontsource-variable/chivo": "^5.3.0",
     "@fontsource-variable/space-grotesk": "^5.3.0",
@@ -71,9 +65,18 @@
     "@vitejs/plugin-react-swc": "^4.3.3",
     "autoprefixer": "^10.6.1",
     "oxlint": "^1.81.0",
+    "playwright": "^1.63.0",
     "postcss": "^8.5.28",
     "tailwindcss": "^4.3.3",
     "typescript": "~6.0.2",
     "vite": "^8.3.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "check:encoding": "python -c \"import sys, glob; errs = [f for f in glob.glob('src/**/*.tsx', recursive=True) + glob.glob('src/**/*.ts', recursive=True) if '\\ufffd' in open(f, 'r', encoding='utf-8', errors='replace').read() or 'Ã' in open(f, 'r', encoding='utf-8', errors='replace').read() or 'ð' in open(f, 'r', encoding='utf-8', errors='replace').read()]; sys.exit(0 if not errs else (print('Encoding errors in: ' + ', '.join(errs)), 1)[1])\"",
+    "check:colors": "python scripts/check-colors.py"
   }
 }

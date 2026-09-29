@@ -16,7 +16,7 @@ export function useDashboardMetrics() {
       if (!user?.id) return null;
 
       // Call the new parameterless RPC
-      const { data: metrics, error: metricsError } = await (supabase.rpc as any)('get_professional_dashboard');
+      const { data: metrics, error: metricsError } = await supabase.rpc('get_professional_dashboard');
 
       if (metricsError) throw metricsError;
 

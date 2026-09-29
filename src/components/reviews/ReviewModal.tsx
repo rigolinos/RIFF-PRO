@@ -86,7 +86,7 @@ export function ReviewModal({ booking, isOpen, onClose, onSuccess }: ReviewModal
                 <Star
                   className={`w-10 h-10 transition-colors ${
                     star <= rating
-                      ? 'fill-emerald-400 text-emerald-400'
+                      ? 'fill-brand text-brand'
                       : 'fill-white/5 text-white/10 hover:text-white/20'
                   }`}
                 />
@@ -115,7 +115,7 @@ export function ReviewModal({ booking, isOpen, onClose, onSuccess }: ReviewModal
           <Button
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-black font-bold glow-emerald"
+            className="flex-1 bg-brand hover:brightness-105 text-brand-ink font-bold glow-emerald"
           >
             {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Enviar Avaliação'}
           </Button>

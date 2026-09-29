@@ -149,7 +149,7 @@ const MySessionsPro = () => {
             {sessions.map((session, i) => {
               const dateStr = format(parseISO(session.date), "EEE, d 'de' MMM", { locale: ptBR });
               const timeStr = session.start_time.substring(0, 5);
-              const isFull = session.current_participants >= session.max_participants;
+              const isFull = (session.current_participants ?? 0) >= (session.max_participants ?? 1);
               const past = isPast(session);
               const cancelled = isCancelled(session);
               const completed = isCompleted(session);
@@ -169,15 +169,15 @@ const MySessionsPro = () => {
                       {session.category?.emoji} {session.title}
                     </h3>
                     {cancelled ? (
-                      <span className="text-[10px] uppercase font-bold text-red-400 bg-red-400/10 border border-red-400/20 px-2 py-1 rounded shrink-0">Cancelada</span>
+                      <span className="text-xs uppercase font-bold text-danger bg-danger/15 border border-danger px-2 py-1 rounded shrink-0">Cancelada</span>
                     ) : completed ? (
-                      <span className="text-[10px] uppercase font-bold text-brand bg-brand/10 border border-brand/20 px-2 py-1 rounded shrink-0">Encerrada</span>
+                      <span className="text-xs uppercase font-bold text-brand bg-brand/10 border border-brand/20 px-2 py-1 rounded shrink-0">Encerrada</span>
                     ) : past ? (
-                      <span className="text-[10px] uppercase font-bold text-amber-400 bg-amber-400/10 border border-amber-400/20 px-2 py-1 rounded shrink-0">Encerrar</span>
+                      <span className="text-xs uppercase font-bold text-accent bg-accent/15 border border-accent/20 px-2 py-1 rounded shrink-0">Encerrar</span>
                     ) : isFull ? (
-                      <span className="text-[10px] uppercase font-bold text-brand bg-brand/10 border border-brand/20 px-2 py-1 rounded shrink-0">Lotada</span>
+                      <span className="text-xs uppercase font-bold text-brand bg-brand/10 border border-brand/20 px-2 py-1 rounded shrink-0">Lotada</span>
                     ) : (
-                      <span className="text-[10px] uppercase font-bold text-amber-400 bg-amber-400/10 border border-amber-400/20 px-2 py-1 rounded shrink-0">Ativa</span>
+                      <span className="text-xs uppercase font-bold text-accent bg-accent/15 border border-accent/20 px-2 py-1 rounded shrink-0">Ativa</span>
                     )}
                   </div>
 
@@ -235,7 +235,7 @@ const MySessionsPro = () => {
                             {!isFull && (
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleCloseRegistrations(session); }}
-                                className="text-[11px] flex items-center gap-1 font-semibold text-amber-400 bg-amber-400/10 px-2.5 py-1.5 rounded-lg hover:bg-amber-400/20 transition-colors"
+                                className="text-[11px] flex items-center gap-1 font-semibold text-accent bg-accent/15 px-2.5 py-1.5 rounded-lg hover:bg-accent/15 transition-colors"
                                 title="Encerrar Inscrições"
                               >
                                 <XCircle className="w-3 h-3" />
@@ -248,7 +248,7 @@ const MySessionsPro = () => {
                               <AlertDialogTrigger asChild>
                                 <button
                                   onClick={(e) => e.stopPropagation()}
-                                  className="text-[11px] flex items-center gap-1 font-semibold text-red-400 bg-red-400/10 px-2.5 py-1.5 rounded-lg hover:bg-red-400/20 transition-colors"
+                                  className="text-[11px] flex items-center gap-1 font-semibold text-danger bg-danger/15 px-2.5 py-1.5 rounded-lg hover:bg-danger/15 transition-colors"
                                 >
                                   <XCircle className="w-3 h-3" />
                                 </button>
@@ -262,7 +262,7 @@ const MySessionsPro = () => {
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                   <AlertDialogCancel className="bg-white/5 hover:bg-line border-0">Manter</AlertDialogCancel>
-                                  <AlertDialogAction onClick={() => handleCancelSession(session)} className="bg-red-500 hover:bg-red-600 text-ink">
+                                  <AlertDialogAction onClick={() => handleCancelSession(session)} className="bg-danger/15 hover:bg-danger/15 text-ink">
                                     Sim, cancelar turma
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
@@ -275,7 +275,7 @@ const MySessionsPro = () => {
                         {canClose && (
                           <button
                             onClick={(e) => { e.stopPropagation(); openAttendanceSheet(session); }}
-                            className="text-[11px] flex items-center gap-1 font-semibold text-amber-400 bg-amber-400/10 px-2.5 py-1.5 rounded-lg hover:bg-amber-400/20 transition-colors"
+                            className="text-[11px] flex items-center gap-1 font-semibold text-accent bg-accent/15 px-2.5 py-1.5 rounded-lg hover:bg-accent/15 transition-colors"
                           >
                             <ClipboardCheck className="w-3 h-3" /> Encerrar
                           </button>
@@ -347,13 +347,13 @@ const MySessionsPro = () => {
                         <div className="flex flex-wrap gap-2">
                           <button
                             onClick={() => setAttendance(prev => ({ ...prev, [booking.id]: { ...prev[booking.id], attended: !prev[booking.id].attended } }))}
-                            className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-colors ${att.attended ? 'bg-brand/20 text-brand' : 'bg-red-400/10 text-red-400'}`}
+                            className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-colors ${att.attended ? 'bg-brand/20 text-brand' : 'bg-danger/15 text-danger'}`}
                           >
                             {att.attended ? '✅ Presente' : '❌ Faltou'}
                           </button>
                           <button
                             onClick={() => setAttendance(prev => ({ ...prev, [booking.id]: { ...prev[booking.id], paid: !prev[booking.id].paid } }))}
-                            className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-colors ${att.paid ? 'bg-brand/20 text-brand' : 'bg-amber-400/10 text-amber-400'}`}
+                            className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-colors ${att.paid ? 'bg-brand/20 text-brand' : 'bg-accent/15 text-accent'}`}
                           >
                             {att.paid ? '💰 Pago' : '⏳ Pendente'}
                           </button>
@@ -389,7 +389,7 @@ const MySessionsPro = () => {
                   <div className="flex gap-3">
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="outline" className="flex-1 h-12 border-red-400/20 text-red-400 hover:bg-red-400/10">
+                        <Button variant="outline" className="flex-1 h-12 border-danger text-danger hover:bg-danger/15">
                           Aula não aconteceu
                         </Button>
                       </AlertDialogTrigger>
@@ -412,7 +412,7 @@ const MySessionsPro = () => {
                                 toast.error(e.message);
                               }
                             }}
-                            className="bg-red-500 hover:bg-red-600 text-ink"
+                            className="bg-danger/15 hover:bg-danger/15 text-ink"
                           >
                             Confirmar
                           </AlertDialogAction>
@@ -423,7 +423,7 @@ const MySessionsPro = () => {
                     <Button
                       onClick={handleCloseSession}
                       disabled={isClosing}
-                      className="flex-1 h-12 bg-brand hover:bg-brand text-black font-bold glow-emerald"
+                      className="flex-1 h-12 bg-brand hover:bg-brand text-brand-ink font-bold glow-emerald"
                     >
                       {isClosing ? <Loader2 className="w-5 h-5 animate-spin" /> : '✅ Encerrar Aula'}
                     </Button>

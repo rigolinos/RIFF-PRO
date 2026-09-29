@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 
 import { useProfile } from '@/hooks/useProfile';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { Logo } from "@/components/ui/logo";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -79,8 +80,8 @@ const OnboardingPro = () => {
       <div className="px-6 py-4 flex-1 flex flex-col">
         {/* Progress */}
         <div className="flex gap-2 mb-8">
-          <div className={`h-1.5 flex-1 rounded-full ${step >= 1 ? 'bg-emerald-500' : 'bg-white/10'}`} />
-          <div className={`h-1.5 flex-1 rounded-full ${step >= 2 ? 'bg-emerald-500' : 'bg-white/10'}`} />
+          <div className={`h-1.5 flex-1 rounded-full ${step >= 1 ? 'bg-brand' : 'bg-white/10'}`} />
+          <div className={`h-1.5 flex-1 rounded-full ${step >= 2 ? 'bg-brand' : 'bg-white/10'}`} />
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex-1 flex flex-col">
@@ -146,7 +147,7 @@ const OnboardingPro = () => {
                 <Button 
                   type="button" 
                   onClick={() => setStep(2)}
-                  className="w-full h-12 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold rounded-xl"
+                  className="w-full h-12 bg-brand hover:brightness-105 text-brand-ink font-semibold rounded-xl"
                   disabled={!watch('professionalType') || !watch('bio')}
                 >
                   Continuar
@@ -161,9 +162,9 @@ const OnboardingPro = () => {
                 <h2 className="text-xl font-bold mb-2">Como você recebe?</h2>
                 <p className="text-muted-foreground text-sm mb-6">No Riff Pro o dinheiro vai direto para a sua conta via Pix.</p>
 
-                <div className="p-4 rounded-xl glass-card border-emerald-500/20 bg-emerald-500/5 flex items-start gap-3 mb-6">
-                  <Info className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-                  <p className="text-sm text-emerald-100/80">O aluno reservará a aula e enviará o Pix diretamente para essa chave. O comprovante será enviado para o seu WhatsApp.</p>
+                <div className="p-4 rounded-xl glass-card border-brand/20 bg-brand/5 flex items-start gap-3 mb-6">
+                  <Info className="w-5 h-5 text-brand shrink-0 mt-0.5" />
+                  <p className="text-sm text-ink-muted">O aluno reservará a aula e enviará o Pix diretamente para essa chave. O comprovante será enviado para o seu WhatsApp.</p>
                 </div>
 
                 <div className="space-y-4">
@@ -202,7 +203,7 @@ const OnboardingPro = () => {
                 </Button>
                 <Button 
                   type="submit" 
-                  className="h-12 flex-1 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold rounded-xl glow-emerald"
+                  className="h-12 flex-1 bg-brand hover:brightness-105 text-brand-ink font-semibold rounded-xl glow-emerald"
                   disabled={isUpdating}
                 >
                   {isUpdating ? 'Salvando...' : 'Finalizar Perfil'}

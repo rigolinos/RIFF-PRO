@@ -1,3 +1,4 @@
+import { Logo } from "@/components/ui/logo";
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Mail, Loader2, Dumbbell } from 'lucide-react';
@@ -56,10 +57,10 @@ const ForgotPassword = () => {
 
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center">
-            <Dumbbell className="w-5 h-5 text-black" />
+          <div className="w-8 h-8 rounded-lg bg-brand flex items-center justify-center">
+            <Dumbbell className="w-5 h-5 text-brand-ink" />
           </div>
-          <span className="text-lg font-bold text-foreground">Riff <span className="text-emerald-400">Pro</span></span>
+          <span className="text-lg font-bold text-foreground">Riff <span className="text-brand">Pro</span></span>
         </div>
         <h1 className="text-2xl font-bold text-foreground">Recuperar Senha</h1>
         <p className="text-muted-foreground text-sm mt-1">
@@ -69,7 +70,7 @@ const ForgotPassword = () => {
 
       {isSuccess ? (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 flex flex-col items-center justify-center text-center mt-8">
-          <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mb-4 text-emerald-400">
+          <div className="w-16 h-16 rounded-full bg-brand/10 flex items-center justify-center mb-4 text-brand">
             <Mail className="w-8 h-8" />
           </div>
           <h3 className="text-lg font-bold text-foreground mb-2">Verifique sua caixa de entrada</h3>
@@ -78,7 +79,7 @@ const ForgotPassword = () => {
           </p>
           <button
             onClick={() => navigate('/login')}
-            className="w-full h-12 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold rounded-xl glow-emerald transition-all"
+            className="w-full h-12 bg-brand hover:brightness-105 text-brand-ink font-semibold rounded-xl glow-emerald transition-all"
           >
             Voltar ao Login
           </button>
@@ -99,14 +100,14 @@ const ForgotPassword = () => {
               value={email}
               onChange={e => setEmail(e.target.value)}
               required
-              className="w-full h-12 rounded-xl bg-white/[0.05] border border-white/10 px-4 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-emerald-500 transition-colors"
+              className="w-full h-12 rounded-xl bg-white/[0.05] border border-white/10 px-4 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-brand transition-colors"
             />
           </div>
 
           <button
             type="submit"
             disabled={isLoading || !email}
-            className="w-full h-12 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-black font-semibold rounded-xl flex items-center justify-center gap-2 transition-all glow-emerald"
+            className="w-full h-12 bg-brand hover:brightness-105 disabled:opacity-50 text-brand-ink font-semibold rounded-xl flex items-center justify-center gap-2 transition-all glow-emerald"
           >
             {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Enviar Link de Recuperação'}
           </button>

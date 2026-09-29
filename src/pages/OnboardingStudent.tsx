@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 
 import { useProfile } from '@/hooks/useProfile';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { Logo } from "@/components/ui/logo";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -93,7 +94,7 @@ const OnboardingStudent = () => {
           <div className="mt-auto pt-6">
             <Button 
               type="submit" 
-              className="w-full h-14 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-xl glow-emerald text-lg"
+              className="w-full h-14 bg-brand hover:brightness-105 text-brand-ink font-bold rounded-xl glow-emerald text-lg"
               disabled={isUpdating}
             >
               {isUpdating ? 'Salvando...' : 'Começar a Treinar'}

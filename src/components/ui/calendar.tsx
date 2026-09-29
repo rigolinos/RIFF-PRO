@@ -29,16 +29,16 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }: C
         head_row: "flex",
         head_cell: "text-gray-600 dark:text-gray-400 rounded-md w-10 font-semibold text-sm",
         row: "flex w-full mt-2",
-        cell: "h-10 w-10 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-blue-100 dark:[&:has([aria-selected].day-outside)]:bg-blue-900/30 [&:has([aria-selected])]:bg-blue-100 dark:[&:has([aria-selected])]:bg-blue-900/30 first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+        cell: "h-10 w-10 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-brand dark:[&:has([aria-selected].day-outside)]:bg-brand [&:has([aria-selected])]:bg-brand dark:[&:has([aria-selected])]:bg-brand first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
         day: cn(buttonVariants({ variant: "ghost" }), "h-10 w-10 p-0 font-medium text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 aria-selected:opacity-100"),
         day_range_end: "day-range-end",
         day_selected:
-          "bg-blue-600 text-white hover:bg-blue-700 hover:text-white focus:bg-blue-700 focus:text-white font-bold shadow-md",
+          "bg-brand text-white hover:bg-brand hover:text-white focus:bg-brand focus:text-white font-bold shadow-md",
         day_today: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-900 dark:text-yellow-100 font-bold border-2 border-yellow-500 dark:border-yellow-400",
         day_outside:
-          "day-outside text-gray-400 dark:text-gray-600 opacity-50 aria-selected:bg-blue-100 dark:aria-selected:bg-blue-900/20 aria-selected:text-gray-400 dark:aria-selected:text-gray-500 aria-selected:opacity-50",
+          "day-outside text-gray-400 dark:text-gray-600 opacity-50 aria-selected:bg-brand dark:aria-selected:bg-brand aria-selected:text-gray-400 dark:aria-selected:text-gray-500 aria-selected:opacity-50",
         day_disabled: "text-gray-300 dark:text-gray-700 opacity-50 cursor-not-allowed",
-        day_range_middle: "aria-selected:bg-blue-100 dark:aria-selected:bg-blue-900/30 aria-selected:text-gray-900 dark:aria-selected:text-white",
+        day_range_middle: "aria-selected:bg-brand dark:aria-selected:bg-brand aria-selected:text-gray-900 dark:aria-selected:text-white",
         day_hidden: "invisible",
         ...classNames,
       }}

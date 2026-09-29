@@ -22,7 +22,7 @@ export const ModeBanner = () => {
         initial={{ y: -50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: -50, opacity: 0 }}
-        className="fixed top-0 left-0 right-0 z-[100] bg-emerald-500 text-slate-950 px-4 py-2 flex items-center justify-between shadow-lg"
+        className="fixed top-0 left-0 right-0 z-[100] bg-brand text-brand-ink px-4 py-2 flex items-center justify-between shadow-lg"
       >
         <div className="flex items-center gap-2 font-medium text-xs sm:text-sm">
           <Briefcase className="w-4 h-4" />

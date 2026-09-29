@@ -59,7 +59,7 @@ export const SessionCard = ({ session, onBookClick }: SessionCardProps) => {
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-line overflow-hidden border border-brand/20 flex items-center justify-center text-[10px] text-ink font-bold">
+          <div className="w-6 h-6 rounded-full bg-line overflow-hidden border border-brand/20 flex items-center justify-center text-xs text-ink font-bold">
             {pro?.avatar_url ? (
               <img src={pro.avatar_url} alt={pro.full_name} className="w-full h-full object-cover" />
             ) : (

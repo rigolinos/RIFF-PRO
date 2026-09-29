@@ -56,10 +56,13 @@ const MyBookings = () => {
 
   const handleWhatsApp = async (booking: any) => {
     try {
-      const { data, error } = await (supabase.rpc as any)('get_booking_payment_info', {
+      const { data: rawData, error } = await supabase.rpc('get_booking_payment_info', {
         p_booking_id: booking.id
       });
       
+      type PaymentInfoResult = { whatsapp_number?: string; pix_key?: string; pro_name?: string };
+      const data = rawData as unknown as PaymentInfoResult;
+
       if (error || !data?.whatsapp_number) {
         toast.error('O profissional não cadastrou o WhatsApp ou você não tem acesso.');
         return;
@@ -121,10 +124,10 @@ const MyBookings = () => {
     const isPast = parseISO(`${booking.session.date}T${booking.session.start_time}`) < new Date();
     const effectiveStatus = (isPast && !booking.status.startsWith('cancelled')) ? 'completed' : booking.status;
 
-    if (effectiveStatus === 'cancelled_by_student') { statusText = 'Cancelada por você'; statusColor = 'text-red-400 bg-red-400/10 border-red-400/20'; }
-    else if (effectiveStatus === 'cancelled_by_pro') { statusText = 'Aula cancelada'; statusColor = 'text-red-400 bg-red-400/10 border-red-400/20'; }
+    if (effectiveStatus === 'cancelled_by_student') { statusText = 'Cancelada por você'; statusColor = 'text-danger bg-danger/15 border-danger'; }
+    else if (effectiveStatus === 'cancelled_by_pro') { statusText = 'Aula cancelada'; statusColor = 'text-danger bg-danger/15 border-danger'; }
     else if (effectiveStatus === 'completed') { statusText = 'Concluída'; statusColor = 'text-ink-muted bg-white/5 border-line'; }
-    else if (booking.payment_status === 'pending') { statusText = 'Aguardando Pagamento'; statusColor = 'text-amber-400 bg-amber-400/10 border-amber-400/20'; }
+    else if (booking.payment_status === 'pending') { statusText = 'Aguardando Pagamento'; statusColor = 'text-accent bg-accent/15 border-accent/20'; }
     else if (booking.payment_status === 'paid') { statusText = 'Confirmada'; statusColor = 'text-brand bg-brand/10 border-brand/20'; }
     else { statusText = effectiveStatus; statusColor = 'text-ink-muted bg-white/5 border-line'; }
 
@@ -147,7 +150,7 @@ const MyBookings = () => {
                 com {booking.professional?.full_name}
               </p>
             </div>
-            <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${statusColor} border-0 shadow-sm`}>
+            <span className={`text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${statusColor} border-0 shadow-sm`}>
               {statusText}
             </span>
           </div>
@@ -188,7 +191,7 @@ const MyBookings = () => {
             <button
               onClick={() => handleCancel(booking)}
               disabled={cancelingId === booking.id}
-              className="flex-1 h-10 rounded-lg bg-red-400/10 text-red-400 hover:bg-red-400/20 font-medium text-sm transition-colors flex items-center justify-center gap-2"
+              className="flex-1 h-10 rounded-lg bg-danger/15 text-danger hover:bg-danger/15 font-medium text-sm transition-colors flex items-center justify-center gap-2"
             >
               {cancelingId === booking.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
               Cancelar
@@ -220,7 +223,7 @@ const MyBookings = () => {
         ) : (
           <Tabs defaultValue="upcoming" className="w-full">
             <TabsList className="w-full bg-white/[0.05] border border-line h-12 rounded-xl mb-6 p-1">
-              <TabsTrigger value="upcoming" className="flex-1 rounded-lg data-[state=active]:bg-brand data-[state=active]:text-black text-ink-muted font-medium transition-all">
+              <TabsTrigger value="upcoming" className="flex-1 rounded-lg data-[state=active]:bg-brand data-[state=active]:text-brand-ink text-ink-muted font-medium transition-all">
                 Próximas Aulas
               </TabsTrigger>
               <TabsTrigger value="history" className="flex-1 rounded-lg data-[state=active]:bg-line data-[state=active]:text-ink text-ink-muted font-medium transition-all">

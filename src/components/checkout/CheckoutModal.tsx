@@ -68,7 +68,7 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
     setIsBooking(true);
     try {
       // Call the new RPC without user_id — server resolves from auth.uid()
-      const { data, error } = await (supabase.rpc as any)('create_booking', {
+      const { data, error } = await supabase.rpc('create_booking', {
         p_session_id: session.id,
       });
 
@@ -85,10 +85,10 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
 
       // Fetch payment info securely via RPC
       if (session.price_per_slot > 0 && response.booking_id) {
-        const { data: pInfo } = await (supabase.rpc as any)('get_booking_payment_info', {
+        const { data: pInfo } = await supabase.rpc('get_booking_payment_info', {
           p_booking_id: response.booking_id,
         });
-        setPaymentInfo(pInfo as PaymentInfo);
+        setPaymentInfo(pInfo as unknown as PaymentInfo);
       }
 
       setIsConfirmed(true);
@@ -170,7 +170,7 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
                 <Button
                   onClick={handleBook}
                   disabled={isBooking}
-                  className="w-full h-14 bg-brand hover:bg-brand text-black font-semibold text-lg rounded-xl glow-emerald"
+                  className="w-full h-14 bg-brand hover:bg-brand text-brand-ink font-semibold text-lg rounded-xl glow-emerald"
                 >
                   {isBooking ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Garantir Vaga'}
                 </Button>
@@ -235,7 +235,7 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
                     </p>
                     <Button
                       onClick={handleWhatsApp}
-                      className="w-full h-14 bg-[#25D366] hover:bg-[#20bd5a] text-black font-semibold text-lg rounded-xl shadow-[0_8px_30px_rgba(37,211,102,0.3)] gap-2"
+                      className="w-full h-14 bg-[#25D366] hover:bg-[#20bd5a] text-brand-ink font-semibold text-lg rounded-xl shadow-[0_8px_30px_rgba(37,211,102,0.3)] gap-2"
                     >
                       <MessageCircle className="w-6 h-6" />
                       Enviar Comprovante
@@ -248,7 +248,7 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
                 <div className="p-6">
                   <Button
                     onClick={onClose}
-                    className="w-full h-14 bg-brand hover:bg-brand text-black font-semibold text-lg rounded-xl glow-emerald"
+                    className="w-full h-14 bg-brand hover:bg-brand text-brand-ink font-semibold text-lg rounded-xl glow-emerald"
                   >
                     Voltar ao Feed
                   </Button>

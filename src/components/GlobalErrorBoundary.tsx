@@ -29,8 +29,8 @@ export class GlobalErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       return (
         <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
-          <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mb-6">
-            <AlertOctagon className="w-10 h-10 text-red-500" />
+          <div className="w-20 h-20 bg-danger/15 rounded-full flex items-center justify-center mb-6">
+            <AlertOctagon className="w-10 h-10 text-danger" />
           </div>
           <h1 className="text-2xl font-bold text-foreground mb-3">Ops! Algo deu errado.</h1>
           <p className="text-muted-foreground max-w-sm mb-8">
@@ -38,7 +38,7 @@ export class GlobalErrorBoundary extends Component<Props, State> {
           </p>
           <button
             onClick={() => window.location.reload()}
-            className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-black px-6 py-3 rounded-xl font-bold transition-all glow-emerald"
+            className="flex items-center gap-2 bg-brand hover:brightness-105 text-brand-ink px-6 py-3 rounded-xl font-bold transition-all glow-emerald"
           >
             <RefreshCw className="w-5 h-5" />
             Recarregar Aplicativo
