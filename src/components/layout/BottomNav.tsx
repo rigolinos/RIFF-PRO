@@ -1,6 +1,5 @@
-import { Home, Search, Plus, ClipboardList, User, LayoutDashboard, BookOpen, DollarSign } from 'lucide-react';
+﻿import { Home, Search, Plus, ClipboardList, User, LayoutDashboard, BookOpen, DollarSign } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useViewMode } from '@/contexts/ViewModeContext';
 
@@ -10,6 +9,10 @@ export const BottomNav = () => {
   const { viewMode } = useViewMode();
 
   const APP_ROUTES = ['/feed', '/explore', '/my-bookings', '/dashboard', '/my-sessions', '/create-session', '/earnings', '/profile'];
+  
+  // Exclude /session/:id
+  if (currentPath.startsWith('/session/')) return null;
+  
   const showNav = APP_ROUTES.some(p => currentPath === p || currentPath.startsWith(p + '/'));
 
   if (!showNav || !viewMode) return null;
@@ -33,19 +36,21 @@ export const BottomNav = () => {
 
   return (
     <>
+      <div className="h-[80px]" /> {/* Spacer */}
       <nav aria-label="Principal" className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-4 px-4 pointer-events-none pb-safe">
-        <div className="bg-surface/90 backdrop-blur-xl border border-line rounded-full flex items-center justify-around w-full max-w-md h-[68px] px-2 shadow-2 pointer-events-auto relative">
-          {navItems.map((item, index) => {
+        <div className="bg-surface/90 backdrop-blur-xl border border-line rounded-full flex items-center justify-around w-full max-w-md p-2 shadow-[var(--shadow-2)] pointer-events-auto relative">
+          {navItems.map((item) => {
             const isActive = currentPath === item.path || (item.path === '/profile/edit' && currentPath.startsWith('/profile'));
 
             if (item.isFab) {
               return (
-                <div key={item.path} className="relative -top-6 mx-2">
+                <div key={item.path} className="relative mx-1 shrink-0">
                   <Link
                     to={item.path}
-                    className="w-[52px] h-[52px] bg-brand hover:bg-brand/90 text-brand-ink rounded-full flex items-center justify-center shadow-cta active:scale-95 transition-all z-10"
+                    className="w-14 h-14 bg-brand hover:brightness-105 text-brand-ink rounded-full flex flex-col items-center justify-center shadow-[var(--shadow-cta)] active:scale-95 transition-all"
                   >
-                    <Plus size={28} strokeWidth={3} />
+                    <Plus size={24} strokeWidth={2.5} />
+                    <span className="text-xs font-bold mt-0.5">{item.label}</span>
                   </Link>
                 </div>
               );
@@ -55,33 +60,13 @@ export const BottomNav = () => {
               <Link
                 key={item.path}
                 to={item.path}
-                className="relative flex flex-col items-center gap-1.5 min-w-[56px] min-h-[44px] group justify-center"
-              >
-                <div
-                  className={cn(
-                    'transition-all duration-300',
-                    isActive ? 'text-brand -translate-y-0.5' : 'text-ink-muted group-hover:text-ink'
-                  )}
-                >
-                  <item.icon size={22} strokeWidth={isActive ? 2.5 : 2} />
-                </div>
-                
-                {isActive && (
-                  <motion.div
-                    layoutId="bottomNavIndicator"
-                    className="absolute -bottom-2 w-1.5 h-1.5 rounded-full bg-brand"
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  />
+                className={cn(
+                  "flex flex-col items-center justify-center gap-1 min-w-[64px] py-1.5 px-2 rounded-full transition-all flex-1 mx-1",
+                  isActive ? "bg-brand-soft text-bg font-semibold" : "text-ink-muted hover:text-ink hover:bg-elevated"
                 )}
-                
-                <span 
-                  className={cn(
-                    "text-xs font-bold transition-colors duration-300 tracking-wide",
-                    isActive ? "text-brand" : "text-ink-muted"
-                  )}
-                >
-                  {item.label}
-                </span>
+              >
+                <item.icon size={22} strokeWidth={isActive ? 2 : 1.75} />
+                <span className="text-xs">{item.label}</span>
               </Link>
             );
           })}

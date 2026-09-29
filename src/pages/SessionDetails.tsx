@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+﻿import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, Share2, MapPin, Clock, Users, Loader2 } from 'lucide-react';
+import { ArrowLeft, Share2, MapPin, Clock, Calendar, CheckCircle2 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -9,9 +9,8 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { CheckoutModal } from '@/components/checkout/CheckoutModal';
-import { SessionCardSkeleton } from '@/components/skeletons/SessionCardSkeleton';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { CoverImage, Avatar, SpotsMeter, PriceTag, StatusPill, RatingBadge } from '@/components/domain';
 
 const SessionDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -26,191 +25,237 @@ const SessionDetails = () => {
         .from('sessions')
         .select(`
           *,
-          category:categories(name, emoji),
+          category:categories(name, emoji, slug),
           professional:profiles!sessions_professional_id_fkey(
-            id, full_name, avatar_url, role
-          ),
-          bookings(id, status)
+            id, full_name, avatar_url, public_slug, credential_verified, rating_avg, total_reviews
+          )
         `)
-        .eq('id', id || '')
+        .eq('id', id!)
         .single();
-
+        
       if (error) throw error;
       return data;
     },
-    enabled: !!id,
   });
 
-  const handleBookClick = () => {
+  if (isLoading) {
+    return <div className="min-h-screen bg-bg flex items-center justify-center">Carregando...</div>;
+  }
+
+  if (error || !session) {
+    return (
+      <div className="min-h-screen bg-bg flex flex-col items-center justify-center p-6 text-center">
+        <h2 className="text-xl font-display font-bold text-ink mb-2">Aula não encontrada</h2>
+        <p className="text-ink-muted mb-6">Esta aula pode ter sido cancelada ou removida.</p>
+        <Button onClick={() => navigate(-1)} variant="secondary">Voltar</Button>
+      </div>
+    );
+  }
+
+  const pro = session.professional;
+  const category = session.category;
+  
+  const spotsLeft = (session.max_participants || 0) - (session.current_participants || 0);
+  const isFull = spotsLeft <= 0 || session.status === 'full';
+  
+  const dateStr = format(parseISO(session.date), "EEEE, d 'de' MMMM", { locale: ptBR });
+  const timeStr = session.start_time.substring(0, 5);
+
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: session.title,
+        text: `Participe da aula de ${session.title} com ${pro.full_name}!`,
+        url: window.location.href,
+      }).catch(console.error);
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      toast.success('Link copiado para a área de transferência');
+    }
+  };
+
+  const handleBook = () => {
     if (!user) {
-      toast.error('Você precisa fazer login para reservar.');
-      navigate(`/login?redirect=/session/${id}`);
+      navigate(`/login?redirect=/session/${session.id}`);
       return;
     }
     setIsCheckoutOpen(true);
   };
 
-  const handleShare = async () => {
-    const url = window.location.href;
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `Aula de ${session?.category?.name} com ${session?.professional?.full_name}`,
-          text: session?.title,
-          url: url,
-        });
-      } catch (err) {
-        console.error('Error sharing', err);
-      }
-    } else {
-      navigator.clipboard.writeText(url);
-      toast.success('Link copiado para a área de transferência!');
-    }
-  };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-bg flex flex-col px-6 py-8">
-        <div className="mb-8">
-          <button onClick={() => navigate(-1)} className="text-ink-muted">
-            <ArrowLeft className="w-6 h-6" />
+  return (
+    <div className="min-h-screen bg-bg pb-28">
+      {/* Header with Cover */}
+      <div className="relative h-64 md:h-80">
+        <CoverImage 
+          src={session.cover_image_url} 
+          categorySlug={category?.slug} 
+          className="h-full"
+        />
+        
+        {/* Top actions */}
+        <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-start pt-safe">
+          <button 
+            onClick={() => navigate(-1)} 
+            className="w-10 h-10 rounded-full bg-surface/80 backdrop-blur-md border border-line flex items-center justify-center text-ink hover:bg-surface transition-colors shadow-sm"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          
+          <button 
+            onClick={handleShare}
+            className="w-10 h-10 rounded-full bg-surface/80 backdrop-blur-md border border-line flex items-center justify-center text-ink hover:bg-surface transition-colors shadow-sm"
+          >
+            <Share2 className="w-5 h-5" />
           </button>
         </div>
-        <SessionCardSkeleton />
-      </div>
-    );
-  }
-
-  if (error || !session || session.status === 'cancelled') {
-    return (
-      <div className="min-h-screen bg-bg flex flex-col px-6 py-8 items-center justify-center text-center">
-        <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-3xl mb-4">🕵️‍♂️</div>
-        <h2 className="text-xl font-bold text-ink mb-2">Aula não encontrada</h2>
-        <p className="text-ink-muted text-sm mb-6">Esta aula pode ter sido cancelada ou o link é inválido.</p>
-        <button onClick={() => navigate('/')} className="px-6 py-3 bg-brand text-brand-ink font-semibold rounded-xl">
-          Voltar ao Início
-        </button>
-      </div>
-    );
-  }
-
-  const dateStr = format(parseISO(session.date), "EEEE, d 'de' MMMM", { locale: ptBR });
-  const timeStr = session.start_time.substring(0, 5);
-  const isFull = (session.current_participants ?? 0) >= (session.max_participants ?? 0);
-  const isFree = session.price_per_slot === 0;
-  const isPast = parseISO(`${session.date}T${session.start_time}`) < new Date();
-
-  return (
-    <div className="min-h-[100dvh] bg-bg flex flex-col pb-safe">
-      {/* Header Image / Pattern */}
-      <div className="h-56 bg-surface relative flex items-start justify-between p-4 border-b border-line">
-        {session.cover_image_url ? (
-          <img src={session.cover_image_url} className="absolute inset-0 w-full h-full object-cover" />
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-brand/20 to-accent/20" />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-bg via-transparent to-black/20" />
         
-        <Button onClick={() => navigate(-1)} variant="ghost" size="icon" className="relative z-10 rounded-full bg-surface/50 backdrop-blur-md shadow-sm">
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-        <Button onClick={handleShare} variant="ghost" size="icon" className="relative z-10 rounded-full bg-surface/50 backdrop-blur-md shadow-sm">
-          <Share2 className="w-5 h-5" />
-        </Button>
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 px-6 -mt-8 relative z-10">
-        <div className="glass-card p-6 mb-6">
-          <div className="flex gap-4 items-center border-b border-line pb-4 mb-4">
-            <img 
-              src={session.professional?.avatar_url || `https://ui-avatars.com/api/?name=${session.professional?.full_name}&background=10b981&color=000`} 
-              alt="Prof" 
-              className="w-16 h-16 rounded-full border-2 border-brand/20"
-            />
-            <div>
-              <p className="text-sm text-brand font-semibold uppercase tracking-wider">{session.category?.name}</p>
-              <h1 className="text-xl font-bold text-ink leading-tight mt-1">{session.title}</h1>
-              <p className="text-sm text-ink-muted mt-1">por {session.professional?.full_name}</p>
+        {/* Badges on cover */}
+        <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end">
+          <div className="flex gap-2">
+            <div className="bg-surface/90 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-line flex items-center gap-1.5 shadow-1">
+              <Calendar className="w-4 h-4 text-brand" />
+              <span className="text-sm font-semibold capitalize text-ink">{dateStr}</span>
             </div>
           </div>
-
-          <div className="space-y-4">
-            <div className="flex items-center gap-3 text-sm text-ink">
-              <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-brand shrink-0">
-                <Clock className="w-5 h-5" />
-              </div>
-              <div className="capitalize">
-                <p className="font-semibold">{dateStr}</p>
-                <p className="text-ink-muted">{timeStr} • {session.duration_minutes} min</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 text-sm text-ink">
-              <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-brand shrink-0">
-                <MapPin className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="font-semibold">{session.location_name}</p>
-                {session.location_address && <p className="text-ink-muted text-xs">{session.location_address}</p>}
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 text-sm text-ink">
-              <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-brand shrink-0">
-                <Users className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="font-semibold">{(session.current_participants ?? 0)} / {(session.max_participants ?? 0)} confirmados</p>
-                <p className="text-ink-muted text-xs">{(session.max_participants ?? 0) - (session.current_participants ?? 0)} vagas restantes</p>
-              </div>
-            </div>
-          </div>
-          
-          {session.what_to_bring && (
-            <div className="mt-4 pt-4 border-t border-line">
-              <h3 className="font-semibold text-sm mb-2">O que levar</h3>
-              <p className="text-sm text-ink-muted whitespace-pre-wrap">{session.what_to_bring}</p>
-            </div>
-          )}
-          
-          {session.description && (
-            <div className="mt-4 pt-4 border-t border-line">
-              <h3 className="font-semibold text-sm mb-2">Sobre a Aula</h3>
-              <p className="text-sm text-ink-muted whitespace-pre-wrap">{session.description}</p>
-            </div>
-          )}
         </div>
       </div>
 
-      {/* Footer Checkout */}
-      <div className="sticky bottom-0 bg-bg/80 backdrop-blur-xl border-t border-line p-4 pb-safe flex items-center gap-4 z-50">
-        <div className="flex-1">
-          <p className="text-xs text-ink-muted">Preço por vaga</p>
-          <p className="text-xl font-bold text-brand">
-            {isFree ? 'Gratuito' : new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(session.price_per_slot)}
+      <div className="px-5 py-6">
+        {/* Title and Category */}
+        <div className="flex justify-between items-start gap-4 mb-4">
+          <h1 className="font-display font-bold text-2xl text-ink leading-tight">
+            {session.title}
+          </h1>
+          <div className="bg-elevated px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap text-ink border border-line">
+            {category?.emoji} {category?.name}
+          </div>
+        </div>
+
+        {/* Date and Time Details */}
+        <div className="flex flex-wrap gap-4 mb-6">
+          <div className="flex items-center gap-2">
+            <div className="w-10 h-10 rounded-full bg-brand/10 flex items-center justify-center">
+              <Clock className="w-5 h-5 text-brand" />
+            </div>
+            <div>
+              <p className="text-xs text-ink-muted font-medium">Horário</p>
+              <p className="text-sm font-bold text-ink">{timeStr} ({session.duration_minutes} min)</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <div className="w-10 h-10 rounded-full bg-brand/10 flex items-center justify-center">
+              <MapPin className="w-5 h-5 text-brand" />
+            </div>
+            <div>
+              <p className="text-xs text-ink-muted font-medium">Local</p>
+              <p className="text-sm font-bold text-ink">{session.location_name || 'A confirmar'}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Pro Block */}
+        <div 
+          onClick={() => navigate(`/pro/${pro.public_slug}`)}
+          className="flex items-center justify-between p-4 rounded-2xl bg-surface border border-line mb-8 active:scale-[.98] transition-transform cursor-pointer"
+        >
+          <div className="flex items-center gap-3">
+            <Avatar src={pro.avatar_url} name={pro.full_name} className="w-12 h-12" />
+            <div>
+              <div className="flex items-center gap-1">
+                <h3 className="font-display font-bold text-ink">{pro.full_name}</h3>
+                {pro.credential_verified && (
+                  <CheckCircle2 className="w-4 h-4 text-success" />
+                )}
+              </div>
+              <RatingBadge rating={pro.rating_avg} count={pro.total_reviews} className="mt-0.5" />
+            </div>
+          </div>
+          <ArrowLeft className="w-5 h-5 text-slate rotate-180" />
+        </div>
+
+        {/* Description */}
+        {session.description && (
+          <div className="mb-8">
+            <h3 className="font-display font-bold text-lg text-ink mb-2">Sobre a aula</h3>
+            <p className="text-ink-muted leading-relaxed text-sm whitespace-pre-wrap">
+              {session.description}
+            </p>
+          </div>
+        )}
+
+        {/* Requirements */}
+        {session.what_to_bring && (
+          <div className="mb-8">
+            <h3 className="font-display font-bold text-lg text-ink mb-3">O que levar</h3>
+            <ul className="space-y-2">
+              {session.what_to_bring.split(/\n|,/).map((req: string, i: number) => req.trim() ? (
+                <li key={i} className="flex items-start gap-2 text-sm text-ink-muted">
+                  <div className="w-1.5 h-1.5 rounded-full bg-brand mt-1.5 shrink-0" />
+                  <span>{req.trim()}</span>
+                </li>
+              ) : null)}
+            </ul>
+          </div>
+        )}
+
+        {/* Spots Meter */}
+        <div className="mb-8 p-5 bg-surface border border-line rounded-2xl">
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="font-display font-bold text-ink">Ocupação</h3>
+            {isFull ? (
+              <StatusPill text="Lotada" variant="danger" />
+            ) : spotsLeft <= 3 ? (
+              <StatusPill text={`Restam ${spotsLeft}`} variant="alert" />
+            ) : (
+              <span className="text-sm font-semibold text-ink-muted">{spotsLeft} vagas livres</span>
+            )}
+          </div>
+          <SpotsMeter current={session.current_participants || 0} max={session.max_participants || 1} />
+          <div className="flex justify-between items-center mt-2 text-xs text-ink-muted">
+            <span>{session.current_participants} confirmados</span>
+            <span>Máx. {session.max_participants}</span>
+          </div>
+        </div>
+
+        {/* Policies */}
+        <div className="mb-4">
+          <h3 className="font-display font-bold text-lg text-ink mb-2">Política de Cancelamento</h3>
+          <p className="text-sm text-ink-muted leading-relaxed">
+            Cancelamentos podem ser feitos com reembolso integral até 4 horas antes do início da aula.
+            Em caso de chuva forte que inviabilize a prática (para aulas ao ar livre), a aula será remarcada ou reembolsada.
           </p>
         </div>
-        
-        <Button
-          variant={isPast || isFull ? 'secondary' : 'default'}
-          size="lg"
-          onClick={handleBookClick}
-          disabled={isPast || isFull}
-          className="flex-none px-8 h-12"
-        >
-          {isPast ? 'Finalizada' : isFull ? 'Lotada' : 'Garantir Vaga'}
-        </Button>
       </div>
 
-      <CheckoutModal 
-        session={session}
-        isOpen={isCheckoutOpen}
-        onClose={() => setIsCheckoutOpen(false)}
-        onSuccess={() => window.location.reload()}
-      />
+      {/* Fixed Bottom Bar */}
+      <div className="fixed bottom-0 left-0 right-0 bg-surface/90 backdrop-blur-xl border-t border-line p-4 pb-safe z-40">
+        <div className="flex items-center justify-between max-w-md mx-auto">
+          <div className="flex flex-col">
+            <span className="text-xs text-ink-muted font-medium mb-0.5">Valor da vaga</span>
+            <PriceTag amount={session.price_per_slot} />
+          </div>
+          <Button 
+            variant="primary" 
+            size="lg" 
+            className="w-[180px] shadow-[var(--shadow-cta)]"
+            onClick={handleBook}
+            disabled={isFull}
+          >
+            {isFull ? 'Turma Lotada' : 'Garantir Vaga'}
+          </Button>
+        </div>
+      </div>
+
+      {isCheckoutOpen && (
+        <CheckoutModal 
+          isOpen={isCheckoutOpen} 
+          onClose={() => setIsCheckoutOpen(false)} 
+          session={session as any}
+          onSuccess={() => {}}
+        />
+      )}
     </div>
   );
 };
-
 export default SessionDetails;
