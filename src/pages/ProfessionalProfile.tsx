@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { ShieldCheck, Star, MapPin, Camera, MessageCircle, ArrowLeft, Loader2, Check } from 'lucide-react';
+import { ShieldCheck, Star, MapPin, Camera, Share2, ArrowLeft, Loader2, Check } from 'lucide-react';
+import { toast } from 'sonner';
 import { Helmet } from 'react-helmet-async';
 
 import { usePublicProfile } from '@/hooks/usePublicProfile';
@@ -38,13 +39,7 @@ const ProfessionalProfile = () => {
     setIsCheckoutOpen(true);
   };
 
-  const handleWhatsApp = () => {
-    const phone = profile.whatsapp_number || profile.phone;
-    if (!phone) return;
-    const cleanPhone = phone.replace(/\D/g, '');
-    const finalPhone = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
-    window.open(`https://wa.me/${finalPhone}`, '_blank');
-  };
+
 
   const handleInstagram = () => {
     if (!profile.instagram_handle) return;
@@ -152,15 +147,8 @@ const ProfessionalProfile = () => {
 
         {sessions.length === 0 ? (
           <div className="mx-6 p-6 rounded-2xl border border-white/5 bg-white/[0.02] text-center">
-            <h3 className="text-sm font-semibold text-foreground mb-2">Turmas em Grupo Fechadas</h3>
-            <p className="text-sm text-muted-foreground mb-4">Nenhuma turma em grupo com vagas abertas no momento.</p>
-            <button 
-              onClick={handleWhatsApp}
-              className="w-full py-3 bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 font-semibold rounded-xl text-sm flex items-center justify-center gap-2 transition-colors"
-            >
-              <MessageCircle className="w-4 h-4" />
-              Chamar no WhatsApp para aulas particulares
-            </button>
+            <h3 className="text-sm font-semibold text-foreground mb-2">Sem Turmas Abertas</h3>
+            <p className="text-sm text-muted-foreground">Nenhuma aula programada no momento.</p>
           </div>
         ) : (
           <div className="flex overflow-x-auto hide-scrollbar snap-x snap-mandatory px-6 pb-4 -mx-6">
@@ -206,13 +194,21 @@ const ProfessionalProfile = () => {
 
         {/* Social Actions */}
         <button 
-          onClick={handleWhatsApp}
-          className="glass-card p-4 flex flex-col items-center justify-center gap-2 hover:bg-white/5 transition-colors border-[#25D366]/20 bg-[#25D366]/5"
+          onClick={() => {
+            const url = window.location.href;
+            if (navigator.share) {
+              navigator.share({ title: profile.full_name, url });
+            } else {
+              navigator.clipboard.writeText(url);
+              toast.success('Link do perfil copiado!');
+            }
+          }}
+          className="glass-card p-4 flex flex-col items-center justify-center gap-2 hover:bg-white/5 transition-colors border-emerald-500/20 bg-emerald-500/5"
         >
-          <div className="w-10 h-10 rounded-full bg-[#25D366]/20 flex items-center justify-center text-[#25D366]">
-            <MessageCircle className="w-5 h-5" />
+          <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+            <Share2 className="w-5 h-5" />
           </div>
-          <span className="text-xs font-semibold text-[#25D366]">WhatsApp</span>
+          <span className="text-xs font-semibold text-emerald-400">Compartilhar</span>
         </button>
 
         <button 

@@ -1,107 +1,101 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { format, parseISO, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Users, Clock, Loader2, CheckCircle2, MessageCircle, Edit, XCircle, Copy } from 'lucide-react';
+import {
+  Users, Clock, Loader2, CheckCircle2, MessageCircle,
+  Edit, XCircle, Copy, Share2, ClipboardCheck
+} from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { PageContainer } from '@/components/layout/PageContainer';
 import { useProSessions } from '@/hooks/useProSessions';
 import { useSessions } from '@/hooks/useSessions';
-import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 const MySessionsPro = () => {
-  const { sessions, isLoading, confirmPayment } = useProSessions();
+  const { sessions, isLoading, cancelSession, closeSession } = useProSessions();
   const { createSession } = useSessions();
   const [selectedSession, setSelectedSession] = useState<any>(null);
-  const [isUpdating, setIsUpdating] = useState<string | null>(null);
-  const [isCanceling, setIsCanceling] = useState<string | null>(null);
   const [isDuplicating, setIsDuplicating] = useState<string | null>(null);
+  const [isClosing, setIsClosing] = useState(false);
   const navigate = useNavigate();
 
-  const handleOpenAttendance = (session: any) => {
+  // Attendance state: { [bookingId]: { attended: boolean, paid: boolean, note: string } }
+  const [attendance, setAttendance] = useState<Record<string, { attended: boolean; paid: boolean; note: string }>>({});
+  const [sessionNotes, setSessionNotes] = useState('');
+
+  const openAttendanceSheet = (session: any) => {
     setSelectedSession(session);
+    setSessionNotes('');
+    // Initialize attendance from existing booking data
+    const initial: Record<string, { attended: boolean; paid: boolean; note: string }> = {};
+    const activeBookings = session.bookings?.filter((b: any) => !b.status.startsWith('cancelled') && b.status !== 'no_show' && b.status !== 'completed') || [];
+    activeBookings.forEach((b: any) => {
+      initial[b.id] = {
+        attended: true,
+        paid: b.payment_status === 'paid' || b.payment_status === 'free',
+        note: '',
+      };
+    });
+    setAttendance(initial);
   };
 
-  const handleConfirmPix = async (bookingId: string) => {
-    setIsUpdating(bookingId);
+  const handleCloseSession = async () => {
+    if (!selectedSession) return;
+    setIsClosing(true);
     try {
-      await confirmPayment({ bookingId, status: 'paid' });
-      setSelectedSession((prev: any) => ({
-        ...prev,
-        bookings: prev.bookings.map((b: any) => b.id === bookingId ? { ...b, payment_status: 'paid' } : b)
+      const attendanceArray = Object.entries(attendance).map(([booking_id, data]) => ({
+        booking_id,
+        attended: data.attended,
+        paid: data.paid,
+        note: data.note || undefined,
       }));
-    } catch (error) {
-      console.error(error);
+
+      await closeSession({
+        sessionId: selectedSession.id,
+        attendance: attendanceArray,
+        happened: true,
+        notes: sessionNotes || undefined,
+      });
+
+      toast.success('Aula encerrada com sucesso!');
+      setSelectedSession(null);
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao encerrar aula.');
     } finally {
-      setIsUpdating(null);
+      setIsClosing(false);
     }
   };
 
-  const handleWhatsAppStudent = (studentPhone: string, studentName: string) => {
-    if (!studentPhone) return;
-    const cleanPhone = studentPhone.replace(/\D/g, '');
-    const finalPhone = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
-    const text = encodeURIComponent(`OlÃ¡ ${studentName.split(' ')[0]}! Aqui Ã© o profissional da Riff Pro.`);
-    window.open(`https://wa.me/${finalPhone}?text=${text}`, '_blank');
-  };
-
-  // --- CANCEL SESSION ---
   const handleCancelSession = async (session: any) => {
-    if (!window.confirm(`Tem certeza que deseja cancelar a turma "${session.title}"? Todos os alunos inscritos serÃ£o notificados.`)) return;
-
-    setIsCanceling(session.id);
     try {
-      // 1. Cancel all active bookings
-      const { error: bookingsError } = await supabase
-        .from('bookings')
-        .update({ status: 'cancelled_by_pro', cancelled_at: new Date().toISOString() })
-        .eq('session_id', session.id)
-        .not('status', 'like', 'cancelled%');
+      await cancelSession({ sessionId: session.id, reason: 'Cancelamento pelo profissional' });
+      toast.success('Turma cancelada.');
 
-      if (bookingsError) throw bookingsError;
-
-      // 2. Cancel the session itself
-      const { error: sessionError } = await supabase
-        .from('sessions')
-        .update({ status: 'cancelled' })
-        .eq('id', session.id);
-
-      if (sessionError) throw sessionError;
-
-      toast.success('Turma cancelada com sucesso.');
-
-      // 3. Open WhatsApp with pre-formatted message for enrolled students
+      // Open WhatsApp with pre-formatted message
       const activeBookings = session.bookings?.filter((b: any) => !b.status.startsWith('cancelled')) || [];
       if (activeBookings.length > 0) {
         const dateStr = format(parseISO(session.date), "dd/MM", { locale: ptBR });
         const timeStr = session.start_time.substring(0, 5);
         const text = encodeURIComponent(
-          `OlÃ¡ turma! Infelizmente precisei cancelar a aula "${session.title}" do dia ${dateStr} Ã s ${timeStr}. PeÃ§o desculpas pelo inconveniente. Qualquer dÃºvida, me chame!`
+          `Olá turma! Infelizmente precisei cancelar a aula "${session.title}" do dia ${dateStr} às ${timeStr}. Peço desculpas pelo inconveniente!`
         );
         window.open(`https://wa.me/?text=${text}`, '_blank');
       }
-
-      // Force reload
-      window.location.reload();
     } catch (error: any) {
-      console.error(error);
       toast.error(error.message || 'Erro ao cancelar turma.');
-    } finally {
-      setIsCanceling(null);
     }
   };
 
-  // --- DUPLICATE SESSION ---
   const handleDuplicateSession = async (session: any) => {
     setIsDuplicating(session.id);
     try {
       const nextWeekDate = format(addDays(parseISO(session.date), 7), 'yyyy-MM-dd');
-      
       await createSession({
         category_id: session.category_id,
         title: session.title,
@@ -116,16 +110,17 @@ const MySessionsPro = () => {
         price_per_slot: session.price_per_slot,
         status: 'active',
       });
-
-      toast.success(`Aula duplicada para ${format(parseISO(nextWeekDate), "EEE, d 'de' MMM", { locale: ptBR })}! ðŸ”`);
-      window.location.reload();
+      toast.success(`Aula duplicada para ${format(parseISO(nextWeekDate), "EEE, d 'de' MMM", { locale: ptBR })}!`);
     } catch (error: any) {
-      console.error(error);
       toast.error(error.message || 'Erro ao duplicar aula.');
     } finally {
       setIsDuplicating(null);
     }
   };
+
+  const isPast = (s: any) => parseISO(`${s.date}T${s.start_time}`) < new Date();
+  const isCancelled = (s: any) => s.status === 'cancelled';
+  const isCompleted = (s: any) => s.status === 'completed';
 
   return (
     <PageContainer title="Minhas Aulas" withBottomNav>
@@ -136,7 +131,7 @@ const MySessionsPro = () => {
           </div>
         ) : !sessions || sessions.length === 0 ? (
           <div className="text-center py-12">
-            <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-3xl mx-auto mb-4">ðŸ“</div>
+            <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-3xl mx-auto mb-4">📝</div>
             <h3 className="text-lg font-semibold text-foreground mb-1">Nenhuma aula criada</h3>
             <p className="text-muted-foreground text-sm">Crie sua primeira turma e comece a receber alunos.</p>
           </div>
@@ -146,10 +141,11 @@ const MySessionsPro = () => {
               const dateStr = format(parseISO(session.date), "EEE, d 'de' MMM", { locale: ptBR });
               const timeStr = session.start_time.substring(0, 5);
               const isFull = session.current_participants >= session.max_participants;
-              const isPast = parseISO(`${session.date}T${session.start_time}`) < new Date();
-              const isCancelled = session.status === 'cancelled';
-              
-              const activeBookings = session.bookings?.filter((b: any) => !b.status.startsWith('cancelled')) || [];
+              const past = isPast(session);
+              const cancelled = isCancelled(session);
+              const completed = isCompleted(session);
+              const canClose = past && !cancelled && !completed;
+              const activeBookings = session.bookings?.filter((b: any) => !b.status.startsWith('cancelled') && b.status !== 'no_show') || [];
 
               return (
                 <motion.div
@@ -157,16 +153,18 @@ const MySessionsPro = () => {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  className={`glass-card p-4 hover:bg-white/[0.04] transition-colors relative ${isPast || isCancelled ? 'opacity-60' : ''}`}
+                  className={`glass-card p-4 hover:bg-white/[0.04] transition-colors relative ${past || cancelled ? 'opacity-60' : ''}`}
                 >
-                  <div className="flex justify-between items-start mb-2 cursor-pointer" onClick={() => handleOpenAttendance(session)}>
+                  <div className="flex justify-between items-start mb-2 cursor-pointer" onClick={() => openAttendanceSheet(session)}>
                     <h3 className="font-semibold text-base leading-tight truncate pr-4">
                       {session.category?.emoji} {session.title}
                     </h3>
-                    {isCancelled ? (
+                    {cancelled ? (
                       <span className="text-[10px] uppercase font-bold text-red-400 bg-red-400/10 border border-red-400/20 px-2 py-1 rounded shrink-0">Cancelada</span>
-                    ) : isPast ? (
-                      <span className="text-[10px] uppercase font-bold text-muted-foreground bg-white/5 px-2 py-1 rounded shrink-0">Finalizada</span>
+                    ) : completed ? (
+                      <span className="text-[10px] uppercase font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded shrink-0">Encerrada</span>
+                    ) : past ? (
+                      <span className="text-[10px] uppercase font-bold text-amber-400 bg-amber-400/10 border border-amber-400/20 px-2 py-1 rounded shrink-0">Encerrar</span>
                     ) : isFull ? (
                       <span className="text-[10px] uppercase font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded shrink-0">Lotada</span>
                     ) : (
@@ -175,27 +173,24 @@ const MySessionsPro = () => {
                   </div>
 
                   <div className="flex items-center justify-between mt-3">
-                    <div className="flex items-center gap-3 cursor-pointer" onClick={() => handleOpenAttendance(session)}>
+                    <div className="flex items-center gap-3 cursor-pointer" onClick={() => openAttendanceSheet(session)}>
                       <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground bg-white/5 px-2 py-1 rounded-md">
                         <Clock className="w-3.5 h-3.5" />
-                        <span className="capitalize">{dateStr} â€¢ {timeStr}</span>
+                        <span className="capitalize">{dateStr} • {timeStr}</span>
                       </div>
-
                       <div className="flex items-center gap-1.5 text-[11px] font-medium px-2 py-1 rounded-md bg-white/5">
                         <Users className="w-3.5 h-3.5 text-emerald-400" />
-                        <span className={isFull ? 'text-emerald-400' : 'text-foreground'}>
-                          {activeBookings.length} / {session.max_participants}
-                        </span>
+                        <span>{activeBookings.length} / {session.max_participants}</span>
                       </div>
                     </div>
-                    
-                    {!isCancelled && (
+
+                    {!cancelled && !completed && (
                       <div className="flex items-center gap-1.5">
-                                                {/* Copy Link */}
-                        <button 
+                        {/* Share Link */}
+                        <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            const url = window.location.origin + '/session/' + session.id;
+                            const url = `${window.location.origin}/session/${session.id}`;
                             if (navigator.share) {
                               navigator.share({ title: session.title, url });
                             } else {
@@ -204,50 +199,65 @@ const MySessionsPro = () => {
                             }
                           }}
                           className="text-[11px] flex items-center gap-1 font-semibold text-emerald-400 bg-emerald-500/10 px-2.5 py-1.5 rounded-lg hover:bg-emerald-500/20 transition-colors"
-                          title="Compartilhar Link Público"
                         >
                           <Share2 className="w-3 h-3" />
                         </button>
 
                         {/* Duplicate */}
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDuplicateSession(session);
-                          }}
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleDuplicateSession(session); }}
                           disabled={isDuplicating === session.id}
                           className="text-[11px] flex items-center gap-1 font-semibold text-muted-foreground bg-white/5 px-2.5 py-1.5 rounded-lg hover:bg-white/10 transition-colors disabled:opacity-50"
-                          title="Duplicar para prÃ³xima semana"
                         >
                           {isDuplicating === session.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Copy className="w-3 h-3" />}
                         </button>
 
-                        {!isPast && (
+                        {!past && (
                           <>
                             {/* Edit */}
-                            <button 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                navigate(`/edit-session/${session.id}`);
-                              }}
+                            <button
+                              onClick={(e) => { e.stopPropagation(); navigate(`/edit-session/${session.id}`); }}
                               className="text-[11px] flex items-center gap-1 font-semibold text-emerald-400 bg-emerald-500/10 px-2.5 py-1.5 rounded-lg hover:bg-emerald-500/20 transition-colors"
                             >
                               <Edit className="w-3 h-3" />
                             </button>
 
-                            {/* Cancel */}
-                            <button 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleCancelSession(session);
-                              }}
-                              disabled={isCanceling === session.id}
-                              className="text-[11px] flex items-center gap-1 font-semibold text-red-400 bg-red-400/10 px-2.5 py-1.5 rounded-lg hover:bg-red-400/20 transition-colors disabled:opacity-50"
-                              title="Cancelar turma"
-                            >
-                              {isCanceling === session.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <XCircle className="w-3 h-3" />}
-                            </button>
+                            {/* Cancel with AlertDialog */}
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <button
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="text-[11px] flex items-center gap-1 font-semibold text-red-400 bg-red-400/10 px-2.5 py-1.5 rounded-lg hover:bg-red-400/20 transition-colors"
+                                >
+                                  <XCircle className="w-3 h-3" />
+                                </button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent className="bg-background border-white/10">
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Cancelar turma "{session.title}"?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Todos os alunos inscritos serão notificados. Esta ação não pode ser desfeita.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel className="bg-white/5 hover:bg-white/10 border-0">Manter</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handleCancelSession(session)} className="bg-red-500 hover:bg-red-600 text-white">
+                                    Sim, cancelar turma
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                           </>
+                        )}
+
+                        {/* Close Session button (past, not cancelled/completed) */}
+                        {canClose && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); openAttendanceSheet(session); }}
+                            className="text-[11px] flex items-center gap-1 font-semibold text-amber-400 bg-amber-400/10 px-2.5 py-1.5 rounded-lg hover:bg-amber-400/20 transition-colors"
+                          >
+                            <ClipboardCheck className="w-3 h-3" /> Encerrar
+                          </button>
                         )}
                       </div>
                     )}
@@ -259,12 +269,16 @@ const MySessionsPro = () => {
         )}
       </div>
 
+      {/* Attendance / Close Session Sheet */}
       <Sheet open={!!selectedSession} onOpenChange={(open) => !open && setSelectedSession(null)}>
-        <SheetContent side="bottom" className="h-[80vh] bg-background border-t border-white/10 p-0 flex flex-col rounded-t-3xl">
+        <SheetContent side="bottom" className="h-[85vh] bg-background border-t border-white/10 p-0 flex flex-col rounded-t-3xl">
           <SheetHeader className="p-6 border-b border-white/5 text-left">
             <SheetTitle className="text-xl">{selectedSession?.title}</SheetTitle>
             <SheetDescription className="text-muted-foreground mt-1">
-              {selectedSession?.current_participants} de {selectedSession?.max_participants} inscritos
+              {isPast(selectedSession || { date: '2099-01-01', start_time: '00:00' }) && !isCancelled(selectedSession || {}) && !isCompleted(selectedSession || {})
+                ? 'Registre a presença e encerre a aula'
+                : `${selectedSession?.current_participants || 0} de ${selectedSession?.max_participants} inscritos`
+              }
             </SheetDescription>
           </SheetHeader>
 
@@ -275,48 +289,125 @@ const MySessionsPro = () => {
                   Nenhum aluno inscrito ainda.
                 </div>
               ) : (
-                selectedSession?.bookings?.filter((b: any) => !b.status.startsWith('cancelled')).map((booking: any) => (
-                  <div key={booking.id} className="flex items-center justify-between p-4 rounded-2xl bg-white/[0.02] border border-white/5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-white/10 overflow-hidden">
-                        {booking.student?.avatar_url ? (
-                          <img src={booking.student.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center font-bold text-muted-foreground">
-                            {booking.student?.full_name?.charAt(0) || '?'}
+                selectedSession?.bookings?.filter((b: any) => !b.status.startsWith('cancelled')).map((booking: any) => {
+                  const canEdit = isPast(selectedSession) && !isCancelled(selectedSession) && !isCompleted(selectedSession);
+                  const att = attendance[booking.id];
+
+                  return (
+                    <div key={booking.id} className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-white/10 overflow-hidden">
+                            {booking.student?.avatar_url ? (
+                              <img src={booking.student.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center font-bold text-muted-foreground">
+                                {booking.student?.full_name?.charAt(0) || '?'}
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-foreground">{booking.student?.full_name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {booking.status === 'completed' ? '✅ Presente' : booking.status === 'no_show' ? '❌ Faltou' : booking.payment_status === 'paid' ? '💰 Pago' : '⏳ Pendente'}
+                            </p>
+                          </div>
+                        </div>
+
+                        {!canEdit && booking.payment_status === 'paid' && (
+                          <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-500">
+                            <CheckCircle2 className="w-5 h-5" />
                           </div>
                         )}
                       </div>
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">{booking.student?.full_name}</p>
-                        <p className="text-xs text-muted-foreground">{booking.student?.phone || 'Sem telefone'}</p>
-                      </div>
-                    </div>
 
-                    <div className="flex items-center gap-2">
-                      <button 
-                        onClick={() => handleWhatsAppStudent(booking.student?.phone, booking.student?.full_name)}
-                        className="w-8 h-8 rounded-full bg-[#25D366]/20 flex items-center justify-center text-[#25D366]"
-                      >
-                        <MessageCircle className="w-4 h-4" />
-                      </button>
-
-                      {booking.payment_status === 'paid' ? (
-                        <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-500">
-                          <CheckCircle2 className="w-5 h-5" />
+                      {/* Attendance toggles (only for past sessions not yet closed) */}
+                      {canEdit && att && (
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            onClick={() => setAttendance(prev => ({ ...prev, [booking.id]: { ...prev[booking.id], attended: !prev[booking.id].attended } }))}
+                            className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-colors ${att.attended ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-400/10 text-red-400'}`}
+                          >
+                            {att.attended ? '✅ Presente' : '❌ Faltou'}
+                          </button>
+                          <button
+                            onClick={() => setAttendance(prev => ({ ...prev, [booking.id]: { ...prev[booking.id], paid: !prev[booking.id].paid } }))}
+                            className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-colors ${att.paid ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-400/10 text-amber-400'}`}
+                          >
+                            {att.paid ? '💰 Pago' : '⏳ Pendente'}
+                          </button>
+                          <input
+                            type="text"
+                            placeholder="Nota privada..."
+                            value={att.note}
+                            onChange={(e) => setAttendance(prev => ({ ...prev, [booking.id]: { ...prev[booking.id], note: e.target.value } }))}
+                            className="flex-1 min-w-[120px] text-xs bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-foreground placeholder:text-muted-foreground"
+                          />
                         </div>
-                      ) : (
-                        <button 
-                          onClick={() => handleConfirmPix(booking.id)}
-                          disabled={isUpdating === booking.id}
-                          className="px-3 py-1.5 rounded-lg bg-amber-500 text-black font-semibold text-xs hover:bg-amber-400 disabled:opacity-50"
-                        >
-                          {isUpdating === booking.id ? <Loader2 className="w-3 h-3 animate-spin mx-auto" /> : 'Confirmar Pix'}
-                        </button>
                       )}
                     </div>
+                  );
+                })
+              )}
+
+              {/* Session notes + Close button */}
+              {selectedSession && isPast(selectedSession) && !isCancelled(selectedSession) && !isCompleted(selectedSession) && (
+                <div className="space-y-4 pt-4 border-t border-white/10">
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Observação da sessão (opcional)
+                    </label>
+                    <textarea
+                      value={sessionNotes}
+                      onChange={(e) => setSessionNotes(e.target.value)}
+                      placeholder="Algo sobre a aula de hoje..."
+                      className="w-full h-20 text-sm bg-white/5 border border-white/10 rounded-xl px-4 py-3 resize-none text-foreground placeholder:text-muted-foreground"
+                    />
                   </div>
-                ))
+
+                  <div className="flex gap-3">
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="outline" className="flex-1 h-12 border-red-400/20 text-red-400 hover:bg-red-400/10">
+                          Aula não aconteceu
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="bg-background border-white/10">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>A aula não aconteceu?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Todas as reservas serão canceladas e os alunos notificados.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel className="bg-white/5 hover:bg-white/10 border-0">Voltar</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={async () => {
+                              try {
+                                await closeSession({ sessionId: selectedSession.id, attendance: [], happened: false });
+                                toast.success('Aula marcada como não realizada.');
+                                setSelectedSession(null);
+                              } catch (e: any) {
+                                toast.error(e.message);
+                              }
+                            }}
+                            className="bg-red-500 hover:bg-red-600 text-white"
+                          >
+                            Confirmar
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+
+                    <Button
+                      onClick={handleCloseSession}
+                      disabled={isClosing}
+                      className="flex-1 h-12 bg-emerald-500 hover:bg-emerald-400 text-black font-bold glow-emerald"
+                    >
+                      {isClosing ? <Loader2 className="w-5 h-5 animate-spin" /> : '✅ Encerrar Aula'}
+                    </Button>
+                  </div>
+                </div>
               )}
             </div>
           </ScrollArea>
@@ -327,4 +418,3 @@ const MySessionsPro = () => {
 };
 
 export default MySessionsPro;
-

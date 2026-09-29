@@ -2,6 +2,11 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
+// Timezone-safe "today" for São Paulo
+function todaySP(): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(new Date());
+}
+
 export function useDashboardMetrics() {
   const { user } = useAuth();
 
@@ -10,19 +15,27 @@ export function useDashboardMetrics() {
     queryFn: async () => {
       if (!user?.id) return null;
 
-      // Chama a RPC construída no banco
-      const { data: metrics, error: metricsError } = await supabase.rpc('get_professional_dashboard', {
-        p_user_id: user.id
-      });
+      // Call the new parameterless RPC
+      const { data: metrics, error: metricsError } = await (supabase.rpc as any)('get_professional_dashboard');
 
       if (metricsError) throw metricsError;
 
-      // Busca a próxima aula imediata para o card de destaque
+      // Get the profile id for the next session query
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!profileData) return { metrics, nextSession: null };
+
+      // Fetch next session using timezone-safe date
       const { data: nextSession } = await supabase
         .from('sessions')
-        .select('*, bookings(id)')
-        .eq('professional_id', (await supabase.from('profiles').select('id').eq('user_id', user!.id).single()).data?.id || '')
-        .gte('date', new Date().toISOString().split('T')[0])
+        .select('id, title, date, start_time, duration_minutes, location_name, current_participants, max_participants, status, category:categories(name, emoji)')
+        .eq('professional_id', profileData.id)
+        .in('status', ['active', 'full'])
+        .gte('date', todaySP())
         .order('date', { ascending: true })
         .order('start_time', { ascending: true })
         .limit(1)

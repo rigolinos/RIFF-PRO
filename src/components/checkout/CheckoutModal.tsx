@@ -1,11 +1,10 @@
 import { useState } from 'react';
-import { Copy, CheckCircle2, MessageCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { Copy, CheckCircle2, MessageCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
-import { buildWhatsAppUrl } from '@/lib/whatsapp';
 import {
   Drawer,
   DrawerContent,
@@ -16,8 +15,33 @@ import {
 } from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
 
+// Map server error codes to pt-BR messages
+const ERROR_MESSAGES: Record<string, string> = {
+  unauthenticated: 'Você precisa estar logado para reservar.',
+  profile_not_found: 'Perfil não encontrado. Faça login novamente.',
+  session_not_found: 'Aula não encontrada.',
+  session_unavailable: 'Esta aula não está mais disponível.',
+  session_started: 'Esta aula já começou.',
+  session_full: 'Não há mais vagas disponíveis.',
+  self_booking: 'Você não pode reservar sua própria aula.',
+  already_booked: 'Você já reservou esta aula.',
+};
+
+interface PaymentInfo {
+  pix_key: string | null;
+  pix_key_type: string | null;
+  whatsapp_number: string | null;
+  pro_name: string | null;
+}
+
 interface CheckoutModalProps {
-  session: any; // O objeto da sessão vindo do Feed
+  session: {
+    id: string;
+    title: string;
+    price_per_slot: number;
+    category?: { emoji?: string | null; name?: string | null } | null;
+    professional?: { full_name?: string | null } | null;
+  };
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
@@ -26,10 +50,11 @@ interface CheckoutModalProps {
 export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutModalProps) => {
   const { user } = useAuth();
   const { profile: studentProfile } = useProfile();
-  
+
   const [isBooking, setIsBooking] = useState(false);
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [paymentInfo, setPaymentInfo] = useState<PaymentInfo | null>(null);
 
   if (!session) return null;
 
@@ -41,38 +66,47 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
 
     setIsBooking(true);
     try {
-      // Chama a RPC que criamos no banco
-      const { data, error } = await supabase.rpc('create_booking', {
+      // Call the new RPC without user_id — server resolves from auth.uid()
+      const { data, error } = await (supabase.rpc as any)('create_booking', {
         p_session_id: session.id,
-        p_student_user_id: user.id
       });
 
       if (error) throw error;
-      
-      const response = data as { success: boolean; message: string; booking_id?: string };
-      
+
+      const response = data as { success: boolean; code: string; booking_id?: string };
+
       if (!response.success) {
-        toast.error(response.message);
+        const message = ERROR_MESSAGES[response.code] || 'Erro ao processar reserva.';
+        toast.error(message);
         onClose();
         return;
       }
 
+      // Fetch payment info securely via RPC
+      if (session.price_per_slot > 0 && response.booking_id) {
+        const { data: pInfo } = await (supabase.rpc as any)('get_booking_payment_info', {
+          p_booking_id: response.booking_id,
+        });
+        setPaymentInfo(pInfo as PaymentInfo);
+      }
+
       setIsConfirmed(true);
-      onSuccess(); // Dá trigger de re-fetch no feed para atualizar vagas
-    } catch (err: any) {
-      toast.error(err.message || 'Erro ao processar reserva');
+      onSuccess();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Erro ao processar reserva';
+      toast.error(message);
     } finally {
       setIsBooking(false);
     }
   };
 
   const handleCopyPix = () => {
-    const pixKey = session.professional?.profiles?.pix_key || session.professional?.pix_key; // Ajuste dependendo do join
+    const pixKey = paymentInfo?.pix_key;
     if (!pixKey) {
       toast.error('Chave Pix não encontrada.');
       return;
     }
-    
+
     navigator.clipboard.writeText(pixKey);
     setCopied(true);
     toast.success('Chave Pix copiada!');
@@ -80,32 +114,33 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
   };
 
   const handleWhatsApp = () => {
-    const proPhone = session.professional?.whatsapp_number || session.professional?.phone;
+    const proPhone = paymentInfo?.whatsapp_number;
     if (!proPhone) {
       toast.error('O profissional não cadastrou o WhatsApp.');
       return;
     }
 
-    const url = buildWhatsAppUrl({
-      phone: proPhone,
-      studentName: studentProfile?.full_name?.split(' ')[0] || 'Aluno',
-      proName: session.professional?.full_name?.split(' ')[0] || 'Prof',
-      sessionTitle: session.category?.name || session.title,
-      sessionTime: session.start_time.substring(0, 5),
-    });
+    const cleanPhone = proPhone.replace(/\D/g, '');
+    const finalPhone = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
+    const studentName = studentProfile?.full_name?.split(' ')[0] || 'Aluno';
+    const proName = paymentInfo?.pro_name?.split(' ')[0] || 'Prof';
+    const text = encodeURIComponent(
+      `Olá ${proName}! Aqui é o(a) ${studentName}. ` +
+      `Acabei de reservar a aula "${session.category?.name || session.title}" pelo Riff Pro. ` +
+      `Segue o comprovante do Pix!`
+    );
 
-    window.open(url, '_blank');
+    window.open(`https://wa.me/${finalPhone}?text=${text}`, '_blank');
     onClose();
   };
 
-  const proPixKey = session.professional?.pix_key;
   const isFree = session.price_per_slot === 0;
 
   return (
     <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DrawerContent className="pb-4">
         <div className="max-w-md w-full mx-auto pb-safe">
-          
+
           {!isConfirmed ? (
             <>
               <DrawerHeader>
@@ -131,8 +166,8 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
               </div>
 
               <DrawerFooter>
-                <Button 
-                  onClick={handleBook} 
+                <Button
+                  onClick={handleBook}
                   disabled={isBooking}
                   className="w-full h-14 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-lg rounded-xl glow-emerald"
                 >
@@ -155,23 +190,23 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
                 </DrawerDescription>
               </DrawerHeader>
 
-              {!isFree && (
+              {!isFree && paymentInfo?.pix_key && (
                 <div className="p-6 space-y-6">
                   <div className="bg-white/5 rounded-2xl p-5 border border-emerald-500/20 text-center space-y-3 relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500/0 via-emerald-500 to-emerald-500/0 opacity-50" />
-                    
+
                     <p className="text-sm text-muted-foreground">Faça o Pix de</p>
                     <p className="text-3xl font-bold text-foreground">
                       R$ {session.price_per_slot.toFixed(2).replace('.', ',')}
                     </p>
-                    
+
                     <div className="pt-2">
                       <p className="text-xs text-muted-foreground mb-2">Chave Pix do Profissional:</p>
                       <div className="flex gap-2">
                         <div className="h-12 bg-black/40 rounded-xl px-4 flex items-center flex-1 font-mono text-sm border border-white/10 truncate select-all">
-                          {proPixKey || 'Chave não cadastrada'}
+                          {paymentInfo.pix_key}
                         </div>
-                        <Button 
+                        <Button
                           onClick={handleCopyPix}
                           className="h-12 w-12 shrink-0 bg-emerald-500 hover:bg-emerald-400 text-black rounded-xl"
                         >
@@ -185,7 +220,7 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
                     <p className="text-sm text-center text-muted-foreground">
                       Após o pagamento, avise o profissional:
                     </p>
-                    <Button 
+                    <Button
                       onClick={handleWhatsApp}
                       className="w-full h-14 bg-[#25D366] hover:bg-[#20bd5a] text-black font-semibold text-lg rounded-xl shadow-[0_8px_30px_rgba(37,211,102,0.3)] gap-2"
                     >
@@ -196,9 +231,9 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
                 </div>
               )}
 
-              {isFree && (
+              {(isFree || !paymentInfo?.pix_key) && (
                 <div className="p-6">
-                  <Button 
+                  <Button
                     onClick={onClose}
                     className="w-full h-14 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-lg rounded-xl glow-emerald"
                   >

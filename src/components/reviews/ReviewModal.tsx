@@ -8,7 +8,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { useProfile } from '@/hooks/useProfile';
 
 interface ReviewModalProps {
-  booking: any;
+  booking: {
+    id: string;
+    session_id: string;
+    professional_id: string;
+    professional?: { full_name?: string };
+  };
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
@@ -25,7 +30,7 @@ export function ReviewModal({ booking, isOpen, onClose, onSuccess }: ReviewModal
   const handleSubmit = async () => {
     if (!profile) return;
     setIsSubmitting(true);
-    
+
     try {
       const { error } = await supabase.from('reviews').insert({
         professional_id: booking.professional_id,
@@ -37,18 +42,17 @@ export function ReviewModal({ booking, isOpen, onClose, onSuccess }: ReviewModal
       });
 
       if (error) {
-        if (error.code === '23505') { // Unique violation
+        if (error.code === '23505') {
           toast.error('Você já avaliou esta aula.');
+        } else if (error.message?.includes('new row violates row-level security')) {
+          toast.error('Você só pode avaliar aulas concluídas que participou.');
         } else {
           throw error;
         }
       } else {
-        // Mark the booking as completed in the database
-        await supabase
-          .from('bookings')
-          .update({ status: 'completed' })
-          .eq('id', booking.id);
-
+        // DO NOT update booking status here.
+        // The "completed" status is set by the professional via close_session RPC.
+        // The rating trigger will auto-recalculate the pro's rating_avg.
         toast.success('Avaliação enviada! Obrigado pelo feedback.');
         onSuccess();
       }
@@ -79,12 +83,12 @@ export function ReviewModal({ booking, isOpen, onClose, onSuccess }: ReviewModal
                 onClick={() => setRating(star)}
                 className="transition-transform active:scale-90 p-1"
               >
-                <Star 
+                <Star
                   className={`w-10 h-10 transition-colors ${
-                    star <= rating 
-                      ? 'fill-emerald-400 text-emerald-400' 
+                    star <= rating
+                      ? 'fill-emerald-400 text-emerald-400'
                       : 'fill-white/5 text-white/10 hover:text-white/20'
-                  }`} 
+                  }`}
                 />
               </button>
             ))}
@@ -95,7 +99,7 @@ export function ReviewModal({ booking, isOpen, onClose, onSuccess }: ReviewModal
               <MessageSquare className="w-3.5 h-3.5" />
               Comentário (Opcional)
             </label>
-            <Textarea 
+            <Textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="Conte o que achou da aula..."
@@ -108,8 +112,8 @@ export function ReviewModal({ booking, isOpen, onClose, onSuccess }: ReviewModal
           <Button variant="ghost" onClick={onClose} className="flex-1 bg-white/5 hover:bg-white/10">
             Cancelar
           </Button>
-          <Button 
-            onClick={handleSubmit} 
+          <Button
+            onClick={handleSubmit}
             disabled={isSubmitting}
             className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-black font-bold glow-emerald"
           >

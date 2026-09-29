@@ -1,4 +1,4 @@
-﻿import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Link2, Share2, Wallet, Users, LayoutDashboard, Calendar, ArrowRight, Loader2, CheckCircle2 } from 'lucide-react';
@@ -181,7 +181,7 @@ const DashboardPro = () => {
                   </div>
                   <div className="w-12 h-12 rounded-full border-4 border-emerald-500/20 flex items-center justify-center flex-col">
                     <span className="text-sm font-bold text-emerald-400 leading-none">
-                      {nextSession.bookings?.length || nextSession.current_participants || 0}
+                      {nextSession.current_participants || 0}
                     </span>
                   </div>
                 </div>

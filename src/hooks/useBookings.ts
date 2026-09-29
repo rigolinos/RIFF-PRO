@@ -6,7 +6,7 @@ export function useBookings() {
   const queryClient = useQueryClient();
   const { profile } = useProfile();
 
-  // Fetch as reservas do Aluno logado
+  // Fetch student bookings — no PII fields from profiles
   const studentBookingsQuery = useQuery({
     queryKey: ['bookings', 'student', profile?.id],
     queryFn: async () => {
@@ -15,13 +15,16 @@ export function useBookings() {
       const { data, error } = await supabase
         .from('bookings')
         .select(`
-          *,
+          id, session_id, professional_id, student_id,
+          status, payment_status, amount_total, cancelled_at,
+          checked_in, created_at, updated_at,
           session:sessions(
-            id, title, date, start_time, location_name, location_address, price_per_slot, category_id,
+            id, title, date, start_time, location_name, location_address,
+            price_per_slot, category_id, duration_minutes,
             category:categories(name, emoji)
           ),
           professional:profiles!bookings_professional_id_fkey(
-            id, full_name, avatar_url, phone, whatsapp_number, pix_key
+            id, full_name, avatar_url
           )
         `)
         .eq('student_id', profile.id)
@@ -33,21 +36,32 @@ export function useBookings() {
     enabled: !!profile?.id,
   });
 
-  // Cancelar uma reserva (Aluno)
+  // Cancel a booking (student) — server enforces 4h rule and status transition
   const cancelBooking = useMutation({
     mutationFn: async (bookingId: string) => {
-      const { error } = await supabase
+      const { data, error, count } = await supabase
         .from('bookings')
-        .update({ 
+        .update({
           status: 'cancelled_by_student',
           cancelled_at: new Date().toISOString()
         })
-        .eq('id', bookingId);
+        .eq('id', bookingId)
+        .select('id');
 
-      if (error) throw error;
+      if (error) {
+        // Map server-side error codes to user-friendly messages
+        if (error.message?.includes('late_cancellation')) {
+          throw new Error('Cancelamento tardio: só é possível cancelar até 4 horas antes da aula.');
+        }
+        if (error.message?.includes('invalid_status_transition')) {
+          throw new Error('Esta reserva não pode mais ser cancelada.');
+        }
+        throw error;
+      }
 
-      // Importante: No mundo real também iríamos disparar via trigger 
-      // ou edge function a redução de current_participants na sessão.
+      if (!data || data.length === 0) {
+        throw new Error('Não foi possível cancelar esta reserva.');
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bookings', 'student'] });

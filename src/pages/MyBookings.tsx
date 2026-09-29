@@ -173,7 +173,7 @@ const MyBookings = () => {
             </button>
           </div>
         ) : (
-          effectiveStatus === 'completed' && (
+          booking.status === 'completed' && (
             <div className="border-t border-white/5 bg-white/[0.02] p-3 flex">
               <button
                 onClick={() => setReviewBooking(booking)}
