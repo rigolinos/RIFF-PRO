@@ -25,6 +25,7 @@ import OnboardingStudent from '@/pages/OnboardingStudent';
 import CreateSession from '@/pages/CreateSession';
 import EditSession from '@/pages/EditSession';
 import SessionDetails from '@/pages/SessionDetails';
+import SessionAttendance from '@/pages/SessionAttendance';
 import Feed from '@/pages/Feed';
 import MyBookings from '@/pages/MyBookings';
 import MySessionsPro from '@/pages/MySessionsPro';
@@ -66,6 +67,7 @@ function App() {
               <Route path="/pro/:slug" element={<ProfessionalProfile />} />
               <Route path="/@:slug" element={<ProfessionalProfile />} />
               <Route path="/session/:id" element={<SessionDetails />} />
+              <Route path="/session/:id/attendance" element={<ProtectedRoute><SessionAttendance /></ProtectedRoute>} />
               
               {/* Protected Routes - Onboarding */}
               <Route path="/onboarding/pro" element={<ProtectedRoute><OnboardingPro /></ProtectedRoute>} />

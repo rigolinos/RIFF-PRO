@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Camera, ImagePlus, Loader2 } from 'lucide-react';
+import { Camera, RefreshCw, ImagePlus, Loader2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, ChevronLeft, Check, Sparkles, AlertTriangle, MessageCircle, MapPin, Calendar, Clock, DollarSign, Users } from 'lucide-react';
@@ -51,8 +51,11 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
   const isEditMode = !!initialData;
   const hasParticipants = isEditMode && initialData.current_participants > 0;
 
+  
+  const savedDraft = !isEditMode ? JSON.parse(localStorage.getItem('riff-session-draft') || 'null') : null;
+  
   const form = useForm({
-    defaultValues: {
+    defaultValues: savedDraft || {
       category_id: initialData?.category_id || '',
       title: initialData?.title || '',
       description: initialData?.description || '',
@@ -67,8 +70,26 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
     }
   });
 
-  const { watch, setValue, handleSubmit, register } = form;
+  const { watch, setValue, handleSubmit, register, reset } = form;
   const formData = watch();
+
+  useEffect(() => {
+    if (!isEditMode) {
+      const timeout = setTimeout(() => {
+        localStorage.setItem('riff-session-draft', JSON.stringify(formData));
+      }, 1000);
+      return () => clearTimeout(timeout);
+    }
+  }, [formData, isEditMode]);
+
+  const handleClearDraft = () => {
+    localStorage.removeItem('riff-session-draft');
+    reset({
+      category_id: '', title: '', description: '', max_participants: 10, date: '', start_time: '', duration_minutes: 60, location_name: '', price_per_slot: 0, what_to_bring: '', cover_image_url: ''
+    });
+    toast.success('Rascunho apagado.');
+  };
+
 
   const selectedCategorySlug = useMemo(() => {
     return categories?.find(c => c.id === formData.category_id)?.slug;

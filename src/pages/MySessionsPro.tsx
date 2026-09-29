@@ -164,7 +164,7 @@ const MySessionsPro = () => {
                   transition={{ delay: i * 0.05 }}
                   className={`glass-card p-4 hover:bg-white/[0.04] transition-colors relative ${past || cancelled ? 'opacity-60' : ''}`}
                 >
-                  <div className="flex justify-between items-start mb-2 cursor-pointer" onClick={() => openAttendanceSheet(session)}>
+                  <div className="flex justify-between items-start mb-2 cursor-pointer" onClick={() => navigate(`/session/${session.id}/attendance`)}>
                     <h3 className="font-semibold text-base leading-tight truncate pr-4">
                       {session.category?.emoji} {session.title}
                     </h3>
@@ -182,7 +182,7 @@ const MySessionsPro = () => {
                   </div>
 
                   <div className="flex items-center justify-between mt-3">
-                    <div className="flex items-center gap-3 cursor-pointer" onClick={() => openAttendanceSheet(session)}>
+                    <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate(`/session/${session.id}/attendance`)}>
                       <div className="flex items-center gap-1.5 text-[11px] text-ink-muted bg-white/5 px-2 py-1 rounded-md">
                         <Clock className="w-3.5 h-3.5" />
                         <span className="capitalize">{dateStr} • {timeStr}</span>
@@ -274,7 +274,7 @@ const MySessionsPro = () => {
                         {/* Close Session button (past, not cancelled/completed) */}
                         {canClose && (
                           <button
-                            onClick={(e) => { e.stopPropagation(); openAttendanceSheet(session); }}
+                            onClick={(e) => { e.stopPropagation(); navigate(`/session/${session.id}/attendance`); }}
                             className="text-[11px] flex items-center gap-1 font-semibold text-accent bg-accent/15 px-2.5 py-1.5 rounded-lg hover:bg-accent/15 transition-colors"
                           >
                             <ClipboardCheck className="w-3 h-3" /> Encerrar

@@ -27,9 +27,17 @@ export function useDashboardMetrics() {
         .eq('user_id', user.id)
         .single();
 
-      if (!profileData) return { metrics, nextSession: null };
+      if (!profileData) return { metrics, nextSession: null, todaySessions: [] };
 
       // Fetch next session using timezone-safe date
+      const { data: todaySessions } = await supabase
+        .from('sessions')
+        .select('id, title, date, start_time, duration_minutes, location_name, current_participants, max_participants, status, category:categories(name, emoji)')
+        .eq('professional_id', profileData.id)
+        .in('status', ['active', 'full'])
+        .eq('date', todaySP())
+        .order('start_time', { ascending: true });
+
       const { data: nextSession } = await supabase
         .from('sessions')
         .select('id, title, date, start_time, duration_minutes, location_name, current_participants, max_participants, status, category:categories(name, emoji)')
