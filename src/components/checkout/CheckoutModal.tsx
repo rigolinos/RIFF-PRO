@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import QRCode from 'react-qr-code';
 import { Copy, CheckCircle2, MessageCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -200,15 +201,27 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
                       R$ {session.price_per_slot.toFixed(2).replace('.', ',')}
                     </p>
 
+                    <div className="flex justify-center py-4">
+                      <div className="p-3 bg-white rounded-xl shadow-sm border border-line/50">
+                        <QRCode 
+                          value={paymentInfo.pix_key} 
+                          size={160} 
+                          bgColor="#FFFFFF"
+                          fgColor="#000000"
+                          level="M"
+                        />
+                      </div>
+                    </div>
+
                     <div className="pt-2">
-                      <p className="text-xs text-ink-muted mb-2">Chave Pix do Profissional:</p>
+                      <p className="text-xs text-ink-muted mb-2">Ou copie a Chave Pix:</p>
                       <div className="flex gap-2">
                         <div className="h-12 bg-surface rounded-xl px-4 flex items-center flex-1 font-mono text-sm border border-line truncate select-all">
                           {paymentInfo.pix_key}
                         </div>
                         <Button
                           onClick={handleCopyPix}
-                          className="h-12 w-12 shrink-0 bg-brand hover:bg-brand text-black rounded-xl"
+                          className="h-12 w-12 shrink-0 bg-brand text-brand-ink hover:bg-brand/90 rounded-xl"
                         >
                           {copied ? <CheckCircle2 className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
                         </Button>

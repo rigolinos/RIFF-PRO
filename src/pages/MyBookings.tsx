@@ -6,6 +6,9 @@ import { MapPin, MessageCircle, XCircle, Loader2, CalendarDays } from 'lucide-re
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
+import QRCode from 'react-qr-code';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 import { PageContainer } from '@/components/layout/PageContainer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -127,43 +130,53 @@ const MyBookings = () => {
 
 
     return (
-      <div key={booking.id} className="glass-card overflow-hidden flex flex-col mb-4">
-        <div className="p-4">
-          <div className="flex justify-between items-start mb-3">
+      <div key={booking.id} className="bg-surface shadow-1 rounded-[24px] overflow-hidden flex flex-col mb-4 border border-line relative">
+        {/* Ticket Header */}
+        <div className="p-5 border-b border-dashed border-line relative">
+          {/* Ticket notches */}
+          <div className="absolute -bottom-3 -left-3 w-6 h-6 rounded-full bg-bg border-r border-t border-line transform rotate-45 z-10" />
+          <div className="absolute -bottom-3 -right-3 w-6 h-6 rounded-full bg-bg border-l border-t border-line transform -rotate-45 z-10" />
+
+          <div className="flex justify-between items-start mb-4">
             <div>
-              <h3 className="font-semibold text-lg text-ink leading-tight">
-                {booking.session.category?.emoji} {booking.session.title}
+              <Badge variant="pill" className="mb-2 shadow-none border-line">{booking.session.category?.emoji} {booking.session.category?.name}</Badge>
+              <h3 className="font-display font-bold text-xl text-ink leading-tight">
+                {booking.session.title}
               </h3>
-              <p className="text-sm text-ink-muted mt-0.5">
+              <p className="text-sm text-ink-muted mt-1 font-medium">
                 com {booking.professional?.full_name}
               </p>
             </div>
-            <span className={`text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider border ${statusColor}`}>
+            <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${statusColor} border-0 shadow-sm`}>
               {statusText}
             </span>
           </div>
 
-          <div className="flex gap-4 items-center bg-white/[0.03] p-3 rounded-xl border border-line">
-            <div className="flex-1 border-r border-line">
-              <p className="text-xs text-ink-muted mb-0.5">Quando</p>
-              <p className="text-sm font-medium capitalize">{dateStr}</p>
-              <p className="text-xs font-semibold text-brand">{timeStr}</p>
+          <div className="flex gap-4 items-center mt-2">
+            <div className="flex-1 space-y-2">
+              <div className="flex items-center gap-2 text-ink-muted">
+                <CalendarDays className="w-4 h-4" />
+                <p className="text-sm font-semibold capitalize text-ink">{dateStr} • {timeStr}</p>
+              </div>
+              <div className="flex items-center gap-2 text-ink-muted">
+                <MapPin className="w-4 h-4 shrink-0" />
+                <p className="text-sm font-semibold truncate text-ink cursor-pointer hover:text-brand transition-colors" onClick={() => handleOpenMap(booking)}>
+                  {booking.session.location_name}
+                </p>
+              </div>
             </div>
-            <div className="flex-1">
-              <p className="text-xs text-ink-muted mb-0.5">Onde</p>
-              <p className="text-sm font-medium truncate">{booking.session.location_name}</p>
-              <button 
-                onClick={() => handleOpenMap(booking)}
-                className="text-xs font-semibold text-brand hover:text-brand-ink flex items-center gap-1 mt-0.5"
-              >
-                <MapPin className="w-3 h-3" /> Ver Mapa
-              </button>
-            </div>
+            
+            {/* QR Code Mini for Ticket vibe */}
+            {!isHistory && effectiveStatus !== 'cancelled_by_student' && effectiveStatus !== 'cancelled_by_pro' && (
+              <div className="shrink-0 p-1.5 bg-white rounded-xl shadow-sm border border-line/50">
+                <QRCode value={`checkin:${booking.id}`} size={64} level="L" />
+              </div>
+            )}
           </div>
         </div>
 
         {!isHistory ? (
-          <div className="border-t border-line bg-white/[0.02] p-3 flex gap-2">
+          <div className="border-t border-line bg-line/20 p-3 flex gap-2">
             <button
               onClick={() => handleWhatsApp(booking)}
               className="flex-1 h-10 rounded-lg bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 font-medium text-sm transition-colors flex items-center justify-center gap-2"
@@ -183,7 +196,7 @@ const MyBookings = () => {
           </div>
         ) : (
           effectiveStatus === 'completed' && (
-            <div className="border-t border-line bg-white/[0.02] p-3 flex">
+            <div className="border-t border-line bg-line/20 p-3 flex">
               <button
                 onClick={() => setReviewBooking(booking)}
                 className="flex-1 h-10 rounded-lg bg-brand/10 text-brand hover:bg-brand/20 font-medium text-sm transition-colors flex items-center justify-center gap-2"
