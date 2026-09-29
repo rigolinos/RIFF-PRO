@@ -13,6 +13,7 @@ import { useBookings } from '@/hooks/useBookings';
 import { buildWhatsAppUrl } from '@/lib/whatsapp';
 import { useProfile } from '@/hooks/useProfile';
 import { ReviewModal } from '@/components/reviews/ReviewModal';
+import { supabase } from '@/integrations/supabase/client';
 
 const MyBookings = () => {
   const { profile } = useProfile();
@@ -50,22 +51,30 @@ const MyBookings = () => {
     return { upcoming: up, history: hist };
   }, [bookings]);
 
-  const handleWhatsApp = (booking: any) => {
-    const proPhone = booking.professional?.whatsapp_number || booking.professional?.phone;
-    if (!proPhone) {
-      toast.error('O profissional não cadastrou o WhatsApp.');
-      return;
+  const handleWhatsApp = async (booking: any) => {
+    try {
+      const { data, error } = await (supabase.rpc as any)('get_booking_payment_info', {
+        p_booking_id: booking.id
+      });
+      
+      if (error || !data?.whatsapp_number) {
+        toast.error('O profissional não cadastrou o WhatsApp ou você não tem acesso.');
+        return;
+      }
+
+      const proPhone = data.whatsapp_number;
+      const url = buildWhatsAppUrl({
+        phone: proPhone,
+        studentName: profile?.full_name?.split(' ')[0] || 'Aluno',
+        proName: booking.professional?.full_name?.split(' ')[0] || 'Prof',
+        sessionTitle: booking.session.category?.name || booking.session.title,
+        sessionTime: booking.session.start_time.substring(0, 5),
+      });
+
+      window.open(url, '_blank');
+    } catch (err) {
+      toast.error('Erro ao acessar o contato do profissional.');
     }
-
-    const url = buildWhatsAppUrl({
-      phone: proPhone,
-      studentName: profile?.full_name?.split(' ')[0] || 'Aluno',
-      proName: booking.professional?.full_name?.split(' ')[0] || 'Prof',
-      sessionTitle: booking.session.category?.name || booking.session.title,
-      sessionTime: booking.session.start_time.substring(0, 5),
-    });
-
-    window.open(url, '_blank');
   };
 
   const handleOpenMap = (booking: any) => {

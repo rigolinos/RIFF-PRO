@@ -26,7 +26,7 @@ const SessionDetails = () => {
           *,
           category:categories(name, emoji),
           professional:profiles!sessions_professional_id_fkey(
-            id, full_name, avatar_url, role, pix_key, whatsapp_number, phone
+            id, full_name, avatar_url, role
           ),
           bookings(id, status)
         `)

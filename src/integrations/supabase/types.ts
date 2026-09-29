@@ -14,8 +14,6 @@ export type Database = {
           id: string
           user_id: string
           full_name: string
-          phone: string | null
-          email: string | null
           avatar_url: string | null
           bio: string | null
           city: string | null
@@ -29,9 +27,6 @@ export type Database = {
           experience_years: number | null
           public_slug: string | null
           instagram_handle: string | null
-          whatsapp_number: string | null
-          pix_key: string | null
-          pix_key_type: string | null
           rating_avg: number
           total_reviews: number
           total_sessions_given: number
@@ -43,8 +38,6 @@ export type Database = {
           id?: string
           user_id: string
           full_name?: string
-          phone?: string | null
-          email?: string | null
           avatar_url?: string | null
           bio?: string | null
           city?: string | null
@@ -58,9 +51,6 @@ export type Database = {
           experience_years?: number | null
           public_slug?: string | null
           instagram_handle?: string | null
-          whatsapp_number?: string | null
-          pix_key?: string | null
-          pix_key_type?: string | null
           rating_avg?: number
           total_reviews?: number
           total_sessions_given?: number
@@ -72,8 +62,6 @@ export type Database = {
           id?: string
           user_id?: string
           full_name?: string
-          phone?: string | null
-          email?: string | null
           avatar_url?: string | null
           bio?: string | null
           city?: string | null
@@ -87,9 +75,6 @@ export type Database = {
           experience_years?: number | null
           public_slug?: string | null
           instagram_handle?: string | null
-          whatsapp_number?: string | null
-          pix_key?: string | null
-          pix_key_type?: string | null
           rating_avg?: number
           total_reviews?: number
           total_sessions_given?: number
@@ -98,6 +83,50 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      profile_private: {
+        Row: {
+          profile_id: string
+          email: string | null
+          phone: string | null
+          whatsapp_number: string | null
+          pix_key: string | null
+          pix_key_type: string | null
+          credential_number: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          profile_id: string
+          email?: string | null
+          phone?: string | null
+          whatsapp_number?: string | null
+          pix_key?: string | null
+          pix_key_type?: string | null
+          credential_number?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          profile_id?: string
+          email?: string | null
+          phone?: string | null
+          whatsapp_number?: string | null
+          pix_key?: string | null
+          pix_key_type?: string | null
+          credential_number?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_private_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       categories: {
         Row: {
