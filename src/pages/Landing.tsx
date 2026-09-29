@@ -33,11 +33,11 @@ const Landing = () => {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="text-center mb-10"
         >
-          <h1 className="text-3xl font-bold text-foreground leading-tight mb-4">
+          <h1 className="text-3xl font-bold font-display text-ink leading-tight mb-4">
             Sua carreira esportiva{' '}
-            <span className="text-gradient-emerald">sem intermediários.</span>
+            <span className="text-brand">sem intermediários.</span>
           </h1>
-          <p className="text-muted-foreground text-base leading-relaxed max-w-xs mx-auto">
+          <p className="text-ink-muted text-base leading-relaxed max-w-xs mx-auto">
             Crie suas turmas, defina seu preço e receba alunos em um só lugar. Sem academia, sem matrícula.
           </p>
         </motion.div>
@@ -47,41 +47,45 @@ const Landing = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="w-full space-y-3 mb-10"
+          className="w-full space-y-3 mb-10 flex flex-col"
         >
-          <button
+          <Button
+            size="lg"
+            className="w-full h-14"
             onClick={() => navigate('/signup?role=professional')}
-            className="w-full h-14 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] glow-emerald-strong"
           >
-            <Shield className="w-5 h-5" />
+            <Shield className="w-5 h-5 mr-2" />
             Sou Profissional
-            <ArrowRight className="w-5 h-5" />
-          </button>
+            <ArrowRight className="w-5 h-5 ml-2" />
+          </Button>
 
-          <button
+          <Button
+            variant="secondary"
+            size="lg"
+            className="w-full h-14"
             onClick={() => navigate('/signup?role=student')}
-            className="w-full h-14 glass-surface rounded-2xl flex items-center justify-center gap-2 text-foreground font-medium hover:bg-white/[0.08] transition-all active:scale-[0.98]"
           >
-            <Users className="w-5 h-5" />
+            <Users className="w-5 h-5 mr-2" />
             Quero Treinar
-          </button>
+          </Button>
         </motion.div>
 
         {/* Login Link */}
-        <motion.p
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.6 }}
-          className="text-muted-foreground text-sm"
+          className="text-ink-muted text-sm text-center"
         >
           Já tem conta?{' '}
-          <button
+          <Button
+            variant="link"
+            className="px-1 h-auto"
             onClick={() => navigate('/login')}
-            className="text-emerald-400 font-medium hover:text-emerald-300 transition-colors"
           >
             Entrar
-          </button>
-        </motion.p>
+          </Button>
+        </motion.div>
       </div>
 
       {/* How it Works */}

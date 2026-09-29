@@ -10,6 +10,7 @@ import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import { useProfile } from '@/hooks/useProfile';
 import { useViewMode } from '@/contexts/ViewModeContext';
 import { RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const DashboardPro = () => {
   const { profile } = useProfile();
@@ -20,22 +21,24 @@ const DashboardPro = () => {
   const { setViewMode } = useViewMode();
   
   const ModeSwitch = () => (
-    <button 
+    <Button 
+      variant="pill"
+      size="sm"
+      className="gap-1.5 h-8 px-3"
       onClick={() => {
         setViewMode('student');
         navigate('/feed');
       }}
-      className="flex items-center gap-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-colors"
     >
       <RefreshCw className="w-3 h-3" /> Ver como Aluno
-    </button>
+    </Button>
   );
 
   if (isLoading) {
     return (
       <PageContainer title="Visão Geral" withBottomNav rightAction={<ModeSwitch />}>
         <div className="flex-1 flex items-center justify-center">
-          <Loader2 className="w-8 h-8 text-emerald-500 animate-spin" />
+          <Loader2 className="w-8 h-8 text-brand animate-spin" />
         </div>
       </PageContainer>
     );
@@ -81,31 +84,33 @@ const DashboardPro = () => {
       <div className="px-6 py-6 flex-1 flex flex-col space-y-6">
 
         {/* Share Banner (The most important action) */}
-        <div className="glass-card p-5 border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 to-transparent relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/20 blur-3xl rounded-full" />
+        <div className="bg-surface rounded-2xl p-5 border border-brand/30 shadow-[0_4px_24px_rgba(11,107,79,0.1)] relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-brand/10 blur-3xl rounded-full" />
           
-          <h3 className="text-sm font-semibold text-emerald-400 mb-1">Seu Link PÃºblico</h3>
-          <p className="text-xs text-muted-foreground mb-4 max-w-[250px]">
+          <h3 className="text-sm font-semibold text-brand mb-1">Seu Link PÃºblico</h3>
+          <p className="text-xs text-ink-muted mb-4 max-w-[250px]">
             Coloque este link na bio do seu Instagram para receber reservas automÃ¡ticas.
           </p>
 
           <div className="flex gap-2">
-            <div className="h-12 bg-black/40 rounded-xl px-4 flex items-center flex-1 font-mono text-xs border border-white/10 truncate select-all text-white/80">
+            <div className="h-12 bg-bg rounded-xl px-4 flex items-center flex-1 font-mono text-xs border border-line truncate select-all text-ink">
               riff.pro/@{publicSlug}
             </div>
-            <button 
+            <Button 
               onClick={handleCopyLink}
-              className="h-12 px-4 shrink-0 bg-emerald-500 hover:bg-emerald-400 text-black rounded-xl font-medium transition-colors flex items-center gap-2 glow-emerald"
+              className="shrink-0 font-medium"
             >
               {copied ? <CheckCircle2 className="w-4 h-4" /> : <Link2 className="w-4 h-4" />}
               {copied ? 'Copiado' : 'Copiar'}
-            </button>
-            <button 
+            </Button>
+            <Button 
+              variant="secondary"
+              size="icon"
               onClick={handleShare}
-              className="h-12 w-12 shrink-0 bg-white/5 hover:bg-white/10 text-foreground rounded-xl flex items-center justify-center transition-colors"
+              className="shrink-0"
             >
               <Share2 className="w-4 h-4" />
-            </button>
+            </Button>
           </div>
         </div>
 
