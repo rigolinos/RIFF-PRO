@@ -1,15 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useForm, useWatch } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { motion } from 'framer-motion';
-import { Check, Info, Upload } from 'lucide-react';
+import { Info, } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { useProfile } from '@/hooks/useProfile';
 import { PageContainer } from '@/components/layout/PageContainer';
-import { Logo } from "@/components/ui/logo";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';

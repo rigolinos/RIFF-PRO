@@ -1,9 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ShieldCheck, Star, Camera, Share2, ArrowLeft, CheckCircle2 } from 'lucide-react';
-import { toast } from 'sonner';
+import { Star, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
-import { motion } from 'framer-motion';
 
 import { usePublicProfile } from '@/hooks/usePublicProfile';
 import { SessionCard } from '@/components/cards/SessionCard';
@@ -38,18 +36,13 @@ export default function ProfessionalProfile() {
 
   const { profile, sessions, reviews } = data;
   const specialties = Array.isArray(profile.specialties) ? profile.specialties : []; 
-  const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
 
   const handleBookClick = (session: any) => {
     setSelectedSession(session);
     setIsCheckoutOpen(true);
   };
 
-  const handleInstagram = () => {
-    if (!profile.instagram_handle) return;
-    const handle = profile.instagram_handle.replace('@', '');
-    window.open(`https://instagram.com/${handle}`, '_blank');
-  };
+  
   
   // Find the next available session to reserve
   const nextSession = sessions.find((s: any) => s.current_participants < s.max_participants && s.status !== 'full');
@@ -88,7 +81,7 @@ export default function ProfessionalProfile() {
           )}
         </div>
 
-        <h1 className="text-2xl font-bold font-display text-ink leading-tight flex items-center justify-center gap-2 mb-1">
+        <h1 className="type-title text-ink leading-tight flex items-center justify-center gap-2 mb-1">
           {profile.full_name}
         </h1>
         
@@ -122,7 +115,7 @@ export default function ProfessionalProfile() {
           )}
           <div className="flex flex-col items-center">
             <span className="type-number text-lg text-ink">{profile.total_sessions_given || 0}</span>
-            <span className="type-label">Atividades Dadas</span>
+            <span className="type-label">Atividades Realizadas</span>
           </div>
           <div className="w-px h-8 bg-line" />
           <div className="flex flex-col items-center">

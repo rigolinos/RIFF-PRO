@@ -1,8 +1,6 @@
 ﻿import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { format, parseISO } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { Link2, Share2, Wallet, Users, LayoutDashboard, Calendar, ArrowRight, Loader2, CheckCircle2, RefreshCw } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Link2, Share2, Wallet, Users, Calendar, Loader2, CheckCircle2, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { PageContainer } from '@/components/layout/PageContainer';
@@ -19,19 +17,6 @@ export default function DashboardPro() {
   const navigate = useNavigate();
   const { setViewMode } = useViewMode();
 
-  const ModeSwitch = () => (
-    <Button 
-      variant="outline"
-      size="sm"
-      className="gap-1.5 h-8 px-3 rounded-full border-line text-ink"
-      onClick={() => {
-        setViewMode('student');
-        navigate('/feed');
-      }}
-    >
-      <RefreshCw className="w-3.5 h-3.5" /> Ver como Participante
-    </Button>
-  );
 
   if (isLoading) {
     return (
@@ -157,7 +142,7 @@ export default function DashboardPro() {
               background: 'repeating-linear-gradient(45deg, transparent 0 10px, var(--brand) 10px 12px)'
             }} />
             <div className="relative z-10">
-              <h3 className="font-display font-bold text-lg text-brand mb-1">Seu Link Público</h3>
+              <h3 className="type-subtitle text-brand mb-1">Seu Link Público</h3>
               <p className="text-sm text-ink-muted mb-4 max-w-[280px]">
                 Coloque este link na bio do seu Instagram para receber reservas automáticas.
               </p>
@@ -228,7 +213,7 @@ export default function DashboardPro() {
             <div className="bg-surface border border-line rounded-2xl p-4 flex flex-col shadow-sm">
               <div className="flex items-center gap-2 text-ink-muted mb-2">
                 <Calendar className="w-4 h-4 text-slate" />
-                <span className="type-label">Atividades Dadas</span>
+                <span className="type-label">Atividades Realizadas</span>
               </div>
               <div className="mt-auto">
                 <span className="type-number text-2xl text-ink">

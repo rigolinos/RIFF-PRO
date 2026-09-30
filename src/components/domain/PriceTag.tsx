@@ -8,7 +8,7 @@ interface PriceTagProps extends React.HTMLAttributes<HTMLDivElement> {
 export function PriceTag({ amount, freeLabel = 'Gratuito', className, ...props }: PriceTagProps) {
   if (amount === 0) {
     return (
-      <div className={cn("text-success font-display font-bold text-lg", className)} {...props}>
+      <div className={cn("text-success type-subtitle", className)} {...props}>
         {freeLabel}
       </div>
     );

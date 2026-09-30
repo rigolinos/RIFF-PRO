@@ -30,7 +30,7 @@ export function useDashboardMetrics() {
       if (!profileData) return { metrics, nextSession: null, todaySessions: [] };
 
       // Fetch next session using timezone-safe date
-      const { data: todaySessions } = await supabase
+      await supabase
         .from('sessions')
         .select('id, title, date, start_time, duration_minutes, location_name, current_participants, max_participants, status, category:categories(name, emoji)')
         .eq('professional_id', profileData.id)

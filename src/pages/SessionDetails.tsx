@@ -123,7 +123,7 @@ const SessionDetails = () => {
       <div className="px-5 py-6">
         {/* Title and Category */}
         <div className="flex justify-between items-start gap-4 mb-4">
-          <h1 className="font-display font-bold text-2xl text-ink leading-tight">
+          <h1 className="type-title text-ink leading-tight">
             {session.title}
           </h1>
           <div className="bg-elevated px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap text-ink border border-line">
@@ -177,7 +177,7 @@ const SessionDetails = () => {
         {/* Description */}
         {session.description && (
           <div className="mb-8">
-            <h3 className="font-display font-bold text-lg text-ink mb-2">Sobre a atividade</h3>
+            <h3 className="type-subtitle text-ink mb-2">Sobre a atividade</h3>
             <p className="text-ink-muted leading-relaxed text-sm whitespace-pre-wrap">
               {session.description}
             </p>
@@ -187,7 +187,7 @@ const SessionDetails = () => {
         {/* Requirements */}
         {session.what_to_bring && (
           <div className="mb-8">
-            <h3 className="font-display font-bold text-lg text-ink mb-3">O que levar</h3>
+            <h3 className="type-subtitle text-ink mb-3">O que levar</h3>
             <ul className="space-y-2">
               {session.what_to_bring.split(/\n|,/).map((req: string, i: number) => req.trim() ? (
                 <li key={i} className="flex items-start gap-2 text-sm text-ink-muted">
@@ -220,7 +220,7 @@ const SessionDetails = () => {
 
         {/* Policies */}
         <div className="mb-4">
-          <h3 className="font-display font-bold text-lg text-ink mb-2">Política de Cancelamento</h3>
+          <h3 className="type-subtitle text-ink mb-2">Política de Cancelamento</h3>
           <p className="text-sm text-ink-muted leading-relaxed">
             Cancelamentos podem ser feitos com reembolso integral até 4 horas antes do início da atividade.
             Em caso de chuva forte que inviabilize a prática (para atividades ao ar livre), a atividade será remarcada ou reembolsada.

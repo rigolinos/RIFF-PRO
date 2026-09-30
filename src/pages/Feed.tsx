@@ -42,7 +42,7 @@ export const Feed = () => {
       // capitalize first letter
       label = label.charAt(0).toUpperCase() + label.slice(1);
       
-      let dateGroupStr = session.date;
+      
       
       if (isToday(date)) {
         label = 'Hoje';
@@ -159,7 +159,7 @@ export const Feed = () => {
           <div className="space-y-8">
             {groupedSessions.map((group, groupIndex) => (
               <div key={group.dateGroupStr}>
-                <h3 className="font-display font-bold text-xl text-ink mb-4">{group.label}</h3>
+                <h3 className="type-subtitle text-ink mb-4">{group.label}</h3>
                 <div className="space-y-4">
                   {group.sessions.map((session, index) => (
                     <motion.div

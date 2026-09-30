@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import QRCode from 'react-qr-code';
-import { Copy, CheckCircle2, MessageCircle, Loader2, Calendar, Map, Check } from 'lucide-react';
+import { Copy, CheckCircle2, MessageCircle, Loader2, Calendar, Map } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -163,8 +163,7 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
     const details = encodeURIComponent(`Local: ${session.location_name}\n\nReservado via Riff`);
     const location = encodeURIComponent(session.location_address || session.location_name);
     // Simple Google Calendar link
-    const ds = session.date.replace(/-/g, '');
-    const ts = session.start_time.replace(/:/g, '').substring(0, 4);
+    
     // Simplified format for demo
     window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&details=${details}&location=${location}`, '_blank');
   };
@@ -204,7 +203,7 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
 
                   <div className="bg-surface border border-line rounded-2xl p-4 flex justify-between items-center shadow-sm">
                     <span className="text-ink-muted font-medium">Total a pagar</span>
-                    <span className="font-display font-bold text-xl text-accent">
+                    <span className="type-subtitle text-accent">
                       {isFree ? 'Gratuito' : `R$ ${session.price_per_slot.toFixed(2).replace('.', ',')}`}
                     </span>
                   </div>
@@ -310,7 +309,7 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
                 className="p-6 pt-8"
               >
                 <div className="text-center mb-6">
-                  <h2 className="font-display font-bold text-2xl text-ink">Reserva confirmada</h2>
+                  <h2 className="type-title text-ink">Reserva confirmada</h2>
                   <p className="text-ink-muted text-sm mt-1">Sua vaga está garantida!</p>
                 </div>
 
@@ -331,7 +330,7 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
                   )}
 
                   <p className="type-label text-brand mb-2">Seu Ingresso</p>
-                  <h3 className="font-display font-bold text-xl text-ink mb-1">{session.title}</h3>
+                  <h3 className="type-subtitle text-ink mb-1">{session.title}</h3>
                   <p className="text-ink-muted text-sm capitalize">
                     {dateStr} · {timeStr} · {session.location_name || 'A confirmar'}
                   </p>

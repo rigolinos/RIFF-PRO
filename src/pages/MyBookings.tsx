@@ -5,9 +5,7 @@ import { format } from 'date-fns';
 import { MapPin, MessageCircle, XCircle, Loader2, CalendarDays } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
-import { Link } from 'react-router-dom';
 import QRCode from 'react-qr-code';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 import { PageContainer } from '@/components/layout/PageContainer';
@@ -20,7 +18,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 const MyBookings = () => {
   const { profile } = useProfile();
-  const { bookings, isLoading, cancelBooking, isCanceling } = useBookings();
+  const { bookings, isLoading, cancelBooking } = useBookings();
   const [cancelingId, setCancelingId] = useState<string | null>(null);
   const [reviewBooking, setReviewBooking] = useState<any>(null);
 
@@ -143,7 +141,7 @@ const MyBookings = () => {
           <div className="flex justify-between items-start mb-4">
             <div>
               <Badge variant="pill" className="mb-2 shadow-none border-line">{booking.session.category?.emoji} {booking.session.category?.name}</Badge>
-              <h3 className="font-display font-bold text-xl text-ink leading-tight">
+              <h3 className="type-subtitle text-ink leading-tight">
                 {booking.session.title}
               </h3>
               <p className="text-sm text-ink-muted mt-1 font-medium">

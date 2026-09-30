@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Camera, RefreshCw, ImagePlus, Loader2 } from 'lucide-react';
+import { ImagePlus, Loader2 } from 'lucide-react';
 import { useForm, useWatch } from 'react-hook-form';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, ChevronLeft, Check, Sparkles, AlertTriangle, MessageCircle, MapPin, Calendar, Clock, DollarSign, Users } from 'lucide-react';
@@ -70,7 +70,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
     }
   });
 
-  const { watch, setValue, handleSubmit, register, reset } = form;
+  const { setValue, handleSubmit, register } = form;
   const formData = useWatch({ control: form.control });
 
   useEffect(() => {
@@ -82,13 +82,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
     }
   }, [formData, isEditMode]);
 
-  const handleClearDraft = () => {
-    localStorage.removeItem('riff-session-draft');
-    reset({
-      category_id: '', title: '', description: '', max_participants: 10, date: '', start_time: '', duration_minutes: 60, location_name: '', price_per_slot: 0, what_to_bring: '', cover_image_url: ''
-    });
-    toast.success('Rascunho apagado.');
-  };
+  
 
 
   const selectedCategorySlug = useMemo(() => {

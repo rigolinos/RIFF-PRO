@@ -1,13 +1,13 @@
 ﻿import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, Loader2, CheckCircle2, User, FileText, Check, X } from 'lucide-react';
+import { ArrowLeft, Loader2, User, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Avatar, StatusPill } from '@/components/domain';
+import { Avatar } from '@/components/domain';
 
 export default function SessionAttendance() {
   const { id } = useParams<{ id: string }>();
@@ -111,13 +111,13 @@ export default function SessionAttendance() {
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="font-display font-bold text-lg text-ink truncate max-w-[200px]">Encerrar Atividade</h1>
+        <h1 className="type-subtitle text-ink truncate max-w-[200px]">Encerrar Atividade</h1>
         <div className="w-10" />
       </div>
 
       <div className="p-6 space-y-6">
         <div>
-          <h2 className="font-display font-bold text-xl text-ink mb-1">{session.title}</h2>
+          <h2 className="type-subtitle text-ink mb-1">{session.title}</h2>
           <p className="text-sm text-ink-muted">{activeBookings.length} participantes inscritos</p>
         </div>
 

@@ -39,7 +39,7 @@ export function useBookings() {
   // Cancel a booking (student) — server enforces 4h rule and status transition
   const cancelBooking = useMutation({
     mutationFn: async (bookingId: string) => {
-      const { data, error, count } = await supabase
+      const { data, error } = await supabase
         .from('bookings')
         .update({
           status: 'cancelled_by_student',

@@ -7,7 +7,6 @@ import { toast } from 'sonner';
 
 import { useProfile } from '@/hooks/useProfile';
 import { PageContainer } from '@/components/layout/PageContainer';
-import { Logo } from "@/components/ui/logo";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 

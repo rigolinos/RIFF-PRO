@@ -55,7 +55,7 @@ export const SessionCard = ({ session, onBookClick }: SessionCardProps) => {
       <div className="p-4 space-y-3">
         <div className="flex justify-between items-start gap-2">
           <div>
-            <h3 className="font-display font-bold text-lg text-ink leading-tight mb-1">
+            <h3 className="type-subtitle text-ink leading-tight mb-1">
               {session.title}
             </h3>
             <div className="flex items-center gap-1 text-sm text-ink-muted">
