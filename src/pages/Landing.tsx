@@ -46,22 +46,22 @@ const Landing = () => {
         >
           <Button
             size="lg"
-            className="w-full h-14"
+            className="w-full h-14 relative group"
             onClick={() => navigate('/signup?role=professional')}
           >
-            <Shield className="w-5 h-5 mr-2" />
-            Sou Organizador
-            <ArrowRight className="w-5 h-5 ml-2" />
+            <Shield className="w-5 h-5 absolute left-6 opacity-80" />
+            <span className="flex-1 text-center">Sou Organizador</span>
+            <ArrowRight className="w-5 h-5 absolute right-6 opacity-80 group-hover:translate-x-1 transition-transform" />
           </Button>
 
           <Button
             variant="secondary"
             size="lg"
-            className="w-full h-14"
+            className="w-full h-14 relative"
             onClick={() => navigate('/signup?role=student')}
           >
-            <Users className="w-5 h-5 mr-2" />
-            Explorar Atividades
+            <Users className="w-5 h-5 absolute left-6 opacity-80" />
+            <span className="flex-1 text-center">Explorar Atividades</span>
           </Button>
         </motion.div>
 
