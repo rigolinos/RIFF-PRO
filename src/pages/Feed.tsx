@@ -6,6 +6,7 @@ import { format, isToday, isTomorrow, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 import { PageContainer } from '@/components/layout/PageContainer';
+import { ModeSwitcher } from '@/components/layout/ModeSwitcher';
 import { useSessions, useCities } from '@/hooks/useSessions';
 import { Drawer, DrawerTrigger, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { useEffect } from 'react';
@@ -85,7 +86,7 @@ export const Feed = () => {
   };
 
   return (
-    <PageContainer withBottomNav>
+    <PageContainer title={<ModeSwitcher />} withBottomNav>
       <div className="pt-12 pb-4 px-6 sticky top-0 z-30 bg-bg/90 backdrop-blur-xl border-b border-line">
         <div className="flex items-center justify-between mb-4">
           <div>

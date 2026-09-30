@@ -1,4 +1,4 @@
-﻿import { createContext, useContext, useState, ReactNode } from 'react';
+﻿import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useProfile } from '@/hooks/useProfile';
 
 type ViewMode = 'professional' | 'student';
@@ -13,23 +13,36 @@ const ViewModeContext = createContext<ViewModeContextType | undefined>(undefined
 
 export function ViewModeProvider({ children }: { children: ReactNode }) {
   const { profile } = useProfile();
-  const [manualMode, setManualMode] = useState<ViewMode | null>(null);
+  const [viewMode, setViewModeState] = useState<ViewMode>('student');
 
-  let viewMode: ViewMode = 'student';
-  if (manualMode) {
-    viewMode = manualMode;
-  } else if (profile?.role) {
-    const savedMode = localStorage.getItem('viewMode') as ViewMode;
-    if (savedMode && (savedMode === 'professional' || savedMode === 'student') && profile.role === 'professional') {
-      viewMode = savedMode;
-    } else {
-      viewMode = profile.role as ViewMode;
+  useEffect(() => {
+    if (!profile) return;
+    
+    // Default fallback based on profile
+    let defaultMode: ViewMode = profile.role === 'professional' ? 'professional' : 'student';
+    let currentMode = defaultMode;
+
+    try {
+      const saved = localStorage.getItem('riff-mode');
+      if (saved === 'professional' || saved === 'student') {
+        currentMode = saved as ViewMode;
+      } else {
+        localStorage.setItem('riff-mode', defaultMode);
+      }
+    } catch (e) {
+      console.error('Error reading riff-mode from localStorage', e);
     }
-  }
+    
+    setViewModeState(currentMode);
+  }, [profile]);
 
   const handleSetViewMode = (mode: ViewMode) => {
-    setManualMode(mode);
-    localStorage.setItem('viewMode', mode);
+    setViewModeState(mode);
+    try {
+      localStorage.setItem('riff-mode', mode);
+    } catch (e) {
+      console.error('Error writing riff-mode to localStorage', e);
+    }
   };
 
   return (

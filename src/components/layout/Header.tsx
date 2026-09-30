@@ -3,7 +3,7 @@ import { ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface HeaderProps {
-  title?: string;
+  title?: React.ReactNode;
   showBack?: boolean;
   onBack?: () => void;
   rightAction?: React.ReactNode;
@@ -37,7 +37,7 @@ export const Header = ({
         className
       )}
     >
-      <div className="flex items-center gap-3 w-1/3">
+      <div className="flex items-center gap-3 min-w-[3rem]">
         {showBack && (
           <button 
             onClick={handleBack}
@@ -49,15 +49,15 @@ export const Header = ({
         )}
       </div>
 
-      <div className="flex-1 flex justify-center w-1/3">
+      <div className="flex-1 flex justify-center px-2">
         {title && (
-          <h1 className="type-subtitle truncate">
+          <h1 className="type-subtitle text-center">
             {title}
           </h1>
         )}
       </div>
 
-      <div className="flex justify-end w-1/3">
+      <div className="flex justify-end min-w-[3rem]">
         {rightAction}
       </div>
     </div>

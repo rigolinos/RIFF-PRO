@@ -195,7 +195,7 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
                     </div>
                     <div>
                       <h3 className="type-title">{session.title}</h3>
-                      <p className="text-sm text-ink-muted mt-1 capitalize">
+                      <p className="text-sm text-ink-muted mt-1">
                         {dateStr} · {timeStr}
                       </p>
                     </div>
@@ -331,7 +331,7 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
 
                   <p className="type-label text-brand mb-2">Seu Ingresso</p>
                   <h3 className="type-subtitle text-ink mb-1">{session.title}</h3>
-                  <p className="text-ink-muted text-sm capitalize">
+                  <p className="text-ink-muted text-sm">
                     {dateStr} · {timeStr} · {session.location_name || 'A confirmar'}
                   </p>
 

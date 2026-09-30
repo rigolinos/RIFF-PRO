@@ -201,14 +201,16 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
         </div>
 
         {/* MOBILE PREVIEW SECTION (Only visible on small screens) */}
-        <div className="block lg:hidden px-6 pt-6 pb-2 border-b border-line bg-white/[0.02]">
+        {step > 1 && (
+          <div className="block lg:hidden px-6 pt-6 pb-2 border-b border-line bg-white/[0.02]">
            <p className="type-label text-brand mb-3 flex items-center gap-1.5"><Sparkles className="w-3 h-3" /> Prévia ao Vivo</p>
            <div className="scale-95 origin-top">
              <SessionCard session={previewSession as unknown as SessionWithJoins} onBookClick={() => {}} />
-           </div>
-        </div>
+                        </div>
+          </div>
+          )}
 
-        <ScrollArea className="flex-1 overflow-y-auto hide-scrollbar p-6">
+          <ScrollArea className="flex-1 overflow-y-auto hide-scrollbar p-6">
           <form id="session-form" onSubmit={handleSubmit(onFinalSubmit)} className="space-y-6 pb-24">
             <AnimatePresence mode="wait">
               
@@ -338,7 +340,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-ink">Capacidade (Vagas)</label>
+                    <label className="text-sm font-medium text-ink">{formDataKind ? KINDS[formDataKind as ActivityKind]?.capacityLabel : 'Capacidade (Vagas)'}</label>
                     <div className="relative">
                       <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted" />
                       <Input {...register('max_participants')} type="number" min="1" className="h-12 pl-10 bg-surface border-line text-base focus:border-brand/50" />

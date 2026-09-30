@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { CheckoutModal } from '@/components/checkout/CheckoutModal';
 import { Button } from '@/components/ui/button';
+import { ActivityKind } from '@/lib/copy';
 import { CoverImage, Avatar, SpotsMeter, PriceTag, StatusPill, RatingBadge } from '@/components/domain';
 
 const SessionDetails = () => {
@@ -88,7 +89,8 @@ const SessionDetails = () => {
       <div className="relative h-64 md:h-80">
         <CoverImage 
           src={session.cover_image_url} 
-          categorySlug={category?.slug} 
+          categorySlug={category?.slug}
+          kind={session.kind as ActivityKind} 
           className="h-full"
         />
         
@@ -114,7 +116,7 @@ const SessionDetails = () => {
           <div className="flex gap-2">
             <div className="bg-surface/90 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-line flex items-center gap-1.5 shadow-1">
               <Calendar className="w-4 h-4 text-brand" />
-              <span className="text-sm font-semibold capitalize text-ink">{dateStr}</span>
+              <span className="text-sm font-semibold text-ink">{dateStr}</span>
             </div>
           </div>
         </div>

@@ -1,13 +1,26 @@
 ﻿import { cn } from '@/lib/utils';
-import { Dumbbell } from 'lucide-react';
+import { BookOpen, Trophy, Users, Calendar, Sparkles } from 'lucide-react';
+import { ActivityKind } from '@/lib/copy';
 
 interface CoverImageProps extends React.HTMLAttributes<HTMLDivElement> {
   src?: string | null;
   categorySlug?: string;
+  kind?: ActivityKind | null;
   fallbackIcon?: React.ReactNode;
 }
 
-export function CoverImage({ src, categorySlug, fallbackIcon, className, children, ...props }: CoverImageProps) {
+export function CoverImage({ src, categorySlug, kind, fallbackIcon, className, children, ...props }: CoverImageProps) {
+  const getKindIcon = () => {
+    if (fallbackIcon) return fallbackIcon;
+    switch (kind) {
+      case 'match': return <Users className="w-16 h-16" />;
+      case 'tournament': return <Trophy className="w-16 h-16" />;
+      case 'event': return <Calendar className="w-16 h-16" />;
+      case 'class': return <BookOpen className="w-16 h-16" />;
+      case 'other': return <Sparkles className="w-16 h-16" />;
+      default: return <Sparkles className="w-16 h-16" />;
+    }
+  };
   // Gradients for fallback based on category
   const getGradient = (slug?: string) => {
     switch (slug) {
@@ -40,7 +53,7 @@ export function CoverImage({ src, categorySlug, fallbackIcon, className, childre
       ) : (
         <div className={cn("w-full h-full bg-gradient-to-br flex items-center justify-center", getGradient(categorySlug))}>
           <div className="text-bg/20 scale-150">
-            {fallbackIcon || <Dumbbell className="w-16 h-16" />}
+            {getKindIcon()}
           </div>
         </div>
       )}

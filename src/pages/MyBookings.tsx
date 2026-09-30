@@ -160,7 +160,7 @@ const MyBookings = () => {
             <div className="flex-1 space-y-2">
               <div className="flex items-center gap-2 text-ink-muted">
                 <CalendarDays className="w-4 h-4" />
-                <p className="text-sm font-semibold capitalize text-ink">{dateStr} • {timeStr}</p>
+                <p className="text-sm font-semibold text-ink">{dateStr} • {timeStr}</p>
               </div>
               <div className="flex items-center gap-2 text-ink-muted">
                 <MapPin className="w-4 h-4 shrink-0" />

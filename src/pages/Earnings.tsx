@@ -115,15 +115,15 @@ export default function Earnings() {
                 return (
                   <div key={t.id} className="glass-card p-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${isPaid ? 'bg-brand/10 text-brand' : 'bg-accent/15 text-accent'}`}>
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${isPaid ? 'bg-brand/10 text-brand' : 'bg-surface border border-line text-ink-muted'}`}>
                         {isPaid ? <ArrowDownLeft className="w-5 h-5" /> : <Clock className="w-5 h-5" />}
                       </div>
                       <div className="min-w-0">
                         <p className="font-semibold text-sm text-foreground truncate">
-                          {t.student?.full_name}
+                          {t.student?.full_name?.split(' ').map(n => n.charAt(0).toUpperCase() + n.slice(1).toLowerCase()).join(' ') || 'Participante'}
                         </p>
                         <div className="flex items-center gap-1.5 mt-0.5">
-                          <span className={`type-label px-1.5 py-0.5 rounded ${isPaid ? 'bg-brand/20 text-brand' : 'bg-accent/15 text-accent'}`}>
+                          <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-md ${isPaid ? 'bg-brand/10 text-brand-ink' : 'bg-surface border border-line text-ink-muted'}`}>
                             {isPaid ? 'Pix Recebido' : 'Pendente'}
                           </span>
                           <span className="text-xs text-muted-foreground truncate">

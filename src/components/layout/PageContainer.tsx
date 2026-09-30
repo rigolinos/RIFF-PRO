@@ -3,7 +3,7 @@ import { Header } from './Header';
 
 interface PageContainerProps {
   children: React.ReactNode;
-  title?: string;
+  title?: React.ReactNode;
   showBack?: boolean;
   onBack?: () => void;
   rightAction?: React.ReactNode;

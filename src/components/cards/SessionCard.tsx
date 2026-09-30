@@ -33,11 +33,12 @@ export const SessionCard = ({ session, onBookClick }: SessionCardProps) => {
     <Link to={`/session/${session.id}`} className="block overflow-hidden rounded-[20px] bg-surface border border-line active:scale-[.98] transition-transform">
       <CoverImage 
         src={session.cover_image_url} 
-        categorySlug={category?.slug} 
+        categorySlug={category?.slug}
+          kind={session.kind as ActivityKind} 
         className="aspect-[16/9]"
       >
         <div className="absolute top-3 left-3 flex gap-2">
-          <Badge variant="secondary" className="shadow-sm bg-surface/90 text-ink backdrop-blur-sm border-0 font-bold capitalize">
+          <Badge variant="secondary" className="shadow-sm bg-surface/90 text-ink backdrop-blur-sm border-0 font-bold">
             {dateStr}
           </Badge>
           <Badge variant="secondary" className="shadow-sm bg-surface/90 text-ink backdrop-blur-sm border-0 font-bold flex items-center gap-1">

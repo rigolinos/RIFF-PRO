@@ -11,7 +11,7 @@ export const BottomNav = () => {
   const APP_ROUTES = ['/feed', '/explore', '/my-bookings', '/dashboard', '/my-sessions', '/create-session', '/earnings', '/profile'];
   
   // Exclude /session/:id
-  if (currentPath.startsWith('/session/')) return null;
+  if (currentPath.startsWith('/session/') || currentPath.startsWith('/create-session') || currentPath.startsWith('/edit-session')) return null;
   
   const showNav = APP_ROUTES.some(p => currentPath === p || currentPath.startsWith(p + '/'));
 

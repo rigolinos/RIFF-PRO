@@ -3,7 +3,7 @@ import { format, parseISO, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
   Users, Clock, Loader2, CheckCircle2,
-  Edit, XCircle, Copy, Share2, ClipboardCheck
+  Edit, XCircle, Copy, Share2, ClipboardCheck, CalendarDays, AlertCircle
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -13,6 +13,7 @@ import { PageContainer } from '@/components/layout/PageContainer';
 import { useProSessions } from '@/hooks/useProSessions';
 import { useSessions } from '@/hooks/useSessions';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/domain';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -144,15 +145,17 @@ const MySessionsPro = () => {
             <Loader2 className="w-8 h-8 text-brand animate-spin" />
           </div>
         ) : !sessions || sessions.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-3xl mx-auto mb-4">📝</div>
-            <h3 className="type-subtitle mb-1">Nenhuma atividade criada</h3>
-            <p className="text-ink-muted text-sm">Crie sua primeira atividade e comece a receber participantes.</p>
-          </div>
+                    <EmptyState 
+            icon={CalendarDays}
+            title="Nenhuma atividade criada" 
+            description="Você ainda não criou nenhuma atividade." 
+            action={{ label: 'Criar Atividade', onClick: () => navigate('/create-session') }} 
+          />
         ) : (
           <div className="space-y-4">
             {sessions.map((session, i) => {
-              const dateStr = format(parseISO(session.date), "EEE, d 'de' MMM", { locale: ptBR });
+              const _dateStr = format(parseISO(session.date), "EEE, d 'de' MMM", { locale: ptBR });
+              const dateStr = _dateStr.charAt(0).toUpperCase() + _dateStr.slice(1);
               const timeStr = session.start_time.substring(0, 5);
               const isFull = (session.current_participants ?? 0) >= (session.max_participants ?? 1);
               const past = isPast(session);
