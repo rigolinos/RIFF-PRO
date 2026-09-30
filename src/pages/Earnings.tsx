@@ -97,7 +97,7 @@ export default function Earnings() {
 
         {/* Transactions List */}
         <div className="flex-1">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+          <h3 className="type-label text-muted-foreground mb-4">
             Extrato Recente
           </h3>
           
@@ -123,7 +123,7 @@ export default function Earnings() {
                           {t.student?.full_name}
                         </p>
                         <div className="flex items-center gap-1.5 mt-0.5">
-                          <span className={`text-xs uppercase font-bold px-1.5 py-0.5 rounded ${isPaid ? 'bg-brand/20 text-brand' : 'bg-accent/15 text-accent'}`}>
+                          <span className={`type-label px-1.5 py-0.5 rounded ${isPaid ? 'bg-brand/20 text-brand' : 'bg-accent/15 text-accent'}`}>
                             {isPaid ? 'Pix Recebido' : 'Pendente'}
                           </span>
                           <span className="text-xs text-muted-foreground truncate">

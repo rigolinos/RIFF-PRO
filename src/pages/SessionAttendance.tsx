@@ -54,7 +54,7 @@ export default function SessionAttendance() {
   }
 
   if (!session) {
-    return <div className="p-6 text-center text-ink-muted">Aula não encontrada.</div>;
+    return <div className="p-6 text-center text-ink-muted">Atividade não encontrada.</div>;
   }
 
   const activeBookings = session.bookings?.filter((b: any) => b.status !== 'cancelled') || [];
@@ -71,10 +71,10 @@ export default function SessionAttendance() {
 
       if (error) throw error;
 
-      toast.success('Aula encerrada com sucesso!');
+      toast.success('Atividade encerrada com sucesso!');
       navigate(-1);
     } catch (error: any) {
-      toast.error(error.message || 'Erro ao encerrar aula.');
+      toast.error(error.message || 'Erro ao encerrar atividade.');
     } finally {
       setIsClosing(false);
     }
@@ -111,7 +111,7 @@ export default function SessionAttendance() {
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="font-display font-bold text-lg text-ink truncate max-w-[200px]">Encerrar Aula</h1>
+        <h1 className="font-display font-bold text-lg text-ink truncate max-w-[200px]">Encerrar Atividade</h1>
         <div className="w-10" />
       </div>
 
@@ -124,7 +124,7 @@ export default function SessionAttendance() {
         {activeBookings.length === 0 ? (
           <div className="p-8 text-center bg-surface border border-line rounded-2xl">
             <User className="w-8 h-8 text-slate mx-auto mb-3" />
-            <p className="text-sm text-ink-muted">Nenhum participante inscrito nesta aula.</p>
+            <p className="text-sm text-ink-muted">Nenhum participante inscrito nesta atividade.</p>
           </div>
         ) : (
           <div className="space-y-4">

@@ -23,12 +23,12 @@ import { Button } from '@/components/ui/button';
 const ERROR_MESSAGES: Record<string, string> = {
   unauthenticated: 'Você precisa estar logado para reservar.',
   profile_not_found: 'Perfil não encontrado. Faça login novamente.',
-  session_not_found: 'Aula não encontrada.',
-  session_unavailable: 'Esta aula não está mais disponível.',
-  session_started: 'Esta aula já começou.',
+  session_not_found: 'Atividade não encontrada.',
+  session_unavailable: 'Esta atividade não está mais disponível.',
+  session_started: 'Esta atividade já começou.',
   session_full: 'Não há mais vagas disponíveis.',
-  self_booking: 'Você não pode reservar sua própria aula.',
-  already_booked: 'Você já reservou esta aula.',
+  self_booking: 'Você não pode reservar sua própria atividade.',
+  already_booked: 'Você já reservou esta atividade.',
 };
 
 interface PaymentInfo {
@@ -38,8 +38,13 @@ interface PaymentInfo {
   pro_name: string | null;
 }
 
+import type { Tables } from '@/integrations/supabase/types';
+
 interface CheckoutModalProps {
-  session: any;
+  session: Tables<'sessions'> & {
+    professional?: { id: string; full_name: string | null; avatar_url: string | null; public_slug: string | null; } | null;
+    category?: { name: string; emoji: string | null; slug: string | null; } | null;
+  };
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
@@ -139,7 +144,7 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
     const proName = paymentInfo?.pro_name?.split(' ')[0] || 'Prof';
     const text = encodeURIComponent(
       `Olá ${proName}! Aqui é o(a) ${studentName}. ` +
-      `Acabei de reservar a aula "${session.category?.name || session.title}" pelo Riff Pro. ` +
+      `Acabei de reservar a atividade "${session.category?.name || session.title}" pelo Riff. ` +
       `Segue o comprovante do Pix!`
     );
 
@@ -154,8 +159,8 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
 
   const generateCalendarLink = () => {
     // Generate an ICS or Google Calendar link
-    const text = encodeURIComponent(`Aula: ${session.title}`);
-    const details = encodeURIComponent(`Local: ${session.location_name}\n\nReservado via Riff Pro`);
+    const text = encodeURIComponent(`Atividade: ${session.title}`);
+    const details = encodeURIComponent(`Local: ${session.location_name}\n\nReservado via Riff`);
     const location = encodeURIComponent(session.location_address || session.location_name);
     // Simple Google Calendar link
     const ds = session.date.replace(/-/g, '');
@@ -325,7 +330,7 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
                     </motion.div>
                   )}
 
-                  <p className="text-brand text-xs font-bold uppercase tracking-wider mb-2">Seu Ingresso</p>
+                  <p className="type-label text-brand mb-2">Seu Ingresso</p>
                   <h3 className="font-display font-bold text-xl text-ink mb-1">{session.title}</h3>
                   <p className="text-ink-muted text-sm capitalize">
                     {dateStr} · {timeStr} · {session.location_name || 'A confirmar'}

@@ -43,9 +43,9 @@ export function ReviewModal({ booking, isOpen, onClose, onSuccess }: ReviewModal
 
       if (error) {
         if (error.code === '23505') {
-          toast.error('Você já avaliou esta aula.');
+          toast.error('Você já avaliou esta atividade.');
         } else if (error.message?.includes('new row violates row-level security')) {
-          toast.error('Você só pode avaliar aulas concluídas que participou.');
+          toast.error('Você só pode avaliar atividades concluídas que participou.');
         } else {
           throw error;
         }
@@ -56,7 +56,7 @@ export function ReviewModal({ booking, isOpen, onClose, onSuccess }: ReviewModal
         toast.success('Avaliação enviada! Obrigado pelo feedback.');
         onSuccess();
       }
-    } catch {
+    } catch (error: any) {
       console.error(error);
       toast.error('Erro ao enviar avaliação.');
     } finally {
@@ -69,7 +69,7 @@ export function ReviewModal({ booking, isOpen, onClose, onSuccess }: ReviewModal
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="w-[90vw] max-w-md rounded-3xl bg-background border border-white/10 p-6">
         <DialogHeader className="text-left mb-2">
-          <DialogTitle className="text-xl font-bold">Avaliar Aula</DialogTitle>
+          <DialogTitle className="text-xl font-bold">Avaliar Atividade</DialogTitle>
           <DialogDescription className="text-muted-foreground">
             Como foi a sua experiência com {booking.professional?.full_name}?
           </DialogDescription>
@@ -95,14 +95,14 @@ export function ReviewModal({ booking, isOpen, onClose, onSuccess }: ReviewModal
           </div>
 
           <div className="w-full space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+            <label className="type-label text-muted-foreground flex items-center gap-2">
               <MessageSquare className="w-3.5 h-3.5" />
               Comentário (Opcional)
             </label>
             <Textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder="Conte o que achou da aula..."
+              placeholder="Conte o que achou da atividade..."
               className="bg-white/[0.02] border-white/10 resize-none h-24"
             />
           </div>

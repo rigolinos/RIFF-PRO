@@ -33,7 +33,7 @@ export default function Explore() {
         if (!error && data) {
           setProfessionals(data);
         }
-      } catch {
+      } catch (err: any) {
         console.error(err);
       } finally {
         setIsLoading(false);
@@ -106,7 +106,7 @@ export default function Explore() {
                           </span>
                         </div>
                       ) : (
-                        <span className="text-xs font-bold uppercase tracking-wider text-brand bg-brand/10 px-2 py-0.5 rounded-sm">
+                        <span className="type-label text-brand bg-brand/10 px-2 py-0.5 rounded-sm">
                           Novo
                         </span>
                       )}

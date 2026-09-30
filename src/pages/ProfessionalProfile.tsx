@@ -57,7 +57,7 @@ export default function ProfessionalProfile() {
   return (
     <div className="min-h-[100dvh] bg-bg text-ink pb-28 w-full max-w-[480px] mx-auto overflow-x-hidden relative">
       <Helmet>
-        <title>{profile.full_name} | Riff Pro</title>
+        <title>{profile.full_name} | Riff</title>
         <meta name="description" content={profile.bio || "Confira os horários disponíveis e reserve sua vaga online."} />
         <meta property="og:image" content={profile.avatar_url || 'https://riff.pro/og-image.jpg'} />
       </Helmet>
@@ -122,7 +122,7 @@ export default function ProfessionalProfile() {
           )}
           <div className="flex flex-col items-center">
             <span className="type-number text-lg text-ink">{profile.total_sessions_given || 0}</span>
-            <span className="type-label">Aulas Dadas</span>
+            <span className="type-label">Atividades Dadas</span>
           </div>
           <div className="w-px h-8 bg-line" />
           <div className="flex flex-col items-center">
@@ -140,10 +140,10 @@ export default function ProfessionalProfile() {
       </div>
 
       <div className="px-5 mb-8">
-        <h2 className="type-subtitle mb-4">Próximas aulas</h2>
+        <h2 className="type-subtitle mb-4">Próximas atividades</h2>
         {sessions.length === 0 ? (
           <EmptyState 
-            title="Nenhuma aula programada" 
+            title="Nenhuma atividade programada" 
             description="O organizador ainda não possui turmas abertas." 
           />
         ) : (
@@ -195,7 +195,7 @@ export default function ProfessionalProfile() {
               className="w-full shadow-[var(--shadow-cta)] font-semibold"
               onClick={() => handleBookClick(nextSession)}
             >
-              Reservar Próxima Aula
+              Reservar Próxima Atividade
             </Button>
           </div>
         </div>

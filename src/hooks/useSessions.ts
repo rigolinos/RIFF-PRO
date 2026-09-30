@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+﻿import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useProfile } from './useProfile';
 import type { TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
@@ -34,28 +34,6 @@ export function useSessions() {
       return data;
     },
   });
-
-export function useSessionById(id: string) {
-  return useQuery({
-      queryKey: ['sessions', id],
-      queryFn: async () => {
-        const { data, error } = await supabase
-          .from('sessions')
-          .select(`
-            id, title, description, date, start_time, duration_minutes,
-            location_name, location_address, max_participants, current_participants,
-            price_per_slot, status, session_type, skill_level, category_id, what_to_bring,
-            professional:profiles(id, full_name, avatar_url, rating_avg, public_slug),
-            category:categories(name, icon, emoji)
-          `)
-          .eq('id', id)
-          .single();
-        if (error) throw error;
-        return data;
-      },
-      enabled: !!id,
-    });
-  };
 
   const createSession = useMutation({
     mutationFn: async (sessionData: Omit<TablesInsert<'sessions'>, 'professional_id'>) => {
@@ -98,4 +76,25 @@ export function useSessionById(id: string) {
     updateSession: updateSession.mutateAsync,
     isUpdating: updateSession.isPending,
   };
+}
+
+
+export function useSessionById(id: string) {
+  return useQuery({
+    queryKey: ['sessions', id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('sessions')
+        .select(`
+          *,
+          professional:profiles(id, full_name, avatar_url, rating_avg, public_slug),
+          category:categories(name, emoji)
+        `)
+        .eq('id', id)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id
+  });
 }

@@ -95,10 +95,10 @@ export function useProSessions() {
 
       if (error) {
         if (error.message?.includes('session_not_started')) {
-          throw new Error('A aula ainda não começou. Aguarde o horário de início.');
+          throw new Error('A atividade ainda não começou. Aguarde o horário de início.');
         }
         if (error.message?.includes('forbidden_or_invalid_state')) {
-          throw new Error('Sem permissão ou a aula já foi encerrada.');
+          throw new Error('Sem permissão ou a atividade já foi encerrada.');
         }
         throw error;
       }

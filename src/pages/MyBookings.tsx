@@ -94,7 +94,7 @@ const MyBookings = () => {
     const hoursDifference = differenceInHours(sessionDate, new Date());
 
     if (hoursDifference < 4) {
-      toast.error('Faltam menos de 4 horas para a aula. Entre em contato direto com o organizador para cancelar.');
+      toast.error('Faltam menos de 4 horas para a atividade. Entre em contato direto com o organizador para cancelar.');
       return;
     }
 
@@ -125,7 +125,7 @@ const MyBookings = () => {
     const effectiveStatus = (isPast && !booking.status.startsWith('cancelled')) ? 'completed' : booking.status;
 
     if (effectiveStatus === 'cancelled_by_student') { statusText = 'Cancelada por você'; statusColor = 'text-danger bg-danger/15 border-danger'; }
-    else if (effectiveStatus === 'cancelled_by_pro') { statusText = 'Aula cancelada'; statusColor = 'text-danger bg-danger/15 border-danger'; }
+    else if (effectiveStatus === 'cancelled_by_pro') { statusText = 'Atividade cancelada'; statusColor = 'text-danger bg-danger/15 border-danger'; }
     else if (effectiveStatus === 'completed') { statusText = 'Concluída'; statusColor = 'text-ink-muted bg-white/5 border-line'; }
     else if (booking.payment_status === 'pending') { statusText = 'Aguardando Pagamento'; statusColor = 'text-accent bg-accent/15 border-accent/20'; }
     else if (booking.payment_status === 'paid') { statusText = 'Confirmada'; statusColor = 'text-brand bg-brand/10 border-brand/20'; }
@@ -204,7 +204,7 @@ const MyBookings = () => {
                 onClick={() => setReviewBooking(booking)}
                 className="flex-1 h-10 rounded-lg bg-brand/10 text-brand hover:bg-brand/20 font-medium text-sm transition-colors flex items-center justify-center gap-2"
               >
-                Avaliar Aula
+                Avaliar Atividade
               </button>
             </div>
           )
@@ -224,7 +224,7 @@ const MyBookings = () => {
           <Tabs defaultValue="upcoming" className="w-full">
             <TabsList className="w-full bg-white/[0.05] border border-line h-12 rounded-xl mb-6 p-1">
               <TabsTrigger value="upcoming" className="flex-1 rounded-lg data-[state=active]:bg-brand data-[state=active]:text-brand-ink text-ink-muted font-medium transition-all">
-                Próximas Aulas
+                Próximas Atividades
               </TabsTrigger>
               <TabsTrigger value="history" className="flex-1 rounded-lg data-[state=active]:bg-line data-[state=active]:text-ink text-ink-muted font-medium transition-all">
                 Histórico
@@ -237,7 +237,7 @@ const MyBookings = () => {
                   {upcoming.length === 0 ? (
                     <div className="text-center py-12">
                       <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-3xl mx-auto mb-4">📅</div>
-                      <h3 className="text-lg font-semibold text-ink mb-1">Nenhuma aula agendada</h3>
+                      <h3 className="text-lg font-semibold text-ink mb-1">Nenhuma atividade agendada</h3>
                       <p className="text-ink-muted text-sm">Que tal explorar novas turmas e agendar seu próximo treino?</p>
                     </div>
                   ) : (
@@ -250,7 +250,7 @@ const MyBookings = () => {
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                   {history.length === 0 ? (
                     <div className="text-center py-12 text-ink-muted">
-                      Seu histórico de aulas aparecerá aqui.
+                      Seu histórico de atividades aparecerá aqui.
                     </div>
                   ) : (
                     history.map(b => renderBookingCard(b, true))

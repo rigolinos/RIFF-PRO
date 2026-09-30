@@ -604,7 +604,7 @@ const Login = () => {
 
 
 
-        <p className="text-muted-foreground text-sm mt-1">Acesse sua conta Riff Pro</p>
+        <p className="text-muted-foreground text-sm mt-1">Acesse sua conta Riff</p>
 
 
 

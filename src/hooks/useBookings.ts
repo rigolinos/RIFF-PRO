@@ -51,7 +51,7 @@ export function useBookings() {
       if (error) {
         // Map server-side error codes to user-friendly messages
         if (error.message?.includes('late_cancellation')) {
-          throw new Error('Cancelamento tardio: só é possível cancelar até 4 horas antes da aula.');
+          throw new Error('Cancelamento tardio: só é possível cancelar até 4 horas antes da atividade.');
         }
         if (error.message?.includes('invalid_status_transition')) {
           throw new Error('Esta reserva não pode mais ser cancelada.');

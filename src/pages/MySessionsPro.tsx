@@ -63,10 +63,10 @@ const MySessionsPro = () => {
         notes: sessionNotes || undefined,
       });
 
-      toast.success('Aula encerrada com sucesso!');
+      toast.success('Atividade encerrada com sucesso!');
       setSelectedSession(null);
     } catch (error: any) {
-      toast.error(error.message || 'Erro ao encerrar aula.');
+      toast.error(error.message || 'Erro ao encerrar atividade.');
     } finally {
       setIsClosing(false);
     }
@@ -83,7 +83,7 @@ const MySessionsPro = () => {
         const dateStr = format(parseISO(session.date), "dd/MM", { locale: ptBR });
         const timeStr = session.start_time.substring(0, 5);
         const text = encodeURIComponent(
-          `Olá turma! Infelizmente precisei cancelar a aula "${session.title}" do dia ${dateStr} às ${timeStr}. Peço desculpas pelo inconveniente!`
+          `Olá turma! Infelizmente precisei cancelar a atividade "${session.title}" do dia ${dateStr} às ${timeStr}. Peço desculpas pelo inconveniente!`
         );
         window.open(`https://wa.me/?text=${text}`, '_blank');
       }
@@ -119,9 +119,9 @@ const MySessionsPro = () => {
         price_per_slot: session.price_per_slot,
         status: 'active',
       });
-      toast.success(`Aula duplicada para ${format(parseISO(nextWeekDate), "EEE, d 'de' MMM", { locale: ptBR })}!`);
+      toast.success(`Atividade duplicada para ${format(parseISO(nextWeekDate), "EEE, d 'de' MMM", { locale: ptBR })}!`);
     } catch (error: any) {
-      toast.error(error.message || 'Erro ao duplicar aula.');
+      toast.error(error.message || 'Erro ao duplicar atividade.');
     } finally {
       setIsDuplicating(null);
     }
@@ -132,7 +132,7 @@ const MySessionsPro = () => {
   const isCompleted = (s: any) => s.status === 'completed';
 
   return (
-    <PageContainer title="Minhas Aulas" withBottomNav>
+    <PageContainer title="Minhas Atividades" withBottomNav>
       <div className="px-6 py-6 flex-1 flex flex-col">
         {isLoading ? (
           <div className="flex-1 flex items-center justify-center">
@@ -141,7 +141,7 @@ const MySessionsPro = () => {
         ) : !sessions || sessions.length === 0 ? (
           <div className="text-center py-12">
             <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-3xl mx-auto mb-4">📝</div>
-            <h3 className="text-lg font-semibold text-ink mb-1">Nenhuma aula criada</h3>
+            <h3 className="text-lg font-semibold text-ink mb-1">Nenhuma atividade criada</h3>
             <p className="text-ink-muted text-sm">Crie sua primeira turma e comece a receber participantes.</p>
           </div>
         ) : (
@@ -297,7 +297,7 @@ const MySessionsPro = () => {
             <SheetTitle className="text-xl">{selectedSession?.title}</SheetTitle>
             <SheetDescription className="text-ink-muted mt-1">
               {isPast(selectedSession || { date: '2099-01-01', start_time: '00:00' }) && !isCancelled(selectedSession || {}) && !isCompleted(selectedSession || {})
-                ? 'Registre a presença e encerre a aula'
+                ? 'Registre a presença e encerre a atividade'
                 : `${selectedSession?.current_participants || 0} de ${selectedSession?.max_participants} inscritos`
               }
             </SheetDescription>
@@ -381,7 +381,7 @@ const MySessionsPro = () => {
                     <textarea
                       value={sessionNotes}
                       onChange={(e) => setSessionNotes(e.target.value)}
-                      placeholder="Algo sobre a aula de hoje..."
+                      placeholder="Algo sobre a atividade de hoje..."
                       className="w-full h-20 text-sm bg-white/5 border border-line rounded-xl px-4 py-3 resize-none text-ink placeholder:text-ink-muted"
                     />
                   </div>
@@ -390,12 +390,12 @@ const MySessionsPro = () => {
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button variant="outline" className="flex-1 h-12 border-danger text-danger hover:bg-danger/15">
-                          Aula não aconteceu
+                          Atividade não aconteceu
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent className="bg-bg border-line">
                         <AlertDialogHeader>
-                          <AlertDialogTitle>A aula não aconteceu?</AlertDialogTitle>
+                          <AlertDialogTitle>A atividade não aconteceu?</AlertDialogTitle>
                           <AlertDialogDescription>
                             Todas as reservas serão canceladas e os participantes notificados.
                           </AlertDialogDescription>
@@ -406,7 +406,7 @@ const MySessionsPro = () => {
                             onClick={async () => {
                               try {
                                 await closeSession({ sessionId: selectedSession.id, attendance: [], happened: false });
-                                toast.success('Aula marcada como não realizada.');
+                                toast.success('Atividade marcada como não realizada.');
                                 setSelectedSession(null);
                               } catch (e: any) {
                                 toast.error(e.message);
@@ -425,7 +425,7 @@ const MySessionsPro = () => {
                       disabled={isClosing}
                       className="flex-1 h-12 bg-brand hover:bg-brand text-brand-ink font-bold glow-emerald"
                     >
-                      {isClosing ? <Loader2 className="w-5 h-5 animate-spin" /> : '✅ Encerrar Aula'}
+                      {isClosing ? <Loader2 className="w-5 h-5 animate-spin" /> : '✅ Encerrar Atividade'}
                     </Button>
                   </div>
                 </div>

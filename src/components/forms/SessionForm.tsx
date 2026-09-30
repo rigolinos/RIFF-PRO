@@ -24,7 +24,7 @@ const TEMPLATES: Record<string, {title: string, description: string}[]> = {
   'yoga': [
     { title: 'Vinyasa Flow (Energia)', description: 'Sequência dinâmica para despertar o corpo e a mente.' },
     { title: 'Hatha (Alinhamento)', description: 'Posturas clássicas com foco em consciência corporal.' },
-    { title: 'Relaxamento e Alongamento', description: 'Aula suave para soltar tensões e acalmar a ansiedade.' },
+    { title: 'Relaxamento e Alongamento', description: 'Atividade suave para soltar tensões e acalmar a ansiedade.' },
   ],
   'crossfit': [
     { title: 'Clínica de LPO', description: 'Técnica de arranco e arremesso para bater PRs.' },
@@ -109,11 +109,11 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
     const cat = categories?.find(c => c.id === formData.category_id);
     return {
       id: initialData?.id || 'preview-123',
-      title: formData.title || 'Título da sua Aula',
+      title: formData.title || 'Título da sua Atividade',
       date: formData.date || new Date().toISOString().split('T')[0],
       start_time: formData.start_time || '00:00',
       duration_minutes: formData.duration_minutes || 60,
-      location_name: formData.location_name || 'Local da aula',
+      location_name: formData.location_name || 'Local da atividade',
       price_per_slot: formData.price_per_slot || 0,
       max_participants: formData.max_participants || 10,
       current_participants: initialData?.current_participants || 0,
@@ -145,7 +145,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
   };
 
   const handleWhatsAppNotify = () => {
-    const text = encodeURIComponent(`Olá turma! A aula "${initialData.title}" teve uma alteração.\n\nNova Data: ${formData.date}\nNovo Horário: ${formData.start_time}\nLocal: ${formData.location_name}\n\nQualquer dúvida, me avisem!`);
+    const text = encodeURIComponent(`Olá turma! A atividade "${initialData.title}" teve uma alteração.\n\nNova Data: ${formData.date}\nNovo Horário: ${formData.start_time}\nLocal: ${formData.location_name}\n\nQualquer dúvida, me avisem!`);
     window.open(`https://wa.me/?text=` + text, '_blank');
   };
 
@@ -168,7 +168,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
 
       const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
       setValue('cover_image_url', data.publicUrl, { shouldValidate: true });
-      toast.success('Imagem da aula atualizada!');
+      toast.success('Imagem da atividade atualizada!');
     } catch (error: any) {
       toast.error(error.message || 'Erro ao fazer upload da imagem.');
     } finally {
@@ -184,7 +184,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
         <div className="p-6 border-b border-line flex items-center justify-between">
           <div className="flex flex-col">
             <h1 className="text-xl font-bold text-ink">
-              {isEditMode ? 'Editar Aula' : 'Criar Nova Aula'}
+              {isEditMode ? 'Editar Atividade' : 'Criar Nova Atividade'}
             </h1>
             <p className="text-xs text-ink-muted mt-1">
               Passo {step} de {totalSteps}
@@ -201,7 +201,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
 
         {/* MOBILE PREVIEW SECTION (Only visible on small screens) */}
         <div className="block lg:hidden px-6 pt-6 pb-2 border-b border-line bg-white/[0.02]">
-           <p className="text-xs font-semibold text-brand uppercase tracking-wider mb-3 flex items-center gap-1.5"><Sparkles className="w-3 h-3" /> Prévia ao Vivo</p>
+           <p className="type-label text-brand mb-3 flex items-center gap-1.5"><Sparkles className="w-3 h-3" /> Prévia ao Vivo</p>
            <div className="scale-95 origin-top">
              <SessionCard session={previewSession} onBookClick={() => {}} />
            </div>
@@ -217,7 +217,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
                   
                   {/* Image Upload */}
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-ink flex items-center gap-2">Capa da Aula</label>
+                    <label className="text-sm font-medium text-ink flex items-center gap-2">Capa da Atividade</label>
                     <div 
                       onClick={() => fileInputRef.current?.click()}
                       className="relative w-full aspect-video rounded-2xl border-2 border-dashed border-line bg-surface hover:bg-surface/80 flex flex-col items-center justify-center cursor-pointer overflow-hidden transition-colors"
@@ -263,7 +263,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
 
                   {activeTemplates.length > 0 && (
                     <div className="space-y-3">
-                      <p className="text-xs font-semibold text-brand uppercase tracking-wider flex items-center gap-1.5">
+                      <p className="type-label text-brand flex items-center gap-1.5">
                         <Sparkles className="w-3 h-3" /> Ideias que convertem
                       </p>
                       <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-2">
@@ -354,7 +354,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
                       </p>
                     )}
                     {!hasParticipants && formData.price_per_slot == 0 && (
-                       <p className="text-xs text-brand/90 italic mt-1">Aula 100% gratuita configurada (ótimo para atrair leads).</p>
+                       <p className="text-xs text-brand/90 italic mt-1">Atividade 100% gratuita configurada (ótimo para atrair leads).</p>
                     )}
                   </div>
 
@@ -369,7 +369,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
                         <AlertTriangle className="w-4 h-4" /> Alerta de Alteração
                       </h4>
                       <p className="text-xs text-ink-muted mb-3">
-                        Você mudou a Data, Horário ou Local de uma aula que já possui <strong>{initialData.current_participants} participantes confirmados</strong>.
+                        Você mudou a Data, Horário ou Local de uma atividade que já possui <strong>{initialData.current_participants} participantes confirmados</strong>.
                       </p>
                       <button 
                         type="button" onClick={handleWhatsAppNotify}
@@ -400,7 +400,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
             </Button>
           ) : (
             <Button type="submit" form="session-form" disabled={isSubmitting} className="h-12 flex-1 rounded-xl bg-brand hover:bg-brand text-brand-ink font-bold text-base shadow-[0_8px_24px_var(--shadow-cta)]">
-              {isSubmitting ? 'Salvando...' : (isEditMode ? 'Salvar Alterações' : 'Publicar Aula')} 
+              {isSubmitting ? 'Salvando...' : (isEditMode ? 'Salvar Alterações' : 'Publicar Atividade')} 
               {!isSubmitting && <Check className="w-4 h-4 ml-1.5" />}
             </Button>
           )}
@@ -413,7 +413,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--brand-soft)_0%,transparent_100%)] pointer-events-none" />
         
         <div className="w-full max-w-[340px] relative z-10">
-          <div className="mb-6 flex items-center justify-center gap-2 text-brand/60 uppercase tracking-widest text-xs font-bold">
+          <div className="mb-6 flex items-center justify-center gap-2 type-label text-brand/60">
             <Sparkles className="w-4 h-4" /> Prévia ao vivo
           </div>
           
@@ -422,7 +422,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
           </div>
 
           <p className="text-center text-xs text-ink-muted mt-8 px-6">
-            É exatamente assim que os participantes verão sua aula no Feed e no seu perfil público.
+            É exatamente assim que os participantes verão sua atividade no Feed e no seu perfil público.
           </p>
         </div>
       </div>

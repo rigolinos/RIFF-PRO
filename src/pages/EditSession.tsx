@@ -15,10 +15,10 @@ const EditSession = () => {
     try {
       if (!id) return;
       await updateSession({ id, data });
-      toast.success('Aula atualizada com sucesso!');
+      toast.success('Atividade atualizada com sucesso!');
       navigate('/my-sessions');
     } catch (error: any) {
-      toast.error(error.message || 'Erro ao atualizar aula.');
+      toast.error(error.message || 'Erro ao atualizar atividade.');
     }
   };
 
@@ -33,7 +33,7 @@ const EditSession = () => {
   if (!session) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center text-muted-foreground">
-        Aula não encontrada.
+        Atividade não encontrada.
       </div>
     );
   }

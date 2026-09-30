@@ -49,9 +49,9 @@ const OnboardingStudent = () => {
         whatsapp_number: data.phone || null, // Keeping both in sync
       });
       
-      toast.success('Tudo pronto! Bem-vindo ao Riff Pro 🚀');
+      toast.success('Tudo pronto! Bem-vindo ao Riff 🚀');
       navigate('/feed');
-    } catch {
+    } catch (error: any) {
       toast.error('Erro ao salvar. Tente novamente.');
       console.error(error);
     }
@@ -64,7 +64,7 @@ const OnboardingStudent = () => {
       <div className="px-6 py-4 flex-1 flex flex-col">
         <div className="mb-8">
           <h2 className="text-xl font-bold mb-2">Onde você vai treinar?</h2>
-          <p className="text-muted-foreground text-sm">Precisamos saber sua cidade para mostrar as aulas mais próximas de você.</p>
+          <p className="text-muted-foreground text-sm">Precisamos saber sua cidade para mostrar as atividades mais próximas de você.</p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex-1 flex flex-col space-y-6">

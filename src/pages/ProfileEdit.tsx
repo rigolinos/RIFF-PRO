@@ -1942,7 +1942,7 @@ export default function ProfileEdit() {
 
 
 
-                  <p className="text-xs text-muted-foreground">Use isso para compartilhar suas aulas no Instagram.</p>
+                  <p className="text-xs text-muted-foreground">Use isso para compartilhar suas atividades no Instagram.</p>
 
 
 
@@ -2478,7 +2478,7 @@ export default function ProfileEdit() {
 
 
 
-                  Esta ação não pode ser desfeita. Isso excluirá permanentemente sua conta, removerá seus dados dos nossos servidores e cancelará todas as suas aulas e reservas ativas.
+                  Esta ação não pode ser desfeita. Isso excluirá permanentemente sua conta, removerá seus dados dos nossos servidores e cancelará todas as suas atividades e reservas ativas.
 
 
 

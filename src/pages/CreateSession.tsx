@@ -10,10 +10,10 @@ const CreateSession = () => {
   const handleSubmit = async (data: any) => {
     try {
       await createSession(data);
-      toast.success('Aula criada com sucesso! 🎉');
+      toast.success('Atividade criada com sucesso! 🎉');
       navigate('/my-sessions');
     } catch (error: any) {
-      toast.error(error.message || 'Erro ao criar aula.');
+      toast.error(error.message || 'Erro ao criar atividade.');
     }
   };
 

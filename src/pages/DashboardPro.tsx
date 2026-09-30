@@ -74,8 +74,8 @@ export default function DashboardPro() {
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({
-        title: `Aulas com ${profile?.full_name}`,
-        text: 'Garanta sua vaga nas minhas próximas aulas!',
+        title: `Atividades com ${profile?.full_name}`,
+        text: 'Garanta sua vaga nas minhas próximas atividades!',
         url: publicUrl,
       }).catch(console.error);
     } else {
@@ -103,7 +103,7 @@ export default function DashboardPro() {
           {todaySessions.length === 0 ? (
             <EmptyState 
               title="Dia livre!" 
-              description="Você não tem aulas marcadas para hoje."
+              description="Você não tem atividades marcadas para hoje."
               icon={Calendar}
             />
           ) : (
@@ -133,7 +133,7 @@ export default function DashboardPro() {
                       className="flex-1"
                       onClick={() => navigate(`/session/${session.id}/attendance`)}
                     >
-                      Encerrar Aula
+                      Encerrar Atividade
                     </Button>
                     <Button 
                       variant="primary" 
@@ -228,7 +228,7 @@ export default function DashboardPro() {
             <div className="bg-surface border border-line rounded-2xl p-4 flex flex-col shadow-sm">
               <div className="flex items-center gap-2 text-ink-muted mb-2">
                 <Calendar className="w-4 h-4 text-slate" />
-                <span className="type-label">Aulas Dadas</span>
+                <span className="type-label">Atividades Dadas</span>
               </div>
               <div className="mt-auto">
                 <span className="type-number text-2xl text-ink">

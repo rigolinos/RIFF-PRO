@@ -144,10 +144,10 @@ export const Feed = () => {
           >
             <EmptyState 
               icon={Search}
-              title="Nenhuma aula encontrada"
+              title="Nenhuma atividade encontrada"
               description={selectedCategory === 'all' 
-                ? 'Ainda não há aulas publicadas na sua região.' 
-                : 'Não encontramos aulas dessa modalidade por agora.'}
+                ? 'Ainda não há atividades publicadas na sua região.' 
+                : 'Não encontramos atividades dessa modalidade por agora.'}
               action={{
                 label: 'Limpar Filtros',
                 onClick: () => setSelectedCategory('all')

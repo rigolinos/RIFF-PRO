@@ -22,7 +22,7 @@ export const BottomNav = () => {
   const navItems = isPro
     ? [
         { path: '/dashboard', icon: LayoutDashboard, label: 'Início' },
-        { path: '/my-sessions', icon: BookOpen, label: 'Aulas' },
+        { path: '/my-sessions', icon: BookOpen, label: 'Atividades' },
         { path: '/create-session', icon: Plus, label: 'Criar', isFab: true },
         { path: '/earnings', icon: DollarSign, label: 'Ganhos' },
         { path: '/profile/edit', icon: User, label: 'Perfil' },

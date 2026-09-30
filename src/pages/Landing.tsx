@@ -96,7 +96,7 @@ const Landing = () => {
         <div className="space-y-3">
           {[
             { icon: Shield, text: 'Crie sua vitrine organizador e atraia participantes', color: 'text-brand' },
-            { icon: MapPin, text: 'Publique aulas em parques, praias ou estúdios', color: 'text-brand' },
+            { icon: MapPin, text: 'Publique atividades em parques, praias ou estúdios', color: 'text-brand' },
             { icon: DollarSign, text: 'Receba o pagamento direto dos seus participantes', color: 'text-accent' },
             { icon: Star, text: 'Construa sua reputação com avaliações reais', color: 'text-slate' },
           ].map((step, i) => (

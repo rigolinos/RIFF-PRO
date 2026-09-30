@@ -45,8 +45,8 @@ const SessionDetails = () => {
   if (error || !session) {
     return (
       <div className="min-h-screen bg-bg flex flex-col items-center justify-center p-6 text-center">
-        <h2 className="text-xl font-display font-bold text-ink mb-2">Aula não encontrada</h2>
-        <p className="text-ink-muted mb-6">Esta aula pode ter sido cancelada ou removida.</p>
+        <h2 className="text-xl font-display font-bold text-ink mb-2">Atividade não encontrada</h2>
+        <p className="text-ink-muted mb-6">Esta atividade pode ter sido cancelada ou removida.</p>
         <Button onClick={() => navigate(-1)} variant="secondary">Voltar</Button>
       </div>
     );
@@ -65,7 +65,7 @@ const SessionDetails = () => {
     if (navigator.share) {
       navigator.share({
         title: session.title,
-        text: `Participe da aula de ${session.title} com ${pro.full_name}!`,
+        text: `Participe da atividade de ${session.title} com ${pro.full_name}!`,
         url: window.location.href,
       }).catch(console.error);
     } else {
@@ -177,7 +177,7 @@ const SessionDetails = () => {
         {/* Description */}
         {session.description && (
           <div className="mb-8">
-            <h3 className="font-display font-bold text-lg text-ink mb-2">Sobre a aula</h3>
+            <h3 className="font-display font-bold text-lg text-ink mb-2">Sobre a atividade</h3>
             <p className="text-ink-muted leading-relaxed text-sm whitespace-pre-wrap">
               {session.description}
             </p>
@@ -222,8 +222,8 @@ const SessionDetails = () => {
         <div className="mb-4">
           <h3 className="font-display font-bold text-lg text-ink mb-2">Política de Cancelamento</h3>
           <p className="text-sm text-ink-muted leading-relaxed">
-            Cancelamentos podem ser feitos com reembolso integral até 4 horas antes do início da aula.
-            Em caso de chuva forte que inviabilize a prática (para aulas ao ar livre), a aula será remarcada ou reembolsada.
+            Cancelamentos podem ser feitos com reembolso integral até 4 horas antes do início da atividade.
+            Em caso de chuva forte que inviabilize a prática (para atividades ao ar livre), a atividade será remarcada ou reembolsada.
           </p>
         </div>
       </div>
