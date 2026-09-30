@@ -14,6 +14,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { SessionCard } from '@/components/cards/SessionCard';
 import { useCategories } from '@/hooks/useCategories';
 import { useProfile } from '@/hooks/useProfile';
+import { KINDS, ActivityKind } from '@/lib/copy';
+
+import { SessionWithJoins } from '@/types/session';
+import type { TablesInsert } from '@/integrations/supabase/types';
 
 const TEMPLATES: Record<string, {title: string, description: string}[]> = {
   'futevolei': [
@@ -34,8 +38,8 @@ const TEMPLATES: Record<string, {title: string, description: string}[]> = {
 };
 
 interface SessionFormProps {
-  initialData?: any;
-  onSubmit: (data: any) => Promise<void>;
+  initialData?: SessionWithJoins;
+  onSubmit: (data: TablesInsert<'sessions'>) => Promise<void>;
   isSubmitting: boolean;
 }
 
@@ -46,17 +50,18 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [step, setStep] = useState(1);
-  const totalSteps = 3;
+  const totalSteps = 4;
 
   const isEditMode = !!initialData;
-  const hasParticipants = isEditMode && initialData.current_participants > 0;
+  const hasParticipants = isEditMode && (initialData.current_participants ?? 0) > 0;
 
   
   const savedDraft = !isEditMode ? JSON.parse(localStorage.getItem('riff-session-draft') || 'null') : null;
   
   const form = useForm({
-    defaultValues: savedDraft || {
-      category_id: initialData?.category_id || '',
+    defaultValues: savedDraft ? { ...savedDraft, kind: savedDraft.kind || initialData?.kind || 'class' } : {
+      kind: initialData?.kind || 'class',
+        category_id: initialData?.category_id || '',
       title: initialData?.title || '',
       description: initialData?.description || '',
       max_participants: initialData?.max_participants || 10,
@@ -91,7 +96,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
 
   const activeTemplates = selectedCategorySlug ? TEMPLATES[selectedCategorySlug] : [];
 
-  const handleTemplateClick = (temp: any) => {
+  const handleTemplateClick = (temp: { title: string; description: string }) => {
     setValue('title', temp.title, { shouldValidate: true });
     if (!formData.description) {
       setValue('description', temp.description, { shouldValidate: true });
@@ -134,12 +139,12 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
   const nextStep = () => setStep(s => Math.min(s + 1, totalSteps));
   const prevStep = () => setStep(s => Math.max(s - 1, 1));
 
-  const onFinalSubmit = async (data: any) => {
+  const onFinalSubmit = async (data: TablesInsert<'sessions'>) => {
     await onSubmit(data);
   };
 
   const handleWhatsAppNotify = () => {
-    const text = encodeURIComponent(`Olá turma! A atividade "${initialData.title}" teve uma alteração.\n\nNova Data: ${formData.date}\nNovo Horário: ${formData.start_time}\nLocal: ${formData.location_name}\n\nQualquer dúvida, me avisem!`);
+    const text = encodeURIComponent(`Olá turma! A atividade "${(initialData?.title)}" teve uma alteração.\n\nNova Data: ${formData.date}\nNovo Horário: ${formData.start_time}\nLocal: ${formData.location_name}\n\nQualquer dúvida, me avisem!`);
     window.open(`https://wa.me/?text=` + text, '_blank');
   };
 
@@ -163,8 +168,9 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
       const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
       setValue('cover_image_url', data.publicUrl, { shouldValidate: true });
       toast.success('Imagem da atividade atualizada!');
-    } catch (error: any) {
-      toast.error(error.message || 'Erro ao fazer upload da imagem.');
+    } catch (error: unknown) {
+      const err = error as Error;
+      toast.error(err.message || 'Erro ao fazer upload da imagem.');
     } finally {
       setIsUploading(false);
     }
@@ -197,7 +203,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
         <div className="block lg:hidden px-6 pt-6 pb-2 border-b border-line bg-white/[0.02]">
            <p className="type-label text-brand mb-3 flex items-center gap-1.5"><Sparkles className="w-3 h-3" /> Prévia ao Vivo</p>
            <div className="scale-95 origin-top">
-             <SessionCard session={previewSession} onBookClick={() => {}} />
+             <SessionCard session={previewSession as unknown as SessionWithJoins} onBookClick={() => {}} />
            </div>
         </div>
 
@@ -205,8 +211,8 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
           <form id="session-form" onSubmit={handleSubmit(onFinalSubmit)} className="space-y-6 pb-24">
             <AnimatePresence mode="wait">
               
-              {/* STEP 1: A EXPERIÊNCIA */}
-              {step === 1 && (
+              {/* STEP 2: A EXPERIÊNCIA */}
+              {step === 2 && (
                 <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
                   
                   {/* Image Upload */}
@@ -287,7 +293,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
                     </div>
                     {formData.max_participants < 6 && (
                       <p className="text-xs text-accent font-medium bg-accent/15 px-2 py-1 rounded border border-accent/20 inline-block mt-1">
-                        🔥 Turmas exclusivas geram escassez e esgotam rápido.
+                        🔥 Poucas vagas costumam esgotar rápido.
                       </p>
                     )}
                   </div>
@@ -295,8 +301,8 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
                 </motion.div>
               )}
 
-              {/* STEP 2: LOGÍSTICA */}
-              {step === 2 && (
+              {/* STEP 3: LOGÍSTICA */}
+              {step === 3 && (
                 <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
                   
                   <div className="grid grid-cols-2 gap-4">
@@ -332,8 +338,8 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
                 </motion.div>
               )}
 
-              {/* STEP 3: OFERTA & EXTRA */}
-              {step === 3 && (
+              {/* STEP 4: OFERTA & EXTRA */}
+              {step === 4 && (
                 <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
                   
                   <div className="space-y-2">
@@ -354,7 +360,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
 
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-ink">Descrição / O que levar (Opcional)</label>
-                    <Textarea {...register('description')} placeholder="Ex: Traga sua própria raquete, água e protetor solar." className="h-24 bg-surface border-line focus:border-brand/50 resize-none" />
+                    <Textarea {...register('description')} placeholder={KINDS[formData.kind as ActivityKind]?.descriptionPlaceholder} className="h-24 bg-surface border-line focus:border-brand/50 resize-none" />
                   </div>
 
                   {logisticsChanged && (
@@ -363,7 +369,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
                         <AlertTriangle className="w-4 h-4" /> Alerta de Alteração
                       </h4>
                       <p className="text-xs text-ink-muted mb-3">
-                        Você mudou a Data, Horário ou Local de uma atividade que já possui <strong>{initialData.current_participants} participantes confirmados</strong>.
+                        Você mudou a Data, Horário ou Local de uma atividade que já possui <strong>{(initialData.current_participants ?? 0)} participantes confirmados</strong>.
                       </p>
                       <button 
                         type="button" onClick={handleWhatsAppNotify}
@@ -412,7 +418,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
           </div>
           
           <div className="scale-105 shadow-[0_20px_60px_rgba(0,0,0,0.5),0_0_40px_var(--brand-soft)] rounded-3xl">
-            <SessionCard session={previewSession} onBookClick={() => {}} />
+            <SessionCard session={previewSession as unknown as SessionWithJoins} onBookClick={() => {}} />
           </div>
 
           <p className="text-center text-xs text-ink-muted mt-8 px-6">
@@ -425,4 +431,4 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
   );
 }
 
-const ScrollArea = ({ children, className }: any) => <div className={`overflow-y-auto ${className}`}>{children}</div>;
+const ScrollArea = ({ children, className }: { children: React.ReactNode, className?: string }) => <div className={`overflow-y-auto ${className}`}>{children}</div>;

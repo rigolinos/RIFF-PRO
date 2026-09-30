@@ -1,4 +1,4 @@
-﻿import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+﻿import { createContext, useContext, useState, ReactNode } from 'react';
 import { useProfile } from '@/hooks/useProfile';
 
 type ViewMode = 'professional' | 'student';
@@ -13,22 +13,22 @@ const ViewModeContext = createContext<ViewModeContextType | undefined>(undefined
 
 export function ViewModeProvider({ children }: { children: ReactNode }) {
   const { profile } = useProfile();
-  const [viewMode, setViewMode] = useState<ViewMode>('student');
+  const [manualMode, setManualMode] = useState<ViewMode | null>(null);
 
-  useEffect(() => {
-    if (profile?.role) {
-      const savedMode = localStorage.getItem('viewMode') as ViewMode;
-      if (savedMode && (savedMode === 'professional' || savedMode === 'student') && profile.role === 'professional') {
-        setViewMode(savedMode);
-      } else {
-        setViewMode(profile.role as ViewMode);
-        localStorage.setItem('viewMode', profile.role);
-      }
+  let viewMode: ViewMode = 'student';
+  if (manualMode) {
+    viewMode = manualMode;
+  } else if (profile?.role) {
+    const savedMode = localStorage.getItem('viewMode') as ViewMode;
+    if (savedMode && (savedMode === 'professional' || savedMode === 'student') && profile.role === 'professional') {
+      viewMode = savedMode;
+    } else {
+      viewMode = profile.role as ViewMode;
     }
-  }, [profile?.role]);
+  }
 
   const handleSetViewMode = (mode: ViewMode) => {
-    setViewMode(mode);
+    setManualMode(mode);
     localStorage.setItem('viewMode', mode);
   };
 

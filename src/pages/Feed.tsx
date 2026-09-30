@@ -1,4 +1,5 @@
-﻿import { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
+import { SessionWithJoins } from '@/types/session';
 import { Search } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { format, isToday, isTomorrow, parseISO } from 'date-fns';
@@ -12,6 +13,7 @@ import { SessionCardSkeleton } from '@/components/skeletons/SessionCardSkeleton'
 import { CheckoutModal } from '@/components/checkout/CheckoutModal';
 import { useProfile } from '@/hooks/useProfile';
 import { EmptyState } from '@/components/domain';
+import { KINDS, ActivityKind } from '@/lib/copy';
 
 export const Feed = () => {
   const { profile } = useProfile();
@@ -19,22 +21,26 @@ export const Feed = () => {
   const { data: categories, isLoading: isLoadingCategories } = useCategories();
   
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [selectedSession, setSelectedSession] = useState<any>(null);
+  const [selectedKind, setSelectedKind] = useState<ActivityKind | 'all'>('all');
+  const [selectedSession, setSelectedSession] = useState<SessionWithJoins | null>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
   // Filter sessions based on category
   const filteredSessions = useMemo(() => {
     if (!sessions) return [];
-    if (selectedCategory === 'all') return sessions;
-    return sessions.filter(session => session.category_id === selectedCategory);
-  }, [sessions, selectedCategory]);
+    let result = sessions;
+    if (selectedCategory !== 'all') result = result.filter(s => s.category_id === selectedCategory);
+    if (selectedKind !== 'all') result = result.filter(s => s.kind === selectedKind);
+    return result;
+    
+  }, [sessions, selectedCategory, selectedKind]);
 
   // Group by date logic
   const groupedSessions = useMemo(() => {
-    const groups: { label: string; dateGroupStr: string; sessions: any[] }[] = [];
+    const groups: { label: string; dateGroupStr: string; sessions: SessionWithJoins[] }[] = [];
     
     // Create a map to group
-    const map = new Map<string, any[]>();
+    const map = new Map<string, SessionWithJoins[]>();
     
     filteredSessions.forEach(session => {
       const date = parseISO(session.date);
@@ -54,7 +60,7 @@ export const Feed = () => {
       if (!map.has(key)) {
         map.set(key, []);
       }
-      map.get(key)!.push(session);
+      map.get(key)!.push(session as unknown as SessionWithJoins); // actually sessions are already typed hopefully
     });
 
     for (const [key, items] of Array.from(map.entries())) {
@@ -70,7 +76,7 @@ export const Feed = () => {
     return groups.sort((a, b) => a.dateGroupStr.localeCompare(b.dateGroupStr));
   }, [filteredSessions]);
 
-  const handleBookClick = (session: any) => {
+  const handleBookClick = (session: SessionWithJoins) => {
     setSelectedSession(session);
     setIsCheckoutOpen(true);
   };
@@ -93,6 +99,31 @@ export const Feed = () => {
         </div>
 
         {/* Categories Horizontal Scroll */}
+        <div className="flex overflow-x-auto hide-scrollbar gap-2 pb-2 -mx-6 px-6 mb-2">
+          <button
+            onClick={() => setSelectedKind('all')}
+            className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
+              selectedKind === 'all' 
+                ? 'bg-brand text-brand-ink' 
+                : 'bg-surface text-ink-muted border border-line'
+            }`}
+          >
+            Todos os Tipos
+          </button>
+          {Object.entries(KINDS).map(([k, meta]) => (
+            <button
+              key={k}
+              onClick={() => setSelectedKind(k as ActivityKind)}
+              className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
+                selectedKind === k 
+                  ? 'bg-brand text-brand-ink' 
+                  : 'bg-surface text-ink-muted border border-line'
+              }`}
+            >
+              {meta.chip}
+            </button>
+          ))}
+        </div>
         <div className="flex overflow-x-auto hide-scrollbar gap-2 pb-2 -mx-6 px-6">
           <button
             onClick={() => setSelectedCategory('all')}

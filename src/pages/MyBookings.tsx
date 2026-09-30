@@ -16,30 +16,32 @@ import { useProfile } from '@/hooks/useProfile';
 import { ReviewModal } from '@/components/reviews/ReviewModal';
 import { supabase } from '@/integrations/supabase/client';
 
+type BookingType = NonNullable<ReturnType<typeof useBookings>['bookings']>[number];
+
 const MyBookings = () => {
   const { profile } = useProfile();
   const { bookings, isLoading, cancelBooking } = useBookings();
   const [cancelingId, setCancelingId] = useState<string | null>(null);
-  const [reviewBooking, setReviewBooking] = useState<any>(null);
+  const [reviewBooking, setReviewBooking] = useState<BookingType | null>(null);
 
   // Split bookings between upcoming and history
   const { upcoming, history } = useMemo(() => {
     if (!bookings) return { upcoming: [], history: [] };
 
     const now = new Date();
-    const up: any[] = [];
-    const hist: any[] = [];
+    const up: BookingType[] = [];
+    const hist: BookingType[] = [];
 
     bookings.forEach((booking) => {
       // Check if session date + time is in the future and not cancelled
       const sessionDate = parseISO(`${booking.session.date}T${booking.session.start_time}`);
       const isFuture = sessionDate > now;
-      const isActive = booking.status === 'pending' || booking.status === 'confirmed';
+      const isActive = (booking.status || '') === 'pending' || (booking.status || '') === 'confirmed';
 
       if (isFuture && isActive) {
-        up.push(booking);
+        up.push(booking as unknown as BookingType);
       } else {
-        hist.push(booking);
+        hist.push(booking as unknown as BookingType);
       }
     });
 
@@ -52,7 +54,7 @@ const MyBookings = () => {
     return { upcoming: up, history: hist };
   }, [bookings]);
 
-  const handleWhatsApp = async (booking: any) => {
+  const handleWhatsApp = async (booking: BookingType) => {
     try {
       const { data: rawData, error } = await supabase.rpc('get_booking_payment_info', {
         p_booking_id: booking.id
@@ -81,13 +83,13 @@ const MyBookings = () => {
     }
   };
 
-  const handleOpenMap = (booking: any) => {
+  const handleOpenMap = (booking: BookingType) => {
     const address = booking.session.location_address || booking.session.location_name;
     const url = `https://maps.google.com/?q=${encodeURIComponent(address)}`;
     window.open(url, '_blank');
   };
 
-  const handleCancel = async (booking: any) => {
+  const handleCancel = async (booking: BookingType) => {
     const sessionDate = parseISO(`${booking.session.date}T${booking.session.start_time}`);
     const hoursDifference = differenceInHours(sessionDate, new Date());
 
@@ -109,7 +111,7 @@ const MyBookings = () => {
     }
   };
 
-  const renderBookingCard = (booking: any, isHistory: boolean = false) => {
+  const renderBookingCard = (booking: BookingType, isHistory: boolean = false) => {
     const sessionDate = parseISO(booking.session.date);
     const timeStr = booking.session.start_time.substring(0, 5);
     const dateStr = format(sessionDate, "EEE, d 'de' MMM", { locale: ptBR });
@@ -120,14 +122,14 @@ const MyBookings = () => {
     
     // Infer completed status if past date and not cancelled
     const isPast = parseISO(`${booking.session.date}T${booking.session.start_time}`) < new Date();
-    const effectiveStatus = (isPast && !booking.status.startsWith('cancelled')) ? 'completed' : booking.status;
+    const effectiveStatus = (isPast && !(booking.status || '').startsWith('cancelled')) ? 'completed' : booking.status;
 
     if (effectiveStatus === 'cancelled_by_student') { statusText = 'Cancelada por você'; statusColor = 'text-danger bg-danger/15 border-danger'; }
     else if (effectiveStatus === 'cancelled_by_pro') { statusText = 'Atividade cancelada'; statusColor = 'text-danger bg-danger/15 border-danger'; }
     else if (effectiveStatus === 'completed') { statusText = 'Concluída'; statusColor = 'text-ink-muted bg-white/5 border-line'; }
     else if (booking.payment_status === 'pending') { statusText = 'Aguardando Pagamento'; statusColor = 'text-accent bg-accent/15 border-accent/20'; }
     else if (booking.payment_status === 'paid') { statusText = 'Confirmada'; statusColor = 'text-brand bg-brand/10 border-brand/20'; }
-    else { statusText = effectiveStatus; statusColor = 'text-ink-muted bg-white/5 border-line'; }
+    else { statusText = effectiveStatus || ''; statusColor = 'text-ink-muted bg-white/5 border-line'; }
 
 
     return (

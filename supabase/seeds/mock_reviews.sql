@@ -1,4 +1,4 @@
-DO $ $
+ÔªøDO $ $
 DECLARE
   v_pro1_id UUID;
   v_student_id UUID;
@@ -20,12 +20,12 @@ BEGIN
   RETURNING id INTO v_booking_id;
 
   INSERT INTO public.reviews (booking_id, session_id, reviewer_id, professional_id, rating, comment, tags)
-  VALUES (v_booking_id, v_session_id, v_student_id, v_pro1_id, 5, 'Aula sensacional! O professor tem uma did·tica incrÌvel e a energia da turma estava l· em cima.', ARRAY['Did·tica', 'Energia', 'TÈcnica']);
+  VALUES (v_booking_id, v_session_id, v_student_id, v_pro1_id, 5, 'Aula sensacional! O professor tem uma did√°tica incr√≠vel e a energia da turma estava l√° em cima.', ARRAY['Did√°tica', 'Energia', 'T√©cnica']);
 
   INSERT INTO public.bookings (session_id, student_id, professional_id, status, amount_total)
   VALUES (v_session_id, v_student_id, v_pro1_id, 'completed', 50.00)
   RETURNING id INTO v_booking_id;
 
   INSERT INTO public.reviews (booking_id, session_id, reviewer_id, professional_id, rating, comment, tags)
-  VALUES (v_booking_id, v_session_id, v_student_id, v_pro1_id, 4.5, 'Excelente treino, me ajudou muito a corrigir a postura.', ARRAY['AtenÁ„o', 'Resultados']);
+  VALUES (v_booking_id, v_session_id, v_student_id, v_pro1_id, 4.5, 'Excelente treino, me ajudou muito a corrigir a postura.', ARRAY['Aten√ß√£o', 'Resultados']);
 END $ $;

@@ -37,7 +37,7 @@ export default function Earnings() {
     let paid = 0;
     let pending = 0;
     
-    transactions?.forEach((t: any) => {
+    transactions?.forEach((t: NonNullable<typeof transactions>[number]) => {
       const price = t.session?.price_per_slot || 0;
       if (t.payment_status === 'paid') paid += price;
       if (t.payment_status === 'pending') pending += price;
@@ -108,7 +108,7 @@ export default function Earnings() {
             </div>
           ) : (
             <div className="space-y-3">
-              {transactions.map((t: any) => {
+              {transactions.map((t: NonNullable<typeof transactions>[number]) => {
                 const isPaid = t.payment_status === 'paid';
                 const price = t.session?.price_per_slot || 0;
                 
@@ -138,7 +138,7 @@ export default function Earnings() {
                         + R$ {price.toFixed(2).replace('.', ',')}
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {format(parseISO(t.created_at), "dd MMM, HH:mm", { locale: ptBR })}
+                        {format(parseISO((t.created_at || '')), "dd MMM, HH:mm", { locale: ptBR })}
                       </p>
                     </div>
                   </div>

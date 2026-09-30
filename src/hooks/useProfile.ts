@@ -1,6 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import type { TablesUpdate } from '@/integrations/supabase/types';
+
+type ProfileUpdates = TablesUpdate<'profiles'> & TablesUpdate<'profile_private'>;
 
 export function useProfile() {
   const { user } = useAuth();
@@ -42,14 +45,11 @@ export function useProfile() {
   });
 
   const updateProfile = useMutation({
-    mutationFn: async (updates: any) => {
+    mutationFn: async (updates: ProfileUpdates) => {
       if (!user?.id) throw new Error('Not authenticated');
 
       // Separate public vs private fields
-      const { 
-        email, phone, whatsapp_number, pix_key, pix_key_type, credential_number, 
-        ...publicUpdates 
-      } = updates;
+      const { email, phone, whatsapp_number, pix_key, pix_key_type, credential_number, profile_id: _profile_id, user_id: _user_id, ...publicUpdates } = updates as ProfileUpdates;
 
       const profileId = profileQuery.data?.id;
 
@@ -67,7 +67,7 @@ export function useProfile() {
       if (profileId && (email !== undefined || phone !== undefined || whatsapp_number !== undefined || pix_key !== undefined || pix_key_type !== undefined || credential_number !== undefined)) {
         
         // Filter out undefined values for the private update
-        const privateUpdates: any = {};
+        const privateUpdates: TablesUpdate<'profile_private'> = {};
         if (email !== undefined) privateUpdates.email = email;
         if (phone !== undefined) privateUpdates.phone = phone;
         if (whatsapp_number !== undefined) privateUpdates.whatsapp_number = whatsapp_number;

@@ -1,3 +1,5 @@
+import { SessionWithJoins } from '@/types/session';
+
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Star, ArrowLeft, CheckCircle2 } from 'lucide-react';
@@ -15,7 +17,7 @@ export default function ProfessionalProfile() {
   const navigate = useNavigate();
   const { data, isLoading, error } = usePublicProfile(slug || '');
   
-  const [selectedSession, setSelectedSession] = useState<any>(null);
+  const [selectedSession, setSelectedSession] = useState<NonNullable<typeof sessions>[number] | null>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
   if (isLoading) {
@@ -37,7 +39,7 @@ export default function ProfessionalProfile() {
   const { profile, sessions, reviews } = data;
   const specialties = Array.isArray(profile.specialties) ? profile.specialties : []; 
 
-  const handleBookClick = (session: any) => {
+  const handleBookClick = (session: NonNullable<typeof sessions>[number]) => {
     setSelectedSession(session);
     setIsCheckoutOpen(true);
   };
@@ -45,7 +47,7 @@ export default function ProfessionalProfile() {
   
   
   // Find the next available session to reserve
-  const nextSession = sessions.find((s: any) => s.current_participants < s.max_participants && s.status !== 'full');
+  const nextSession = sessions.find((s: NonNullable<typeof sessions>[number]) => (s.current_participants ?? 0) < (s.max_participants ?? 0) && s.status !== 'full');
 
   return (
     <div className="min-h-[100dvh] bg-bg text-ink pb-28 w-full max-w-[480px] mx-auto overflow-x-hidden relative">
@@ -141,8 +143,8 @@ export default function ProfessionalProfile() {
           />
         ) : (
           <div className="space-y-4">
-            {sessions.map((session: any) => (
-              <SessionCard key={session.id} session={session} onBookClick={handleBookClick} />
+            {sessions.map((session: NonNullable<typeof sessions>[number]) => (
+              <SessionCard key={session.id} session={session as unknown as SessionWithJoins} onBookClick={(session) => handleBookClick(session as unknown as NonNullable<typeof sessions>[number])} />
             ))}
           </div>
         )}
@@ -156,7 +158,7 @@ export default function ProfessionalProfile() {
             <RatingBadge rating={profile.rating_avg} count={profile.total_reviews} showCount={false} />
           </div>
           <div className="flex overflow-x-auto hide-scrollbar snap-x snap-mandatory pb-4 -mx-5 px-5 gap-4">
-            {reviews.map((review: any) => (
+            {reviews.map((review: Record<string, any>) => (
               <div key={review.id} className="snap-center w-[280px] shrink-0 bg-surface rounded-2xl p-5 border border-line flex flex-col shadow-sm">
                 <div className="flex items-center gap-3 mb-3">
                   <Avatar src={review.reviewer?.avatar_url} name={review.reviewer?.full_name} className="w-10 h-10" />
@@ -198,7 +200,7 @@ export default function ProfessionalProfile() {
         <CheckoutModal 
           isOpen={isCheckoutOpen} 
           onClose={() => setIsCheckoutOpen(false)} 
-          session={selectedSession}
+          session={selectedSession as unknown as SessionWithJoins}
           onSuccess={() => {}}
         />
       )}

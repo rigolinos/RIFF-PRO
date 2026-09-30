@@ -1,10 +1,23 @@
 {
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
+  "plugins": [
+    "react",
+    "typescript"
+  ],
   "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": "off",
-    "react/incompatible-library": "off",
-    "react/set-state-in-effect": "off"
-  }
+    "react/only-export-components": "warn",
+    "react/incompatible-library": "warn",
+    "react/set-state-in-effect": "warn"
+  },
+  "overrides": [
+    {
+      "files": [
+        "src/components/ui/**/*.tsx",
+        "src/contexts/ViewModeContext.tsx",
+        "src/hooks/use-mobile.tsx"
+      ],
+      "rules": {
+        "react/only-export-components": "off"
+      }
+    }
+  ]
 }

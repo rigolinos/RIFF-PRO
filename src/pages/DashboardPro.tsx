@@ -1,4 +1,5 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
+import { SessionWithJoins } from '@/types/session';
 import { useNavigate } from 'react-router-dom';
 import { Link2, Share2, Wallet, Users, Calendar, Loader2, CheckCircle2, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
@@ -38,7 +39,7 @@ export default function DashboardPro() {
     );
   }
 
-  const metrics: { total_revenue: number; unique_students: number; total_bookings: number; total_sessions: number; } = (data?.metrics as any) || {
+  const metrics: { total_revenue: number; unique_students: number; total_bookings: number; total_sessions: number; } = (data?.metrics as { total_revenue: number; unique_students: number; total_bookings: number; total_sessions: number; }) || {
     total_revenue: 0,
     unique_students: 0,
     total_bookings: 0,
@@ -93,7 +94,7 @@ export default function DashboardPro() {
             />
           ) : (
             <div className="space-y-3">
-              {todaySessions.map((session: any) => (
+              {todaySessions.map((session: SessionWithJoins) => (
                 <div key={session.id} className="bg-surface border border-line rounded-2xl p-4 flex flex-col gap-3 shadow-sm">
                   <div className="flex justify-between items-start">
                     <div>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { motion } from 'framer-motion';
@@ -30,7 +30,7 @@ const OnboardingPro = () => {
   const { profile, updateProfile, isLoading, isUpdating } = useProfile();
   const [step, setStep] = useState(1);
 
-  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<ProFormValues>({
+  const { register, handleSubmit, setValue, control, formState: { errors } } = useForm<ProFormValues>({
     resolver: zodResolver(proSchema),
     defaultValues: {
       professionalType: '',
@@ -41,6 +41,10 @@ const OnboardingPro = () => {
       pixKey: '',
     }
   });
+
+  const professionalType = useWatch({ control, name: 'professionalType' });
+  const bio = useWatch({ control, name: 'bio' });
+
 
   // Redirect if already onboarded or not a pro
   useEffect(() => {
@@ -66,7 +70,7 @@ const OnboardingPro = () => {
       
       toast.success('Perfil configurado com sucesso! 🎉');
       navigate('/dashboard');
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error('Erro ao salvar perfil. Tente novamente.');
       console.error(error);
     }
@@ -148,7 +152,7 @@ const OnboardingPro = () => {
                   type="button" 
                   onClick={() => setStep(2)}
                   className="w-full h-12 bg-brand hover:brightness-105 text-brand-ink font-semibold rounded-xl"
-                  disabled={!watch('professionalType') || !watch('bio')}
+                  disabled={!professionalType || !bio}
                 >
                   Continuar
                 </Button>

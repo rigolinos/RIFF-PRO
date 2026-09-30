@@ -50,7 +50,7 @@ const OnboardingStudent = () => {
       
       toast.success('Tudo pronto! Bem-vindo ao Riff 🚀');
       navigate('/feed');
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error('Erro ao salvar. Tente novamente.');
       console.error(error);
     }

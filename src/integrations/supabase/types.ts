@@ -476,6 +476,7 @@ export type Database = {
           location_type: string | null
           longitude: number | null
           max_participants: number | null
+          kind: 'class' | 'match' | 'tournament' | 'event' | 'other'
           parent_session_id: string | null
           price_per_slot: number
           professional_id: string
@@ -505,6 +506,7 @@ export type Database = {
           location_type?: string | null
           longitude?: number | null
           max_participants?: number | null
+          kind?: 'class' | 'match' | 'tournament' | 'event' | 'other'
           parent_session_id?: string | null
           price_per_slot: number
           professional_id: string
@@ -534,6 +536,7 @@ export type Database = {
           location_type?: string | null
           longitude?: number | null
           max_participants?: number | null
+          kind?: 'class' | 'match' | 'tournament' | 'event' | 'other'
           parent_session_id?: string | null
           price_per_slot?: number
           professional_id?: string

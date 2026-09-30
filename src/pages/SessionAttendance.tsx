@@ -39,8 +39,8 @@ export default function SessionAttendance() {
   // Initialize attendance state once data is loaded
   useState(() => {
     if (session?.bookings) {
-      const initial: any = {};
-      session.bookings.forEach((b: any) => {
+      const initial: Record<string, { present: boolean; paid: boolean; notes: string }> = {};
+      session.bookings.forEach((b: Record<string, any>) => {
         if (b.status !== 'cancelled') {
           initial[b.id] = { present: true, paid: true, notes: '' };
         }
@@ -57,7 +57,7 @@ export default function SessionAttendance() {
     return <div className="p-6 text-center text-ink-muted">Atividade não encontrada.</div>;
   }
 
-  const activeBookings = session.bookings?.filter((b: any) => b.status !== 'cancelled') || [];
+  const activeBookings = session.bookings?.filter((b: Record<string, any>) => b.status !== 'cancelled') || [];
 
   const handleCloseSession = async () => {
     setIsClosing(true);
@@ -73,8 +73,8 @@ export default function SessionAttendance() {
 
       toast.success('Atividade encerrada com sucesso!');
       navigate(-1);
-    } catch (error: any) {
-      toast.error(error.message || 'Erro ao encerrar atividade.');
+    } catch (error: unknown) {
+      toast.error((error as Error).message || 'Erro ao encerrar atividade.');
     } finally {
       setIsClosing(false);
     }
@@ -128,7 +128,7 @@ export default function SessionAttendance() {
           </div>
         ) : (
           <div className="space-y-4">
-            {activeBookings.map((booking: any) => {
+            {activeBookings.map((booking: Record<string, any>) => {
               const state = attendance[booking.id] || { present: true, paid: true, notes: '' };
               const studentName = booking.student?.full_name || 'Participante';
               

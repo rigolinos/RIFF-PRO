@@ -21,7 +21,7 @@ export function useSessions() {
         .select(`
           id, title, description, date, start_time, duration_minutes,
           location_name, location_address, max_participants, current_participants,
-          price_per_slot, status, session_type, skill_level, category_id,
+          price_per_slot, status, session_type, skill_level, category_id, kind,
           professional:profiles(id, full_name, avatar_url, rating_avg, public_slug),
           category:categories(name, icon, emoji)
         `)

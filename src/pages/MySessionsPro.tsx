@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { format, parseISO, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
-  Users, Clock, Loader2, CheckCircle2, MessageCircle,
+  Users, Clock, Loader2, CheckCircle2,
   Edit, XCircle, Copy, Share2, ClipboardCheck
 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -19,8 +19,12 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 
 const MySessionsPro = () => {
   const { sessions, isLoading, cancelSession, closeSession, updateSessionStatus } = useProSessions();
+  
+  type SessionType = NonNullable<typeof sessions>[0];
+  type BookingType = NonNullable<SessionType['bookings']>[0];
+
   const { createSession } = useSessions();
-  const [selectedSession, setSelectedSession] = useState<any>(null);
+  const [selectedSession, setSelectedSession] = useState<SessionType | null>(null);
   const [isDuplicating, setIsDuplicating] = useState<string | null>(null);
   const [isClosing, setIsClosing] = useState(false);
   const navigate = useNavigate();
@@ -29,13 +33,13 @@ const MySessionsPro = () => {
   const [attendance, setAttendance] = useState<Record<string, { attended: boolean; paid: boolean; note: string }>>({});
   const [sessionNotes, setSessionNotes] = useState('');
 
-  const openAttendanceSheet = (session: any) => {
+  const _openAttendanceSheet = (session: SessionType) => {
     setSelectedSession(session);
     setSessionNotes('');
     // Initialize attendance from existing booking data
     const initial: Record<string, { attended: boolean; paid: boolean; note: string }> = {};
-    const activeBookings = session.bookings?.filter((b: any) => !b.status.startsWith('cancelled') && b.status !== 'no_show' && b.status !== 'completed') || [];
-    activeBookings.forEach((b: any) => {
+    const activeBookings = session.bookings?.filter((b: BookingType) => !(b.status || '').startsWith('cancelled') && b.status !== 'no_show' && b.status !== 'completed') || [];
+    activeBookings.forEach((b: BookingType) => {
       initial[b.id] = {
         attended: true,
         paid: b.payment_status === 'paid' || b.payment_status === 'free',
@@ -65,20 +69,20 @@ const MySessionsPro = () => {
 
       toast.success('Atividade encerrada com sucesso!');
       setSelectedSession(null);
-    } catch (error: any) {
-      toast.error(error.message || 'Erro ao encerrar atividade.');
+    } catch (error: unknown) {
+      toast.error((error as Error).message || 'Erro ao encerrar atividade.');
     } finally {
       setIsClosing(false);
     }
   };
 
-  const handleCancelSession = async (session: any) => {
+  const handleCancelSession = async (session: SessionType) => {
     try {
       await cancelSession({ sessionId: session.id, reason: 'Cancelamento pelo organizador' });
       toast.success('Turma cancelada.');
 
       // Open WhatsApp with pre-formatted message
-      const activeBookings = session.bookings?.filter((b: any) => !b.status.startsWith('cancelled')) || [];
+      const activeBookings = session.bookings?.filter((b: BookingType) => !(b.status || '').startsWith('cancelled')) || [];
       if (activeBookings.length > 0) {
         const dateStr = format(parseISO(session.date), "dd/MM", { locale: ptBR });
         const timeStr = session.start_time.substring(0, 5);
@@ -87,21 +91,21 @@ const MySessionsPro = () => {
         );
         window.open(`https://wa.me/?text=${text}`, '_blank');
       }
-    } catch (error: any) {
-      toast.error(error.message || 'Erro ao cancelar turma.');
+    } catch (error: unknown) {
+      toast.error((error as Error).message || 'Erro ao cancelar turma.');
     }
   };
 
-  const handleCloseRegistrations = async (session: any) => {
+  const handleCloseRegistrations = async (session: SessionType) => {
     try {
       await updateSessionStatus({ sessionId: session.id, status: 'full' });
       toast.success('Inscrições encerradas antecipadamente.');
-    } catch (error: any) {
-      toast.error(error.message || 'Erro ao encerrar inscrições.');
+    } catch (error: unknown) {
+      toast.error((error as Error).message || 'Erro ao encerrar inscrições.');
     }
   };
 
-  const handleDuplicateSession = async (session: any) => {
+  const handleDuplicateSession = async (session: SessionType) => {
     setIsDuplicating(session.id);
     try {
       const nextWeekDate = format(addDays(parseISO(session.date), 7), 'yyyy-MM-dd');
@@ -120,16 +124,16 @@ const MySessionsPro = () => {
         status: 'active',
       });
       toast.success(`Atividade duplicada para ${format(parseISO(nextWeekDate), "EEE, d 'de' MMM", { locale: ptBR })}!`);
-    } catch (error: any) {
-      toast.error(error.message || 'Erro ao duplicar atividade.');
+    } catch (error: unknown) {
+      toast.error((error as Error).message || 'Erro ao duplicar atividade.');
     } finally {
       setIsDuplicating(null);
     }
   };
 
-  const isPast = (s: any) => parseISO(`${s.date}T${s.start_time}`) < new Date();
-  const isCancelled = (s: any) => s.status === 'cancelled';
-  const isCompleted = (s: any) => s.status === 'completed';
+  const isPast = (s: SessionType) => parseISO(`${s.date}T${s.start_time}`) < new Date();
+  const isCancelled = (s: SessionType) => s.status === 'cancelled';
+  const isCompleted = (s: SessionType) => s.status === 'completed';
 
   return (
     <PageContainer title="Minhas Atividades" withBottomNav>
@@ -154,7 +158,7 @@ const MySessionsPro = () => {
               const cancelled = isCancelled(session);
               const completed = isCompleted(session);
               const canClose = past && !cancelled && !completed;
-              const activeBookings = session.bookings?.filter((b: any) => !b.status.startsWith('cancelled') && b.status !== 'no_show') || [];
+              const activeBookings = session.bookings?.filter((b: BookingType) => !(b.status || '').startsWith('cancelled') && b.status !== 'no_show') || [];
 
               return (
                 <motion.div
@@ -296,7 +300,7 @@ const MySessionsPro = () => {
           <SheetHeader className="p-6 border-b border-line text-left">
             <SheetTitle className="text-xl">{selectedSession?.title}</SheetTitle>
             <SheetDescription className="text-ink-muted mt-1">
-              {isPast(selectedSession || { date: '2099-01-01', start_time: '00:00' }) && !isCancelled(selectedSession || {}) && !isCompleted(selectedSession || {})
+              {isPast((selectedSession || { date: '2099-01-01', start_time: '00:00' }) as unknown as SessionType) && !isCancelled((selectedSession as SessionType) as SessionType) && !isCompleted((selectedSession as SessionType) as SessionType)
                 ? 'Registre a presença e encerre a atividade'
                 : `${selectedSession?.current_participants || 0} de ${selectedSession?.max_participants} inscritos`
               }
@@ -305,12 +309,12 @@ const MySessionsPro = () => {
 
           <ScrollArea className="flex-1 p-6">
             <div className="space-y-4">
-              {selectedSession?.bookings?.filter((b: any) => !b.status.startsWith('cancelled')).length === 0 ? (
+              {selectedSession?.bookings?.filter((b: BookingType) => !(b.status || '').startsWith('cancelled')).length === 0 ? (
                 <div className="text-center py-8 text-ink-muted text-sm">
                   Nenhum participante inscrito ainda.
                 </div>
               ) : (
-                selectedSession?.bookings?.filter((b: any) => !b.status.startsWith('cancelled')).map((booking: any) => {
+                selectedSession?.bookings?.filter((b: BookingType) => !(b.status || '').startsWith('cancelled')).map((booking: BookingType) => {
                   const canEdit = isPast(selectedSession) && !isCancelled(selectedSession) && !isCompleted(selectedSession);
                   const att = attendance[booking.id];
 
@@ -408,8 +412,8 @@ const MySessionsPro = () => {
                                 await closeSession({ sessionId: selectedSession.id, attendance: [], happened: false });
                                 toast.success('Atividade marcada como não realizada.');
                                 setSelectedSession(null);
-                              } catch (e: any) {
-                                toast.error(e.message);
+                              } catch (e: unknown) {
+                                toast.error((e as Error).message);
                               }
                             }}
                             className="bg-danger/15 hover:bg-danger/15 text-ink"

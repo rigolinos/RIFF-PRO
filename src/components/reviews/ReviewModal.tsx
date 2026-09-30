@@ -12,8 +12,8 @@ interface ReviewModalProps {
     id: string;
     session_id: string;
     professional_id: string;
-    professional?: { full_name?: string };
-  };
+    professional?: { full_name?: string | null } | null;
+  } | null;
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
@@ -56,7 +56,7 @@ export function ReviewModal({ booking, isOpen, onClose, onSuccess }: ReviewModal
         toast.success('Avaliação enviada! Obrigado pelo feedback.');
         onSuccess();
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
       toast.error('Erro ao enviar avaliação.');
     } finally {

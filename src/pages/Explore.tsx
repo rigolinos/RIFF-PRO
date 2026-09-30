@@ -5,12 +5,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { Input } from '@/components/ui/input';
 import { useDebounce } from '@/hooks/useDebounce'; // We will create this
+import type { Tables } from '@/integrations/supabase/types';
 
 export default function Explore() {
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebounce(searchTerm, 500);
   
-  const [professionals, setProfessionals] = useState<any[]>([]);
+  const [professionals, setProfessionals] = useState<Tables<'profiles'>[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -31,9 +32,9 @@ export default function Explore() {
 
         const { data, error } = await query;
         if (!error && data) {
-          setProfessionals(data);
+          setProfessionals(data as unknown as Tables<'profiles'>[]);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error(err);
       } finally {
         setIsLoading(false);
@@ -95,14 +96,14 @@ export default function Explore() {
                     )}
 
                     <div className="flex items-center gap-3 mt-2">
-                      {pro.total_reviews > 0 ? (
+                      {(pro.total_reviews ?? 0) > 0 ? (
                         <div className="flex items-center gap-1">
                           <Star className="w-3.5 h-3.5 text-brand fill-brand" />
                           <span className="text-sm font-semibold text-brand">
-                            {pro.rating_avg.toFixed(1)}
+                            {(pro.rating_avg ?? 0).toFixed(1)}
                           </span>
                           <span className="text-xs text-ink-muted ml-0.5">
-                            ({pro.total_reviews})
+                            ({(pro.total_reviews ?? 0)})
                           </span>
                         </div>
                       ) : (

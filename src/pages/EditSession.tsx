@@ -1,8 +1,11 @@
-﻿import { useNavigate, useParams } from 'react-router-dom';
+import { SessionWithJoins } from '@/types/session';
+import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { SessionForm } from '@/components/forms/SessionForm';
 import { useSessions, useSessionById } from '@/hooks/useSessions';
+
+import type { TablesInsert } from '@/integrations/supabase/types';
 
 const EditSession = () => {
   const { id } = useParams<{ id: string }>();
@@ -11,14 +14,14 @@ const EditSession = () => {
   
   const { data: session, isLoading } = useSessionById(id || '');
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: TablesInsert<'sessions'>) => {
     try {
       if (!id) return;
       await updateSession({ id, data });
       toast.success('Atividade atualizada com sucesso!');
       navigate('/my-sessions');
-    } catch (error: any) {
-      toast.error(error.message || 'Erro ao atualizar atividade.');
+    } catch (error: unknown) {
+      toast.error((error as Error).message || 'Erro ao atualizar atividade.');
     }
   };
 
@@ -40,7 +43,7 @@ const EditSession = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <SessionForm initialData={session} onSubmit={handleSubmit} isSubmitting={isUpdating} />
+      <SessionForm initialData={session as unknown as SessionWithJoins} onSubmit={handleSubmit} isSubmitting={isUpdating} />
     </div>
   );
 };

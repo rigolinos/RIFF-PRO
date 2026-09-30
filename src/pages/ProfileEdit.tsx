@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 
 
 
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 
 
 
@@ -158,7 +158,7 @@ export default function ProfileEdit() {
 
 
 
-  const { register, handleSubmit, setValue, reset, watch } = useForm({
+  const { register, handleSubmit, setValue, reset, control } = useForm({
 
 
 
@@ -271,6 +271,10 @@ export default function ProfileEdit() {
 
 
   });
+  const avatar_url = useWatch({ control, name: 'avatar_url' });
+  const full_name = useWatch({ control, name: 'full_name' });
+  const pix_key_type = useWatch({ control, name: 'pix_key_type' });
+
 
 
 
@@ -670,7 +674,7 @@ export default function ProfileEdit() {
 
 
 
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
 
 
 
@@ -678,7 +682,7 @@ export default function ProfileEdit() {
 
 
 
-      toast.error(error.message || 'Erro ao fazer upload da imagem.');
+      toast.error((error as Error).message || 'Erro ao fazer upload da imagem.');
 
 
 
@@ -726,7 +730,7 @@ export default function ProfileEdit() {
 
 
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: Record<string, string | null | undefined>) => {
 
 
 
@@ -950,7 +954,7 @@ export default function ProfileEdit() {
 
 
 
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
 
 
 
@@ -1206,7 +1210,7 @@ export default function ProfileEdit() {
 
 
 
-                    {watch('avatar_url') ? (
+                    {avatar_url ? (
 
 
 
@@ -1214,7 +1218,7 @@ export default function ProfileEdit() {
 
 
 
-                      <img src={watch('avatar_url')} alt="Avatar" className="w-full h-full object-cover" />
+                      <img src={avatar_url} alt="Avatar" className="w-full h-full object-cover" />
 
 
 
@@ -1230,7 +1234,7 @@ export default function ProfileEdit() {
 
 
 
-                      <span className="text-brand font-bold text-3xl">{watch('full_name')?.charAt(0) || '?'}</span>
+                      <span className="text-brand font-bold text-3xl">{full_name?.charAt(0) || '?'}</span>
 
 
 
@@ -2094,7 +2098,7 @@ export default function ProfileEdit() {
 
 
 
-                    <Select onValueChange={(v) => setValue('pix_key_type', v)} value={watch('pix_key_type')}>
+                    <Select onValueChange={(v) => setValue('pix_key_type', v)} value={pix_key_type}>
 
 
 

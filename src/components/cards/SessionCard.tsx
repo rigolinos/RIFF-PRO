@@ -1,21 +1,24 @@
-﻿import { MapPin, Clock } from 'lucide-react';
+import { MapPin, Clock } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { CoverImage, PriceTag, RatingBadge, SpotsMeter, StatusPill } from '../domain';
+import { KINDS, ActivityKind } from '@/lib/copy';
+
+import { SessionWithJoins } from '@/types/session';
 
 interface SessionCardProps {
-  session: any;
-  onBookClick: (session: any) => void;
+  session: SessionWithJoins;
+  onBookClick: (session: SessionWithJoins) => void;
 }
 
 export const SessionCard = ({ session, onBookClick }: SessionCardProps) => {
   const pro = session.professional;
   const category = session.category;
   
-  const spotsLeft = session.max_participants - session.current_participants;
+  const spotsLeft = (session.max_participants ?? 0) - (session.current_participants ?? 0);
   const isFull = spotsLeft <= 0 || session.status === 'full';
   
   const dateStr = format(parseISO(session.date), "EEE, d 'de' MMM", { locale: ptBR });
@@ -61,7 +64,10 @@ export const SessionCard = ({ session, onBookClick }: SessionCardProps) => {
             <div className="flex items-center gap-1 text-sm text-ink-muted">
               <span className="font-medium text-ink">{pro?.full_name || 'Organizador'}</span>
               <span>·</span>
-              <RatingBadge rating={pro?.rating_avg} count={pro?.rating_count} />
+              <RatingBadge rating={pro?.rating_avg} count={pro?.total_reviews} />
+              {session.kind && KINDS[session.kind as ActivityKind] && (
+                <StatusPill text={KINDS[session.kind as ActivityKind].chip} variant="neutral" className="px-2 py-0 h-6" />
+              )}
             </div>
           </div>
         </div>
@@ -71,7 +77,7 @@ export const SessionCard = ({ session, onBookClick }: SessionCardProps) => {
           <span className="truncate">{session.location_name || 'Local a confirmar'}</span>
         </div>
 
-        <SpotsMeter current={session.current_participants} max={session.max_participants} className="my-3" />
+        <SpotsMeter current={session.current_participants ?? 0} max={session.max_participants ?? 0} className="my-3" />
 
         <div className="flex items-center justify-between pt-1">
           <PriceTag amount={session.price_per_slot} />

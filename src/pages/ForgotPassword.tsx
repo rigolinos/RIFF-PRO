@@ -21,8 +21,12 @@ const ForgotPassword = () => {
     e.preventDefault();
     try {
       forgotPasswordSchema.parse({ email });
-    } catch (err: any) {
-      toast.error(err.errors[0].message);
+    } catch (err: unknown) {
+      if (err instanceof z.ZodError) {
+        toast.error(err.errors[0].message);
+      } else {
+        toast.error('Erro ao validar email.');
+      }
       return;
     }
 
