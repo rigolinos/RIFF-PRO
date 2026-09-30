@@ -24,7 +24,19 @@ export default function ProfessionalProfile() {
     return <div className="min-h-screen bg-bg flex items-center justify-center">Carregando...</div>;
   }
 
-  if (error || !data?.profile) {
+  if (error) {
+    return (
+      <div className="min-h-[100dvh] bg-bg flex flex-col items-center justify-center p-6 text-center">
+        <EmptyState 
+          icon={AlertCircle}
+          title="Erro ao carregar perfil"
+          description="Ocorreu um erro ao buscar os dados deste organizador. O banco de dados pode estar indisponível."
+          action={{ label: 'Tentar novamente', onClick: () => window.location.reload() }}
+        />
+      </div>
+    );
+  }
+  if (!data?.profile) {
     return (
       <div className="min-h-[100dvh] bg-bg flex flex-col items-center justify-center p-6 text-center">
         <EmptyState 

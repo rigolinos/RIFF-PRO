@@ -17,7 +17,8 @@ import { KINDS, ActivityKind } from '@/lib/copy';
 
 export const Feed = () => {
   const { profile } = useProfile();
-  const { feed: sessions, isLoadingFeed } = useSessions();
+  const { feed: sessions, isLoadingFeed, isErrorFeed, errorFeed } = useSessions();
+  if (isErrorFeed && errorFeed) console.error('Error fetching feed:', errorFeed);
   const { data: categories, isLoading: isLoadingCategories } = useCategories();
   
   const [selectedCategory, setSelectedCategory] = useState<string>('all');

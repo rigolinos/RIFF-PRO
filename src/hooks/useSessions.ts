@@ -71,6 +71,8 @@ export function useSessions() {
   return {
     feed: feedQuery.data,
     isLoadingFeed: feedQuery.isLoading,
+    isErrorFeed: feedQuery.isError,
+    errorFeed: feedQuery.error,
     createSession: createSession.mutateAsync,
     isCreating: createSession.isPending,
     updateSession: updateSession.mutateAsync,

@@ -20,7 +20,8 @@ type BookingType = NonNullable<ReturnType<typeof useBookings>['bookings']>[numbe
 
 const MyBookings = () => {
   const { profile } = useProfile();
-  const { bookings, isLoading, cancelBooking } = useBookings();
+  const { bookings, isLoading, isError, error, cancelBooking } = useBookings();
+  if (isError && error) console.error('Error fetching bookings:', error);
   const [cancelingId, setCancelingId] = useState<string | null>(null);
   const [reviewBooking, setReviewBooking] = useState<BookingType | null>(null);
 

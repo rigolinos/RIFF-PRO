@@ -72,6 +72,8 @@ export function useBookings() {
   return {
     bookings: studentBookingsQuery.data,
     isLoading: studentBookingsQuery.isLoading,
+    isError: studentBookingsQuery.isError,
+    error: studentBookingsQuery.error,
     cancelBooking: cancelBooking.mutateAsync,
     isCanceling: cancelBooking.isPending,
   };

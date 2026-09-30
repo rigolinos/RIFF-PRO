@@ -18,7 +18,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 const MySessionsPro = () => {
-  const { sessions, isLoading, cancelSession, closeSession, updateSessionStatus } = useProSessions();
+  const { sessions, isLoading, isError, error, cancelSession, closeSession, updateSessionStatus } = useProSessions();
+  if (isError && error) console.error('Error fetching pro sessions:', error);
   
   type SessionType = NonNullable<typeof sessions>[0];
   type BookingType = NonNullable<SessionType['bookings']>[0];

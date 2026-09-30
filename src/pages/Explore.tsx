@@ -13,6 +13,7 @@ export default function Explore() {
   
   const [professionals, setProfessionals] = useState<Tables<'profiles'>[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [errorState, setErrorState] = useState<Error | null>(null);
 
   useEffect(() => {
     async function searchPros() {
@@ -31,6 +32,10 @@ export default function Explore() {
         }
 
         const { data, error } = await query;
+        if (error) {
+          console.error('Error fetching professionals:', error);
+          setErrorState(error as Error);
+        }
         if (!error && data) {
           setProfessionals(data as unknown as Tables<'profiles'>[]);
         }

@@ -1,32 +1,18 @@
-# React + TypeScript + Vite
+﻿# Riff Profissionais
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+O Riff Profissionais é um Progressive Web App (PWA) projetado...
 
-Currently, two official plugins are available:
+## Comandos Úteis
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Dev:** `npm run dev`
+- **Build:** `npm run build`
+- **Lint:** `npm run lint`
 
-## React Compiler
+## Sincronização com o Banco de Dados (Supabase)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
-
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+> **ATENÇÃO:** Sempre que fizer um `git pull` e receber novos arquivos na pasta `supabase/migrations`, é obrigatório rodar o comando abaixo para aplicar as alterações no seu banco de dados (seja ele local ou remoto):
+>
+> ```bash
+> npx supabase db push
+> ```
+> Sem isso, as novas colunas (como `kind` ou `city`) não existirão e as inserções (INSERT) irão falhar silenciosamente ou gerar erros 400.

@@ -131,6 +131,8 @@ export function useProSessions() {
   return {
     sessions: proSessionsQuery.data,
     isLoading: proSessionsQuery.isLoading,
+    isError: proSessionsQuery.isError,
+    error: proSessionsQuery.error,
     confirmPayment: confirmPayment.mutateAsync,
     cancelSession: cancelSession.mutateAsync,
     closeSession: closeSession.mutateAsync,
