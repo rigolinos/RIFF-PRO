@@ -97,12 +97,12 @@ export default function Earnings() {
 
         {/* Transactions List */}
         <div className="flex-1">
-          <h3 className="type-label text-muted-foreground mb-4">
+          <h3 className="type-label text-ink-muted mb-4">
             Extrato Recente
           </h3>
           
           {!transactions || transactions.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground bg-white/[0.02] rounded-2xl border border-white/5">
+            <div className="text-center py-12 text-ink-muted bg-white/[0.02] rounded-2xl border border-white/5">
               <Wallet className="w-8 h-8 mx-auto mb-3 opacity-20" />
               <p className="text-sm">Nenhuma transação encontrada.</p>
             </div>
@@ -119,14 +119,14 @@ export default function Earnings() {
                         {isPaid ? <ArrowDownLeft className="w-5 h-5" /> : <Clock className="w-5 h-5" />}
                       </div>
                       <div className="min-w-0">
-                        <p className="font-semibold text-sm text-foreground truncate">
+                        <p className="font-semibold text-sm text-ink truncate">
                           {t.student?.full_name?.split(' ').map(n => n.charAt(0).toUpperCase() + n.slice(1).toLowerCase()).join(' ') || 'Participante'}
                         </p>
                         <div className="flex items-center gap-1.5 mt-0.5">
-                          <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-md ${isPaid ? 'bg-brand/10 text-brand-ink' : 'bg-surface border border-line text-ink-muted'}`}>
+                          <span className={`text-xs font-semibold px-2 py-0.5 rounded-md ${isPaid ? 'bg-brand/10 text-brand-ink' : 'bg-surface border border-line text-ink-muted'}`}>
                             {isPaid ? 'Pix Recebido' : 'Pendente'}
                           </span>
-                          <span className="text-xs text-muted-foreground truncate">
+                          <span className="text-xs text-ink-muted truncate">
                             {t.session?.title}
                           </span>
                         </div>
@@ -134,10 +134,10 @@ export default function Earnings() {
                     </div>
                     
                     <div className="text-right shrink-0 ml-3">
-                      <p className={`font-bold text-sm ${isPaid ? 'text-brand' : 'text-foreground'}`}>
+                      <p className={`font-bold text-sm ${isPaid ? 'text-brand' : 'text-ink'}`}>
                         + R$ {price.toFixed(2).replace('.', ',')}
                       </p>
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="text-xs text-ink-muted mt-1">
                         {format(parseISO((t.created_at || '')), "dd MMM, HH:mm", { locale: ptBR })}
                       </p>
                     </div>
