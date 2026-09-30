@@ -67,7 +67,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
       max_participants: initialData?.max_participants || 10,
       date: initialData?.date || '',
       start_time: initialData?.start_time || '',
-      duration_minutes: initialData?.duration_minutes || 60,
+      duration_minutes: initialData?.duration_minutes || (formData.kind ? KINDS[formData.kind as ActivityKind]?.defaultDuration : 60),
       location_name: initialData?.location_name || '',
       price_per_slot: initialData?.price_per_slot || 0,
       what_to_bring: initialData?.what_to_bring || '',
@@ -94,7 +94,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
     return categories?.find(c => c.id === formData.category_id)?.slug;
   }, [categories, formData.category_id]);
 
-  const activeTemplates = selectedCategorySlug ? TEMPLATES[selectedCategorySlug] : [];
+  const activeTemplates = (selectedCategorySlug && formData.kind === 'class') ? TEMPLATES[selectedCategorySlug] : [];
 
   const handleTemplateClick = (temp: { title: string; description: string }) => {
     setValue('title', temp.title, { shouldValidate: true });
@@ -111,7 +111,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
       title: formData.title || 'Título da sua Atividade',
       date: formData.date || new Date().toISOString().split('T')[0],
       start_time: formData.start_time || '00:00',
-      duration_minutes: formData.duration_minutes || 60,
+      duration_minutes: formData.duration_minutes || (formData.kind ? KINDS[formData.kind as ActivityKind]?.defaultDuration : 60),
       location_name: formData.location_name || 'Local da atividade',
       price_per_slot: formData.price_per_slot || 0,
       max_participants: formData.max_participants || 10,
@@ -342,7 +342,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
                       <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted" />
                       <Input {...register('max_participants')} type="number" min="1" className="h-12 pl-10 bg-surface border-line text-base focus:border-brand/50" />
                     </div>
-                    {formData.max_participants < 6 && (
+                    {formData.max_participants < 6 && formData.kind === 'class' && (
                       <p className="text-xs text-accent font-medium bg-accent/15 px-2 py-1 rounded border border-accent/20 inline-block mt-1">
                         🔥 Poucas vagas costumam esgotar rápido.
                       </p>
