@@ -86,7 +86,7 @@ export default function Explore() {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-base text-ink truncate">{pro.full_name}</h3>
+                    <h3 className="type-subtitle truncate">{pro.full_name}</h3>
                     
                     {pro.city && (
                       <div className="flex items-center gap-1 text-xs text-ink-muted mt-0.5">

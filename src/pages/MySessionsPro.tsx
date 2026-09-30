@@ -70,7 +70,7 @@ const MySessionsPro = () => {
       toast.success('Atividade encerrada com sucesso!');
       setSelectedSession(null);
     } catch (error: unknown) {
-      toast.error((error as Error).message || 'Erro ao encerrar atividade.');
+      toast.error((error instanceof Error ? error.message : 'Erro desconhecido') || 'Erro ao encerrar atividade.');
     } finally {
       setIsClosing(false);
     }
@@ -79,7 +79,7 @@ const MySessionsPro = () => {
   const handleCancelSession = async (session: SessionType) => {
     try {
       await cancelSession({ sessionId: session.id, reason: 'Cancelamento pelo organizador' });
-      toast.success('Turma cancelada.');
+      toast.success('Atividade cancelada.');
 
       // Open WhatsApp with pre-formatted message
       const activeBookings = session.bookings?.filter((b: BookingType) => !(b.status || '').startsWith('cancelled')) || [];
@@ -87,12 +87,12 @@ const MySessionsPro = () => {
         const dateStr = format(parseISO(session.date), "dd/MM", { locale: ptBR });
         const timeStr = session.start_time.substring(0, 5);
         const text = encodeURIComponent(
-          `Olá turma! Infelizmente precisei cancelar a atividade "${session.title}" do dia ${dateStr} às ${timeStr}. Peço desculpas pelo inconveniente!`
+          `Olá pessoal! Infelizmente precisei cancelar a atividade "${session.title}" do dia ${dateStr} às ${timeStr}. Peço desculpas pelo inconveniente!`
         );
         window.open(`https://wa.me/?text=${text}`, '_blank');
       }
     } catch (error: unknown) {
-      toast.error((error as Error).message || 'Erro ao cancelar turma.');
+      toast.error((error instanceof Error ? error.message : 'Erro desconhecido') || 'Erro ao cancelar atividade.');
     }
   };
 
@@ -101,7 +101,7 @@ const MySessionsPro = () => {
       await updateSessionStatus({ sessionId: session.id, status: 'full' });
       toast.success('Inscrições encerradas antecipadamente.');
     } catch (error: unknown) {
-      toast.error((error as Error).message || 'Erro ao encerrar inscrições.');
+      toast.error((error instanceof Error ? error.message : 'Erro desconhecido') || 'Erro ao encerrar inscrições.');
     }
   };
 
@@ -125,7 +125,7 @@ const MySessionsPro = () => {
       });
       toast.success(`Atividade duplicada para ${format(parseISO(nextWeekDate), "EEE, d 'de' MMM", { locale: ptBR })}!`);
     } catch (error: unknown) {
-      toast.error((error as Error).message || 'Erro ao duplicar atividade.');
+      toast.error((error instanceof Error ? error.message : 'Erro desconhecido') || 'Erro ao duplicar atividade.');
     } finally {
       setIsDuplicating(null);
     }
@@ -145,8 +145,8 @@ const MySessionsPro = () => {
         ) : !sessions || sessions.length === 0 ? (
           <div className="text-center py-12">
             <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-3xl mx-auto mb-4">📝</div>
-            <h3 className="text-lg font-semibold text-ink mb-1">Nenhuma atividade criada</h3>
-            <p className="text-ink-muted text-sm">Crie sua primeira turma e comece a receber participantes.</p>
+            <h3 className="type-subtitle mb-1">Nenhuma atividade criada</h3>
+            <p className="text-ink-muted text-sm">Crie sua primeira atividade e comece a receber participantes.</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -169,7 +169,7 @@ const MySessionsPro = () => {
                   className={`glass-card p-4 hover:bg-white/[0.04] transition-colors relative ${past || cancelled ? 'opacity-60' : ''}`}
                 >
                   <div className="flex justify-between items-start mb-2 cursor-pointer" onClick={() => navigate(`/session/${session.id}/attendance`)}>
-                    <h3 className="font-semibold text-base leading-tight truncate pr-4">
+                    <h3 className="type-subtitle truncate pr-4">
                       {session.category?.emoji} {session.title}
                     </h3>
                     {cancelled ? (
@@ -259,7 +259,7 @@ const MySessionsPro = () => {
                               </AlertDialogTrigger>
                               <AlertDialogContent className="bg-bg border-line">
                                 <AlertDialogHeader>
-                                  <AlertDialogTitle>Cancelar turma "{session.title}"?</AlertDialogTitle>
+                                  <AlertDialogTitle>Cancelar atividade "{session.title}"?</AlertDialogTitle>
                                   <AlertDialogDescription>
                                     Todos os participantes inscritos serão notificados. Esta ação não pode ser desfeita.
                                   </AlertDialogDescription>
@@ -267,7 +267,7 @@ const MySessionsPro = () => {
                                 <AlertDialogFooter>
                                   <AlertDialogCancel className="bg-white/5 hover:bg-line border-0">Manter</AlertDialogCancel>
                                   <AlertDialogAction onClick={() => handleCancelSession(session)} className="bg-danger/15 hover:bg-danger/15 text-ink">
-                                    Sim, cancelar turma
+                                    Sim, cancelar atividade
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>

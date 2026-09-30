@@ -15,7 +15,7 @@ const CreateSession = () => {
       toast.success('Atividade criada com sucesso! 🎉');
       navigate('/my-sessions');
     } catch (error: unknown) {
-      toast.error((error as Error).message || 'Erro ao criar atividade.');
+      toast.error((error instanceof Error ? error.message : 'Erro desconhecido') || 'Erro ao criar atividade.');
     }
   };
 

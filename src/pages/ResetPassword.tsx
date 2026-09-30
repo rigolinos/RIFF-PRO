@@ -68,7 +68,7 @@ const ResetPassword = () => {
           </div>
           <span className="text-lg font-bold text-foreground">Riff <span className="text-brand">Pro</span></span>
         </div>
-        <h1 className="text-2xl font-bold text-foreground">Definir Nova Senha</h1>
+        <h1 className="type-display">Definir Nova Senha</h1>
         <p className="text-muted-foreground text-sm mt-1">
           Crie uma nova senha segura para acessar sua conta.
         </p>

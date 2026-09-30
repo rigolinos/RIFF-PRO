@@ -65,7 +65,7 @@ const ForgotPassword = () => {
           </div>
           <span className="text-lg font-bold text-foreground">Riff <span className="text-brand">Pro</span></span>
         </div>
-        <h1 className="text-2xl font-bold text-foreground">Recuperar Senha</h1>
+        <h1 className="type-display">Recuperar Senha</h1>
         <p className="text-muted-foreground text-sm mt-1">
           Informe seu email para receber o link de redefinição.
         </p>
@@ -76,7 +76,7 @@ const ForgotPassword = () => {
           <div className="w-16 h-16 rounded-full bg-brand/10 flex items-center justify-center mb-4 text-brand">
             <Mail className="w-8 h-8" />
           </div>
-          <h3 className="text-lg font-bold text-foreground mb-2">Verifique sua caixa de entrada</h3>
+          <h3 className="type-title mb-2">Verifique sua caixa de entrada</h3>
           <p className="text-muted-foreground text-sm mb-8">
             Enviamos um link seguro para <strong>{email}</strong>. Lembre-se de checar a caixa de spam.
           </p>

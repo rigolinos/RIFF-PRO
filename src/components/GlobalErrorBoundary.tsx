@@ -32,7 +32,7 @@ export class GlobalErrorBoundary extends Component<Props, State> {
           <div className="w-20 h-20 bg-danger/15 rounded-full flex items-center justify-center mb-6">
             <AlertOctagon className="w-10 h-10 text-danger" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground mb-3">Ops! Algo deu errado.</h1>
+          <h1 className="type-display mb-3">Ops! Algo deu errado.</h1>
           <p className="text-muted-foreground max-w-sm mb-8">
             Tivemos um problema inesperado ao carregar esta página. Recarregue o aplicativo para tentar novamente.
           </p>

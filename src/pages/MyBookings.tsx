@@ -237,8 +237,8 @@ const MyBookings = () => {
                   {upcoming.length === 0 ? (
                     <div className="text-center py-12">
                       <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-3xl mx-auto mb-4">📅</div>
-                      <h3 className="text-lg font-semibold text-ink mb-1">Nenhuma atividade agendada</h3>
-                      <p className="text-ink-muted text-sm">Que tal explorar novas turmas e agendar seu próximo treino?</p>
+                      <h3 className="type-subtitle mb-1">Nenhuma atividade agendada</h3>
+                      <p className="text-ink-muted text-sm">Que tal explorar novas atividades e participar?</p>
                     </div>
                   ) : (
                     upcoming.map(b => renderBookingCard(b, false))

@@ -98,7 +98,7 @@ export default function DashboardPro() {
                 <div key={session.id} className="bg-surface border border-line rounded-2xl p-4 flex flex-col gap-3 shadow-sm">
                   <div className="flex justify-between items-start">
                     <div>
-                      <h3 className="font-display font-bold text-ink leading-tight">{session.title}</h3>
+                      <h3 className="type-title">{session.title}</h3>
                       <div className="flex items-center gap-1.5 mt-1 text-sm text-ink-muted">
                         <span>{session.start_time.substring(0,5)}</span>
                         <span>·</span>

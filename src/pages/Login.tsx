@@ -594,7 +594,7 @@ const Login = () => {
 
 
 
-        <h1 className="text-2xl font-bold text-foreground">Entrar</h1>
+        <h1 className="type-display">Entrar</h1>
 
 
 

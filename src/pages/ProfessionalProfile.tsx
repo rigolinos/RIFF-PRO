@@ -163,7 +163,7 @@ export default function ProfessionalProfile() {
                 <div className="flex items-center gap-3 mb-3">
                   <Avatar src={review.reviewer?.avatar_url} name={review.reviewer?.full_name} className="w-10 h-10" />
                   <div>
-                    <h4 className="font-semibold text-sm text-ink">{review.reviewer?.full_name?.split(' ')[0] || 'Participante'}</h4>
+                    <h4 className="type-subtitle text-sm">{review.reviewer?.full_name?.split(' ')[0] || 'Participante'}</h4>
                     <div className="flex gap-0.5 mt-0.5">
                       {[1, 2, 3, 4, 5].map(star => (
                         <Star key={star} className={`w-3 h-3 ${star <= review.rating ? 'fill-brand text-brand' : 'fill-line text-line'}`} />

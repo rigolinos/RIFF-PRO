@@ -194,7 +194,7 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
                       {session.category?.emoji || '🎯'}
                     </div>
                     <div>
-                      <h3 className="font-display font-bold text-ink leading-tight">{session.title}</h3>
+                      <h3 className="type-title">{session.title}</h3>
                       <p className="text-sm text-ink-muted mt-1 capitalize">
                         {dateStr} · {timeStr}
                       </p>

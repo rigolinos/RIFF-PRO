@@ -62,7 +62,7 @@ const OnboardingStudent = () => {
     <PageContainer title="Só mais um passo" withBottomNav={false}>
       <div className="px-6 py-4 flex-1 flex flex-col">
         <div className="mb-8">
-          <h2 className="text-xl font-bold mb-2">Onde você vai treinar?</h2>
+          <h2 className="type-title mb-2">Onde você vai treinar?</h2>
           <p className="text-muted-foreground text-sm">Precisamos saber sua cidade para mostrar as atividades mais próximas de você.</p>
         </div>
 

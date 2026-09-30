@@ -33,7 +33,7 @@ const Landing = () => {
             <span className="text-brand">sem intermediários.</span>
           </h1>
           <p className="text-ink-muted text-base leading-relaxed max-w-xs mx-auto">
-            Crie suas turmas, defina seu preço e receba participantes em um só lugar. Sem academia, sem matrícula.
+            Crie suas atividades, defina seu preço e receba participantes em um só lugar. Simples e direto.
           </p>
         </motion.div>
 

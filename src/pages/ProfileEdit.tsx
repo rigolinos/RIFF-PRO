@@ -682,7 +682,7 @@ export default function ProfileEdit() {
 
 
 
-      toast.error((error as Error).message || 'Erro ao fazer upload da imagem.');
+      toast.error((error instanceof Error ? error.message : 'Erro desconhecido') || 'Erro ao fazer upload da imagem.');
 
 
 

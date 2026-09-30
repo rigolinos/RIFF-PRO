@@ -88,7 +88,7 @@ export const Feed = () => {
           <div>
             <p className="text-sm text-ink-muted">Local atual</p>
             <div className="flex items-center gap-1">
-              <h2 className="text-xl font-display font-bold text-ink">
+              <h2 className="type-title">
                 {profile?.city || 'Sua Cidade'}
               </h2>
             </div>

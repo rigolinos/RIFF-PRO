@@ -91,7 +91,7 @@ const OnboardingPro = () => {
           {step === 1 && (
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex-1 space-y-6">
               <div>
-                <h2 className="text-xl font-bold mb-2">Quem é você?</h2>
+                <h2 className="type-title mb-2">Quem é você?</h2>
                 <p className="text-muted-foreground text-sm mb-6">Como os participantes vão encontrar você.</p>
                 
                 <div className="space-y-4">
@@ -163,7 +163,7 @@ const OnboardingPro = () => {
           {step === 2 && (
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex-1 space-y-6 flex flex-col">
               <div>
-                <h2 className="text-xl font-bold mb-2">Como você recebe?</h2>
+                <h2 className="type-title mb-2">Como você recebe?</h2>
                 <p className="text-muted-foreground text-sm mb-6">No Riff o dinheiro vai direto para a sua conta via Pix.</p>
 
                 <div className="p-4 rounded-xl glass-card border-brand/20 bg-brand/5 flex items-start gap-3 mb-6">

@@ -45,7 +45,7 @@ const SessionDetails = () => {
   if (error || !session) {
     return (
       <div className="min-h-screen bg-bg flex flex-col items-center justify-center p-6 text-center">
-        <h2 className="text-xl font-display font-bold text-ink mb-2">Atividade não encontrada</h2>
+        <h2 className="type-title mb-2">Atividade não encontrada</h2>
         <p className="text-ink-muted mb-6">Esta atividade pode ter sido cancelada ou removida.</p>
         <Button onClick={() => navigate(-1)} variant="secondary">Voltar</Button>
       </div>
@@ -163,7 +163,7 @@ const SessionDetails = () => {
             <Avatar src={pro.avatar_url} name={pro.full_name} className="w-12 h-12" />
             <div>
               <div className="flex items-center gap-1">
-                <h3 className="font-display font-bold text-ink">{pro.full_name}</h3>
+                <h3 className="type-title">{pro.full_name}</h3>
                 {pro.credential_verified && (
                   <CheckCircle2 className="w-4 h-4 text-success" />
                 )}
@@ -202,7 +202,7 @@ const SessionDetails = () => {
         {/* Spots Meter */}
         <div className="mb-8 p-5 bg-surface border border-line rounded-2xl">
           <div className="flex justify-between items-center mb-3">
-            <h3 className="font-display font-bold text-ink">Ocupação</h3>
+            <h3 className="type-title">Ocupação</h3>
             {isFull ? (
               <StatusPill text="Lotada" variant="danger" />
             ) : spotsLeft <= 3 ? (
@@ -242,7 +242,7 @@ const SessionDetails = () => {
             onClick={handleBook}
             disabled={isFull}
           >
-            {isFull ? 'Turma Lotada' : 'Garantir Vaga'}
+            {isFull ? 'Atividade Lotada' : 'Garantir Vaga'}
           </Button>
         </div>
       </div>

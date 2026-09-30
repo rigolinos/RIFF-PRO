@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { ImagePlus, Loader2 } from 'lucide-react';
 import { useForm, useWatch } from 'react-hook-form';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, ChevronLeft, Check, Sparkles, AlertTriangle, MessageCircle, MapPin, Calendar, Clock, DollarSign, Users } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Check, Sparkles, AlertTriangle, MessageCircle, MapPin, Calendar, Clock, DollarSign, Users, GraduationCap, Trophy, CalendarDays } from 'lucide-react';
 
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -21,9 +21,9 @@ import type { TablesInsert } from '@/integrations/supabase/types';
 
 const TEMPLATES: Record<string, {title: string, description: string}[]> = {
   'futevolei': [
-    { title: 'Clínica de Saque e Smash', description: 'Treino focado em fundamentos ofensivos para pontuar mais.' },
+    { title: 'Clínica de Saque e Smash', description: 'Atividade focada em fundamentos ofensivos para pontuar mais.' },
     { title: 'Jogo Guiado + Tática', description: 'Partidas com correções de posicionamento em tempo real.' },
-    { title: 'Treino Físico na Areia', description: 'Condicionamento intenso com bola para melhorar a resistência.' },
+    { title: 'Condicionamento Físico na Areia', description: 'Condicionamento intenso com bola para melhorar a resistência.' },
   ],
   'yoga': [
     { title: 'Vinyasa Flow (Energia)', description: 'Sequência dinâmica para despertar o corpo e a mente.' },
@@ -33,7 +33,7 @@ const TEMPLATES: Record<string, {title: string, description: string}[]> = {
   'crossfit': [
     { title: 'Clínica de LPO', description: 'Técnica de arranco e arremesso para bater PRs.' },
     { title: 'Gymnastics Skill', description: 'Foco em movimentos ginásticos: Muscle-up, HSPU e Handstand.' },
-    { title: 'WOD Queima Máxima', description: 'Treino metabólico de alta intensidade para condicionamento.' },
+    { title: 'WOD Queima Máxima', description: 'Atividade metabólica de alta intensidade para condicionamento.' },
   ],
 };
 
@@ -144,7 +144,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
   };
 
   const handleWhatsAppNotify = () => {
-    const text = encodeURIComponent(`Olá turma! A atividade "${(initialData?.title)}" teve uma alteração.\n\nNova Data: ${formData.date}\nNovo Horário: ${formData.start_time}\nLocal: ${formData.location_name}\n\nQualquer dúvida, me avisem!`);
+    const text = encodeURIComponent(`Olá pessoal! A atividade "${(initialData?.title)}" teve uma alteração.\n\nNova Data: ${formData.date}\nNovo Horário: ${formData.start_time}\nLocal: ${formData.location_name}\n\nQualquer dúvida, me avisem!`);
     window.open(`https://wa.me/?text=` + text, '_blank');
   };
 
@@ -183,7 +183,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
       <div className="flex-1 flex flex-col h-full bg-bg relative z-10 lg:max-w-xl lg:border-r border-line shadow-2xl">
         <div className="p-6 border-b border-line flex items-center justify-between">
           <div className="flex flex-col">
-            <h1 className="text-xl font-bold text-ink">
+            <h1 className="type-title">
               {isEditMode ? 'Editar Atividade' : 'Criar Nova Atividade'}
             </h1>
             <p className="text-xs text-ink-muted mt-1">
@@ -211,6 +211,57 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
           <form id="session-form" onSubmit={handleSubmit(onFinalSubmit)} className="space-y-6 pb-24">
             <AnimatePresence mode="wait">
               
+              
+              {/* STEP 1: O QUE VOCÊ VAI ORGANIZAR? */}
+              {step === 1 && (
+                <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
+                  <div className="mb-4">
+                    <h3 className="type-title mb-1">O que você vai organizar?</h3>
+                    <p className="type-caption text-ink-muted">Escolha o que mais se parece com o seu caso. Dá para mudar depois.</p>
+                  </div>
+                  
+                  <div className="grid gap-3">
+                    {Object.entries(KINDS).map(([k, meta]) => {
+                      const IconMap: Record<string, React.ElementType> = { GraduationCap, Users, Trophy, CalendarDays, Sparkles };
+                      const Icon = IconMap[meta.icon] || Sparkles;
+                      const isSelected = formData.kind === k;
+                      return (
+                        <div 
+                          key={k}
+                          onClick={() => {
+                             if (hasParticipants) return;
+                             setValue('kind', k as ActivityKind);
+                             setStep(2);
+                          }}
+                          className={`relative flex items-start gap-4 p-4 rounded-xl border-2 transition-all cursor-pointer ${
+                            hasParticipants ? 'opacity-50 cursor-not-allowed border-line/50 bg-surface/50' : 
+                            isSelected ? 'border-brand bg-brand/5' : 'border-line bg-surface hover:border-brand/30'
+                          }`}
+                        >
+                          <div className={`p-2 rounded-lg ${isSelected ? 'bg-brand text-brand-ink' : 'bg-white/5 text-ink-muted'}`}>
+                            <Icon className="w-6 h-6" />
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="type-subtitle mb-0.5">{meta.label}</h4>
+                            <p className="type-caption text-ink-muted">{meta.description}</p>
+                            {meta.example && (
+                              <p className="type-caption text-ink-muted mt-1 opacity-70">Ex: {meta.example}</p>
+                            )}
+                          </div>
+                          
+                          {hasParticipants && (
+                             <div className="absolute right-3 top-3" title="Não pode mudar o tipo de uma atividade com participantes.">
+                               <AlertTriangle className="w-4 h-4 text-accent" />
+                             </div>
+                          )}
+                          <input type="radio" name="kind" value={k} checked={isSelected} readOnly className="sr-only" />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+
               {/* STEP 2: A EXPERIÊNCIA */}
               {step === 2 && (
                 <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
@@ -281,7 +332,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
 
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-ink">Título Magnético</label>
-                    <Input {...register('title')} placeholder="Ex: Treino Queima Máxima (Iniciante)" className="h-12 bg-surface border-line text-base font-semibold focus:border-brand/50" />
+                    <Input {...register('title')} placeholder="Ex: Funcional na Praia Máxima (Iniciante)" className="h-12 bg-surface border-line text-base font-semibold focus:border-brand/50" />
                     <p className="text-xs text-ink-muted italic">Dica: Títulos com o benefício final vendem 3x mais.</p>
                   </div>
 
@@ -365,7 +416,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
 
                   {logisticsChanged && (
                     <div className="glass-card p-4 border-accent/20 bg-accent/15 rounded-xl">
-                      <h4 className="text-sm font-semibold text-accent flex items-center gap-2 mb-2">
+                      <h4 className="type-subtitle text-accent flex items-center gap-2 mb-2">
                         <AlertTriangle className="w-4 h-4" /> Alerta de Alteração
                       </h4>
                       <p className="text-xs text-ink-muted mb-3">
@@ -375,7 +426,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
                         type="button" onClick={handleWhatsAppNotify}
                         className="w-full h-10 bg-[#25D366]/20 text-[#25D366] hover:bg-[#25D366]/30 font-semibold rounded-lg text-xs flex items-center justify-center gap-2 transition-colors"
                       >
-                        <MessageCircle className="w-4 h-4" /> Avisar Turma no WhatsApp
+                        <MessageCircle className="w-4 h-4" /> Avisar Inscritos no WhatsApp
                       </button>
                     </div>
                   )}

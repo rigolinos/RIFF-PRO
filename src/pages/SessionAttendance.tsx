@@ -74,7 +74,7 @@ export default function SessionAttendance() {
       toast.success('Atividade encerrada com sucesso!');
       navigate(-1);
     } catch (error: unknown) {
-      toast.error((error as Error).message || 'Erro ao encerrar atividade.');
+      toast.error((error instanceof Error ? error.message : 'Erro desconhecido') || 'Erro ao encerrar atividade.');
     } finally {
       setIsClosing(false);
     }
@@ -137,7 +137,7 @@ export default function SessionAttendance() {
                   <div className="flex items-center gap-3">
                     <Avatar src={booking.student?.avatar_url} name={studentName} className="w-12 h-12" />
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-ink truncate">{studentName}</h3>
+                      <h3 className="type-subtitle truncate">{studentName}</h3>
                       <p className="type-label mt-0.5">
                         Status: {state.paid ? 'Pago' : 'Pendente'}
                       </p>

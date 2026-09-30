@@ -51,7 +51,7 @@ export const Header = ({
 
       <div className="flex-1 flex justify-center w-1/3">
         {title && (
-          <h1 className="text-base font-semibold text-foreground truncate">
+          <h1 className="type-subtitle truncate">
             {title}
           </h1>
         )}

@@ -1,7 +1,8 @@
 {
   "plugins": [
     "react",
-    "typescript"
+    "typescript",
+    "oxc"
   ],
   "rules": {
     "react/only-export-components": "warn",

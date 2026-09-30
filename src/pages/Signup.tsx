@@ -58,7 +58,7 @@ const Signup = () => {
           </div>
           <span className="text-lg font-bold text-foreground">Riff <span className="text-brand">Pro</span></span>
         </div>
-        <h1 className="text-2xl font-bold text-foreground">Criar conta</h1>
+        <h1 className="type-display">Criar conta</h1>
         <p className="text-muted-foreground text-sm mt-1">Comece a sua jornada sem intermediários</p>
       </motion.div>
 
