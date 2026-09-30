@@ -1,8 +1,8 @@
 import { SessionWithJoins } from '@/types/session';
 
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Star, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { useParams, useNavigate, Navigate } from 'react-router-dom';
+import { Star, ArrowLeft, CheckCircle2, AlertCircle } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 
 import { usePublicProfile } from '@/hooks/usePublicProfile';
@@ -13,13 +13,15 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, CoverImage, RatingBadge, EmptyState } from '@/components/domain';
 
 export default function ProfessionalProfile() {
-  const { slug } = useParams<{ slug: string }>();
+  const { slug, handle } = useParams<{ slug?: string, handle?: string }>();
   const navigate = useNavigate();
-  const { data, isLoading, error } = usePublicProfile(slug || '');
+  const queryParam = slug || (handle?.startsWith('@') ? handle.substring(1) : '');
+  const { data, isLoading, error } = usePublicProfile(queryParam);
   
   const [selectedSession, setSelectedSession] = useState<NonNullable<typeof sessions>[number] | null>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
+  if (handle && !handle.startsWith('@')) return <Navigate to="/404" replace />;
   if (isLoading) {
     return <div className="min-h-screen bg-bg flex items-center justify-center">Carregando...</div>;
   }

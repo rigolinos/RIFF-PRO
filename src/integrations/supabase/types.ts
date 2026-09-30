@@ -477,7 +477,8 @@ export type Database = {
           longitude: number | null
           max_participants: number | null
           kind: 'class' | 'match' | 'tournament' | 'event' | 'other'
-          parent_session_id: string | null
+            city: string | null
+            parent_session_id: string | null
           price_per_slot: number
           professional_id: string
           recurrence_rule: string | null
@@ -507,6 +508,7 @@ export type Database = {
           longitude?: number | null
           max_participants?: number | null
           kind?: 'class' | 'match' | 'tournament' | 'event' | 'other'
+          city?: string | null
           parent_session_id?: string | null
           price_per_slot: number
           professional_id: string

@@ -67,7 +67,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
       max_participants: initialData?.max_participants || 10,
       date: initialData?.date || '',
       start_time: initialData?.start_time || '',
-      duration_minutes: initialData?.duration_minutes || (formData.kind ? KINDS[formData.kind as ActivityKind]?.defaultDuration : 60),
+      duration_minutes: initialData?.duration_minutes || (initialData?.kind ? KINDS[initialData.kind as ActivityKind]?.defaultDuration : 60),
       location_name: initialData?.location_name || '',
       price_per_slot: initialData?.price_per_slot || 0,
       what_to_bring: initialData?.what_to_bring || '',
@@ -94,7 +94,8 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
     return categories?.find(c => c.id === formData.category_id)?.slug;
   }, [categories, formData.category_id]);
 
-  const activeTemplates = (selectedCategorySlug && formData.kind === 'class') ? TEMPLATES[selectedCategorySlug] : [];
+  const formDataKind = form.watch('kind');
+  const activeTemplates = (selectedCategorySlug && formDataKind === 'class') ? TEMPLATES[selectedCategorySlug] : [];
 
   const handleTemplateClick = (temp: { title: string; description: string }) => {
     setValue('title', temp.title, { shouldValidate: true });
@@ -111,7 +112,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
       title: formData.title || 'Título da sua Atividade',
       date: formData.date || new Date().toISOString().split('T')[0],
       start_time: formData.start_time || '00:00',
-      duration_minutes: formData.duration_minutes || (formData.kind ? KINDS[formData.kind as ActivityKind]?.defaultDuration : 60),
+      duration_minutes: formData.duration_minutes || 60,
       location_name: formData.location_name || 'Local da atividade',
       price_per_slot: formData.price_per_slot || 0,
       max_participants: formData.max_participants || 10,

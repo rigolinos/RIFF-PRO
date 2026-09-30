@@ -8,20 +8,36 @@ function todaySP(): string {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(new Date());
 }
 
-export function useSessions() {
+export function useCities() {
+  return useQuery({
+    queryKey: ['sessions', 'cities'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('sessions')
+        .select('city')
+        .in('status', ['active', 'full'])
+        .gte('date', new Date().toISOString().split('T')[0]);
+      if (error) throw error;
+      const cities = Array.from(new Set(data.map(d => d.city).filter(Boolean))) as string[];
+      return cities.sort();
+    }
+  });
+}
+
+export function useSessions(cityFilter?: string | null) {
   const queryClient = useQueryClient();
   const { profile } = useProfile();
 
   // Fetch all active sessions (For the Feed) — no PII
   const feedQuery = useQuery({
-    queryKey: ['sessions', 'feed'],
+    queryKey: ['sessions', 'feed', cityFilter],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('sessions')
         .select(`
           id, title, description, date, start_time, duration_minutes,
           location_name, location_address, max_participants, current_participants,
-          price_per_slot, status, session_type, skill_level, category_id, kind,
+          price_per_slot, status, session_type, skill_level, category_id, kind, city,
           professional:profiles(id, full_name, avatar_url, rating_avg, public_slug),
           category:categories(name, icon, emoji)
         `)

@@ -67,7 +67,7 @@ function App() {
               
               {/* Public Profiles & Sessions */}
               <Route path="/pro/:slug" element={<ProfessionalProfile />} />
-              <Route path="/@:slug" element={<ProfessionalProfile />} />
+              <Route path="/:handle" element={<ProfessionalProfile />} />
               <Route path="/session/:id" element={<SessionDetails />} />
               <Route path="/session/:id/attendance" element={<ProtectedRoute><SessionAttendance /></ProtectedRoute>} />
               

@@ -6,7 +6,9 @@ import { format, isToday, isTomorrow, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 import { PageContainer } from '@/components/layout/PageContainer';
-import { useSessions } from '@/hooks/useSessions';
+import { useSessions, useCities } from '@/hooks/useSessions';
+import { Drawer, DrawerTrigger, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
+import { useEffect } from 'react';
 import { useCategories } from '@/hooks/useCategories';
 import { SessionCard } from '@/components/cards/SessionCard';
 import { SessionCardSkeleton } from '@/components/skeletons/SessionCardSkeleton';
