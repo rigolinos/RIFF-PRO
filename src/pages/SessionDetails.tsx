@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Share2, MapPin, Clock, Calendar, CheckCircle2 } from 'lucide-react';
@@ -251,7 +251,7 @@ const SessionDetails = () => {
         <CheckoutModal 
           isOpen={isCheckoutOpen} 
           onClose={() => setIsCheckoutOpen(false)} 
-          session={session as any}
+          session={session}
           onSuccess={() => {}}
         />
       )}

@@ -26,7 +26,7 @@ export const ModeBanner = () => {
       >
         <div className="flex items-center gap-2 font-medium text-xs sm:text-sm">
           <Briefcase className="w-4 h-4" />
-          <span>Você está no Modo Aluno</span>
+          <span>Você está no Modo Participante</span>
         </div>
         
         <button 

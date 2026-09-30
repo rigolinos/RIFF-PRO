@@ -118,19 +118,19 @@ export default function SessionAttendance() {
       <div className="p-6 space-y-6">
         <div>
           <h2 className="font-display font-bold text-xl text-ink mb-1">{session.title}</h2>
-          <p className="text-sm text-ink-muted">{activeBookings.length} alunos inscritos</p>
+          <p className="text-sm text-ink-muted">{activeBookings.length} participantes inscritos</p>
         </div>
 
         {activeBookings.length === 0 ? (
           <div className="p-8 text-center bg-surface border border-line rounded-2xl">
             <User className="w-8 h-8 text-slate mx-auto mb-3" />
-            <p className="text-sm text-ink-muted">Nenhum aluno inscrito nesta aula.</p>
+            <p className="text-sm text-ink-muted">Nenhum participante inscrito nesta aula.</p>
           </div>
         ) : (
           <div className="space-y-4">
             {activeBookings.map((booking: any) => {
               const state = attendance[booking.id] || { present: true, paid: true, notes: '' };
-              const studentName = booking.student?.full_name || 'Aluno';
+              const studentName = booking.student?.full_name || 'Participante';
               
               return (
                 <div key={booking.id} className="bg-surface border border-line rounded-2xl p-4 flex flex-col gap-4">
@@ -138,7 +138,7 @@ export default function SessionAttendance() {
                     <Avatar src={booking.student?.avatar_url} name={studentName} className="w-12 h-12" />
                     <div className="flex-1 min-w-0">
                       <h3 className="font-bold text-ink truncate">{studentName}</h3>
-                      <p className="text-xs text-ink-muted uppercase tracking-wider mt-0.5">
+                      <p className="type-label mt-0.5">
                         Status: {state.paid ? 'Pago' : 'Pendente'}
                       </p>
                     </div>

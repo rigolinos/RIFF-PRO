@@ -1,25 +1,25 @@
 /**
  * @file brand.ts
- * Central source of truth for Riff Sports brand identity.
+ * Central source of truth for Riff brand identity.
  * When launching Riff Clubes (or any other vertical), duplicate
  * this file and change only the values here — zero code changes elsewhere.
  */
 
 export const BRAND = {
   /** Full product name, e.g. used in page titles and meta tags */
-  name: 'Riff Pro',
+  name: 'Riff',
 
   /** Parent company / brand family */
-  family: 'Riff Sports',
+  family: 'Riff',
 
   /** Short tagline */
-  tagline: 'Conectando atletas a profissionais.',
+  tagline: 'Organize. Participe. Jogue junto.',
 
   /** Base domain (no trailing slash) */
   domain: 'riff.pro',
 
   /** Twitter / X handle, without @ */
-  twitter: 'riffsports',
+  twitter: 'riffpro',
 
   /** Default OG image URL — replace when the designer delivers the final art */
   ogImage: '/brand/og-image.jpg',
@@ -30,3 +30,4 @@ export const BRAND = {
   /** Background color used in PWA manifest and meta theme-color */
   backgroundColor: '#0F1115',
 } as const;
+

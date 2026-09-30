@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import QRCode from 'react-qr-code';
 import { Copy, CheckCircle2, MessageCircle, Loader2, Calendar, Map, Check } from 'lucide-react';
 import { toast } from 'sonner';
@@ -56,14 +56,7 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
   const [paymentInfo, setPaymentInfo] = useState<PaymentInfo | null>(null);
   const [showArrowAnimation, setShowArrowAnimation] = useState(false);
 
-  // Reset state when modal opens/closes
-  useEffect(() => {
-    if (isOpen) {
-      setStep('resume');
-      setIsBooking(false);
-      setShowArrowAnimation(false);
-    }
-  }, [isOpen]);
+
 
   if (!session) return null;
 
@@ -135,14 +128,14 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
   const handleWhatsApp = () => {
     const proPhone = paymentInfo?.whatsapp_number;
     if (!proPhone) {
-      toast.error('O profissional não cadastrou o WhatsApp.');
+      toast.error('O organizador não cadastrou o WhatsApp.');
       triggerSuccess();
       return;
     }
 
     const cleanPhone = proPhone.replace(/\D/g, '');
     const finalPhone = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
-    const studentName = studentProfile?.full_name?.split(' ')[0] || 'Aluno';
+    const studentName = studentProfile?.full_name?.split(' ')[0] || 'Participante';
     const proName = paymentInfo?.pro_name?.split(' ')[0] || 'Prof';
     const text = encodeURIComponent(
       `Olá ${proName}! Aqui é o(a) ${studentName}. ` +
@@ -281,7 +274,7 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
 
                   <div className="space-y-3">
                     <p className="text-sm text-center text-ink-muted font-medium">
-                      Após o pagamento, avise o profissional:
+                      Após o pagamento, avise o organizador:
                     </p>
                     <Button
                       onClick={handleWhatsApp}
@@ -351,7 +344,7 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
                   </div>
 
                   <p className="text-ink-muted text-xs font-medium">
-                    Mostre ao profissional na chegada
+                    Mostre ao organizador na chegada
                   </p>
                 </div>
 

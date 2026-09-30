@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Camera, RefreshCw, ImagePlus, Loader2 } from 'lucide-react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, ChevronLeft, Check, Sparkles, AlertTriangle, MessageCircle, MapPin, Calendar, Clock, DollarSign, Users } from 'lucide-react';
 
@@ -71,7 +71,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
   });
 
   const { watch, setValue, handleSubmit, register, reset } = form;
-  const formData = watch();
+  const formData = useWatch({ control: form.control });
 
   useEffect(() => {
     if (!isEditMode) {
@@ -369,7 +369,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
                         <AlertTriangle className="w-4 h-4" /> Alerta de Alteração
                       </h4>
                       <p className="text-xs text-ink-muted mb-3">
-                        Você mudou a Data, Horário ou Local de uma aula que já possui <strong>{initialData.current_participants} alunos confirmados</strong>.
+                        Você mudou a Data, Horário ou Local de uma aula que já possui <strong>{initialData.current_participants} participantes confirmados</strong>.
                       </p>
                       <button 
                         type="button" onClick={handleWhatsAppNotify}
@@ -422,7 +422,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
           </div>
 
           <p className="text-center text-xs text-ink-muted mt-8 px-6">
-            É exatamente assim que os alunos verão sua aula no Feed e no seu perfil público.
+            É exatamente assim que os participantes verão sua aula no Feed e no seu perfil público.
           </p>
         </div>
       </div>

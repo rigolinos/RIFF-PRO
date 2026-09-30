@@ -59,7 +59,7 @@ export const SessionCard = ({ session, onBookClick }: SessionCardProps) => {
               {session.title}
             </h3>
             <div className="flex items-center gap-1 text-sm text-ink-muted">
-              <span className="font-medium text-ink">{pro?.full_name || 'Profissional'}</span>
+              <span className="font-medium text-ink">{pro?.full_name || 'Organizador'}</span>
               <span>·</span>
               <RatingBadge rating={pro?.rating_avg} count={pro?.rating_count} />
             </div>

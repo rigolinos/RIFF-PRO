@@ -33,7 +33,7 @@ export default function Explore() {
         if (!error && data) {
           setProfessionals(data);
         }
-      } catch (err) {
+      } catch {
         console.error(err);
       } finally {
         setIsLoading(false);
@@ -64,7 +64,7 @@ export default function Explore() {
           </div>
         ) : professionals.length === 0 ? (
           <div className="text-center py-12 text-ink-muted">
-            Nenhum profissional encontrado.
+            Nenhum organizador encontrado.
           </div>
         ) : (
           <div className="space-y-4">

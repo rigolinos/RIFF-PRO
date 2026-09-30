@@ -29,13 +29,23 @@ export default function DashboardPro() {
         navigate('/feed');
       }}
     >
-      <RefreshCw className="w-3.5 h-3.5" /> Ver como Aluno
+      <RefreshCw className="w-3.5 h-3.5" /> Ver como Participante
     </Button>
   );
 
   if (isLoading) {
     return (
-      <PageContainer title="Visão Geral" withBottomNav rightAction={<ModeSwitch />}>
+      <PageContainer title="Visão Geral" withBottomNav rightAction={<Button 
+              variant="outline"
+              size="sm"
+              className="gap-1.5 h-8 px-3 rounded-full border-line text-ink"
+              onClick={() => {
+                setViewMode('student');
+                navigate('/feed');
+              }}
+            >
+              <RefreshCw className="w-3.5 h-3.5" /> Ver como Participante
+            </Button>}>
         <div className="flex-1 flex items-center justify-center">
           <Loader2 className="w-8 h-8 text-brand animate-spin" />
         </div>
@@ -43,7 +53,7 @@ export default function DashboardPro() {
     );
   }
 
-  const metrics = (data?.metrics as any) || {
+  const metrics: { total_revenue: number; unique_students: number; total_bookings: number; total_sessions: number; } = (data?.metrics as any) || {
     total_revenue: 0,
     unique_students: 0,
     total_bookings: 0,
@@ -74,12 +84,22 @@ export default function DashboardPro() {
   };
 
   return (
-    <PageContainer title="Visão Geral" withBottomNav rightAction={<ModeSwitch />}>
+    <PageContainer title="Visão Geral" withBottomNav rightAction={<Button 
+              variant="outline"
+              size="sm"
+              className="gap-1.5 h-8 px-3 rounded-full border-line text-ink"
+              onClick={() => {
+                setViewMode('student');
+                navigate('/feed');
+              }}
+            >
+              <RefreshCw className="w-3.5 h-3.5" /> Ver como Participante
+            </Button>}>
       <div className="px-6 py-6 flex-1 flex flex-col space-y-8 pb-32">
         
         {/* Hoje */}
         <section>
-          <h2 className="font-display font-bold text-xl text-ink mb-4">Hoje</h2>
+          <h2 className="type-subtitle mb-4">Hoje</h2>
           {todaySessions.length === 0 ? (
             <EmptyState 
               title="Dia livre!" 
@@ -166,16 +186,16 @@ export default function DashboardPro() {
 
         {/* KPI Grid */}
         <section>
-          <h2 className="font-display font-bold text-xl text-ink mb-4">Métricas (Todo o período)</h2>
+          <h2 className="type-subtitle mb-4">Métricas (Todo o período)</h2>
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-surface border border-line rounded-2xl p-4 flex flex-col shadow-sm">
               <div className="flex items-center gap-2 text-ink-muted mb-2">
                 <Wallet className="w-4 h-4 text-slate" />
-                <span className="text-xs font-bold uppercase tracking-wider">Receita</span>
+                <span className="type-label">Receita</span>
               </div>
               <div className="mt-auto">
                 <span className="text-sm text-accent font-bold mr-1">R$</span>
-                <span className="text-2xl font-bold font-display text-ink tabular-nums tracking-tight">
+                <span className="type-number text-2xl text-ink">
                   {metrics.total_revenue.toFixed(2).replace('.', ',')}
                 </span>
               </div>
@@ -184,10 +204,10 @@ export default function DashboardPro() {
             <div className="bg-surface border border-line rounded-2xl p-4 flex flex-col shadow-sm">
               <div className="flex items-center gap-2 text-ink-muted mb-2">
                 <Users className="w-4 h-4 text-slate" />
-                <span className="text-xs font-bold uppercase tracking-wider">Alunos Únicos</span>
+                <span className="type-label">Participantes Únicos</span>
               </div>
               <div className="mt-auto">
-                <span className="text-2xl font-bold font-display text-ink tabular-nums tracking-tight">
+                <span className="type-number text-2xl text-ink">
                   {metrics.unique_students}
                 </span>
               </div>
@@ -196,10 +216,10 @@ export default function DashboardPro() {
             <div className="bg-surface border border-line rounded-2xl p-4 flex flex-col shadow-sm">
               <div className="flex items-center gap-2 text-ink-muted mb-2">
                 <CheckCircle2 className="w-4 h-4 text-slate" />
-                <span className="text-xs font-bold uppercase tracking-wider">Reservas</span>
+                <span className="type-label">Reservas</span>
               </div>
               <div className="mt-auto">
-                <span className="text-2xl font-bold font-display text-ink tabular-nums tracking-tight">
+                <span className="type-number text-2xl text-ink">
                   {metrics.total_bookings}
                 </span>
               </div>
@@ -208,10 +228,10 @@ export default function DashboardPro() {
             <div className="bg-surface border border-line rounded-2xl p-4 flex flex-col shadow-sm">
               <div className="flex items-center gap-2 text-ink-muted mb-2">
                 <Calendar className="w-4 h-4 text-slate" />
-                <span className="text-xs font-bold uppercase tracking-wider">Aulas Dadas</span>
+                <span className="type-label">Aulas Dadas</span>
               </div>
               <div className="mt-auto">
-                <span className="text-2xl font-bold font-display text-ink tabular-nums tracking-tight">
+                <span className="type-number text-2xl text-ink">
                   {metrics.total_sessions}
                 </span>
               </div>

@@ -6,7 +6,7 @@ import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
- * Button — Riff Sports DS v2
+ * Button — Riff DS v2
  *
  * Variantes do briefing:
  *   primary   – fundo --brand, texto --brand-ink, shadow-cta   → UMA ação por tela
@@ -27,7 +27,7 @@ const buttonVariants = cva(
   // Base: fonte Space Grotesk (herda do body), peso 600, alvo de toque mínimo 44px
   [
     "inline-flex items-center justify-center gap-2 whitespace-nowrap",
-    "font-semibold text-[15px] tracking-tight transition-all select-none",
+    "font-semibold text-sm tracking-tight transition-all select-none",
     "active:scale-[0.98]",
     "disabled:pointer-events-none disabled:opacity-40",
     "[&_svg]:pointer-events-none [&_svg]:shrink-0",

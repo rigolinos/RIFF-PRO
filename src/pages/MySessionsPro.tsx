@@ -74,7 +74,7 @@ const MySessionsPro = () => {
 
   const handleCancelSession = async (session: any) => {
     try {
-      await cancelSession({ sessionId: session.id, reason: 'Cancelamento pelo profissional' });
+      await cancelSession({ sessionId: session.id, reason: 'Cancelamento pelo organizador' });
       toast.success('Turma cancelada.');
 
       // Open WhatsApp with pre-formatted message
@@ -142,7 +142,7 @@ const MySessionsPro = () => {
           <div className="text-center py-12">
             <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-3xl mx-auto mb-4">📝</div>
             <h3 className="text-lg font-semibold text-ink mb-1">Nenhuma aula criada</h3>
-            <p className="text-ink-muted text-sm">Crie sua primeira turma e comece a receber alunos.</p>
+            <p className="text-ink-muted text-sm">Crie sua primeira turma e comece a receber participantes.</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -169,15 +169,15 @@ const MySessionsPro = () => {
                       {session.category?.emoji} {session.title}
                     </h3>
                     {cancelled ? (
-                      <span className="text-xs uppercase font-bold text-danger bg-danger/15 border border-danger px-2 py-1 rounded shrink-0">Cancelada</span>
+                      <span className="text-xs font-semibold text-danger bg-danger/15 border border-danger px-2 py-1 rounded shrink-0">Cancelada</span>
                     ) : completed ? (
-                      <span className="text-xs uppercase font-bold text-brand bg-brand/10 border border-brand/20 px-2 py-1 rounded shrink-0">Encerrada</span>
+                      <span className="text-xs font-semibold text-brand bg-brand/10 border border-brand/20 px-2 py-1 rounded shrink-0">Encerrada</span>
                     ) : past ? (
-                      <span className="text-xs uppercase font-bold text-accent bg-accent/15 border border-accent/20 px-2 py-1 rounded shrink-0">Encerrar</span>
+                      <span className="text-xs font-semibold text-accent bg-accent/15 border border-accent/20 px-2 py-1 rounded shrink-0">Encerrar</span>
                     ) : isFull ? (
-                      <span className="text-xs uppercase font-bold text-brand bg-brand/10 border border-brand/20 px-2 py-1 rounded shrink-0">Lotada</span>
+                      <span className="text-xs font-semibold text-brand bg-brand/10 border border-brand/20 px-2 py-1 rounded shrink-0">Lotada</span>
                     ) : (
-                      <span className="text-xs uppercase font-bold text-accent bg-accent/15 border border-accent/20 px-2 py-1 rounded shrink-0">Ativa</span>
+                      <span className="text-xs font-semibold text-accent bg-accent/15 border border-accent/20 px-2 py-1 rounded shrink-0">Ativa</span>
                     )}
                   </div>
 
@@ -257,7 +257,7 @@ const MySessionsPro = () => {
                                 <AlertDialogHeader>
                                   <AlertDialogTitle>Cancelar turma "{session.title}"?</AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    Todos os alunos inscritos serão notificados. Esta ação não pode ser desfeita.
+                                    Todos os participantes inscritos serão notificados. Esta ação não pode ser desfeita.
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
@@ -307,7 +307,7 @@ const MySessionsPro = () => {
             <div className="space-y-4">
               {selectedSession?.bookings?.filter((b: any) => !b.status.startsWith('cancelled')).length === 0 ? (
                 <div className="text-center py-8 text-ink-muted text-sm">
-                  Nenhum aluno inscrito ainda.
+                  Nenhum participante inscrito ainda.
                 </div>
               ) : (
                 selectedSession?.bookings?.filter((b: any) => !b.status.startsWith('cancelled')).map((booking: any) => {
@@ -375,7 +375,7 @@ const MySessionsPro = () => {
               {selectedSession && isPast(selectedSession) && !isCancelled(selectedSession) && !isCompleted(selectedSession) && (
                 <div className="space-y-4 pt-4 border-t border-line">
                   <div className="space-y-2">
-                    <label className="text-xs font-semibold uppercase tracking-wider text-ink-muted">
+                    <label className="type-label">
                       Observação da sessão (opcional)
                     </label>
                     <textarea
@@ -397,7 +397,7 @@ const MySessionsPro = () => {
                         <AlertDialogHeader>
                           <AlertDialogTitle>A aula não aconteceu?</AlertDialogTitle>
                           <AlertDialogDescription>
-                            Todas as reservas serão canceladas e os alunos notificados.
+                            Todas as reservas serão canceladas e os participantes notificados.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>

@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 /**
- * Badge — Riff Sports DS v2
+ * Badge — Riff DS v2
  * Tamanho mínimo de texto: 12px (spec do briefing).
  * Nunca usar text-[9px|10px|11px] em badges visíveis.
  */

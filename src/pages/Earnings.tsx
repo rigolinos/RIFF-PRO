@@ -68,7 +68,7 @@ export default function Earnings() {
             </div>
             <div className="flex items-center gap-1.5 text-brand mb-2">
               <ArrowDownLeft className="w-4 h-4" />
-              <span className="text-xs font-bold uppercase tracking-wider">Saldo Recebido</span>
+              <span className="text-xs font-semibold">Saldo Recebido</span>
             </div>
             <div className="flex items-baseline gap-1 relative z-10">
               <span className="text-sm font-semibold text-brand">R$</span>
@@ -84,7 +84,7 @@ export default function Earnings() {
             </div>
             <div className="flex items-center gap-1.5 text-accent mb-2">
               <ArrowUpRight className="w-4 h-4" />
-              <span className="text-xs font-bold uppercase tracking-wider">A Receber</span>
+              <span className="text-xs font-semibold">A Receber</span>
             </div>
             <div className="flex items-baseline gap-1 relative z-10">
               <span className="text-sm font-semibold text-accent">R$</span>

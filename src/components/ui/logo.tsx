@@ -1,4 +1,4 @@
-﻿import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 interface LogoProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: 'full-color' | 'full-white' | 'icon';
@@ -25,7 +25,7 @@ export function Logo({ variant = 'full-color', size = 'md', className, ...props 
     xl: 'h-16',
   };
 
-  const altText = variant === 'icon' ? 'Riff Sports Ícone' : 'Riff Sports Logo';
+  const altText = variant === 'icon' ? 'Riff Ícone' : 'Riff Logo';
 
   return (
     <div className={cn("flex items-center justify-center", className)} {...props}>

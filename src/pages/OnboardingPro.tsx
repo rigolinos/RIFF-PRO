@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { motion } from 'framer-motion';
@@ -67,7 +67,7 @@ const OnboardingPro = () => {
       
       toast.success('Perfil configurado com sucesso! 🎉');
       navigate('/dashboard');
-    } catch (error) {
+    } catch {
       toast.error('Erro ao salvar perfil. Tente novamente.');
       console.error(error);
     }
@@ -89,7 +89,7 @@ const OnboardingPro = () => {
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex-1 space-y-6">
               <div>
                 <h2 className="text-xl font-bold mb-2">Quem é você?</h2>
-                <p className="text-muted-foreground text-sm mb-6">Como os alunos vão encontrar você.</p>
+                <p className="text-muted-foreground text-sm mb-6">Como os participantes vão encontrar você.</p>
                 
                 <div className="space-y-4">
                   <div className="space-y-2">
@@ -102,6 +102,7 @@ const OnboardingPro = () => {
                         <SelectItem value="personal_trainer">Personal Trainer</SelectItem>
                         <SelectItem value="physiotherapist">Fisioterapeuta</SelectItem>
                         <SelectItem value="instructor">Instrutor(a) / Professor(a)</SelectItem>
+                        <SelectItem value="organizer">Organizador(a)</SelectItem>
                         <SelectItem value="coach">Coach Esportivo</SelectItem>
                         <SelectItem value="nutritionist">Nutricionista</SelectItem>
                         <SelectItem value="other">Outro</SelectItem>
@@ -136,7 +137,7 @@ const OnboardingPro = () => {
                     <Textarea 
                       {...register('bio')} 
                       className="bg-white/[0.05] border-white/10 resize-none h-32" 
-                      placeholder="Conte um pouco sobre sua experiência, metodologia e o que os alunos podem esperar das suas aulas..."
+                      placeholder="Conte um pouco sobre sua experiência, metodologia e o que os participantes podem esperar das suas aulas..."
                     />
                     {errors.bio && <span className="text-destructive text-xs">{errors.bio.message}</span>}
                   </div>
@@ -148,7 +149,7 @@ const OnboardingPro = () => {
                   type="button" 
                   onClick={() => setStep(2)}
                   className="w-full h-12 bg-brand hover:brightness-105 text-brand-ink font-semibold rounded-xl"
-                  disabled={!watch('professionalType') || !watch('bio')}
+                  disabled={!isTypeSelected || !hasBio}
                 >
                   Continuar
                 </Button>
@@ -164,7 +165,7 @@ const OnboardingPro = () => {
 
                 <div className="p-4 rounded-xl glass-card border-brand/20 bg-brand/5 flex items-start gap-3 mb-6">
                   <Info className="w-5 h-5 text-brand shrink-0 mt-0.5" />
-                  <p className="text-sm text-ink-muted">O aluno reservará a aula e enviará o Pix diretamente para essa chave. O comprovante será enviado para o seu WhatsApp.</p>
+                  <p className="text-sm text-ink-muted">O participante reservará a aula e enviará o Pix diretamente para essa chave. O comprovante será enviado para o seu WhatsApp.</p>
                 </div>
 
                 <div className="space-y-4">

@@ -35,8 +35,8 @@ export function useSessions() {
     },
   });
 
-  const getSessionById = (id: string) => {
-    return useQuery({
+export function useSessionById(id: string) {
+  return useQuery({
       queryKey: ['sessions', id],
       queryFn: async () => {
         const { data, error } = await supabase
@@ -93,7 +93,6 @@ export function useSessions() {
   return {
     feed: feedQuery.data,
     isLoadingFeed: feedQuery.isLoading,
-    getSessionById,
     createSession: createSession.mutateAsync,
     isCreating: createSession.isPending,
     updateSession: updateSession.mutateAsync,

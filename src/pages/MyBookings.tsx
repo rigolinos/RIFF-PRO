@@ -64,22 +64,22 @@ const MyBookings = () => {
       const data = rawData as unknown as PaymentInfoResult;
 
       if (error || !data?.whatsapp_number) {
-        toast.error('O profissional não cadastrou o WhatsApp ou você não tem acesso.');
+        toast.error('O organizador não cadastrou o WhatsApp ou você não tem acesso.');
         return;
       }
 
       const proPhone = data.whatsapp_number;
       const url = buildWhatsAppUrl({
         phone: proPhone,
-        studentName: profile?.full_name?.split(' ')[0] || 'Aluno',
+        studentName: profile?.full_name?.split(' ')[0] || 'Participante',
         proName: booking.professional?.full_name?.split(' ')[0] || 'Prof',
         sessionTitle: booking.session.category?.name || booking.session.title,
         sessionTime: booking.session.start_time.substring(0, 5),
       });
 
       window.open(url, '_blank');
-    } catch (err) {
-      toast.error('Erro ao acessar o contato do profissional.');
+    } catch {
+      toast.error('Erro ao acessar o contato do organizador.');
     }
   };
 
@@ -94,7 +94,7 @@ const MyBookings = () => {
     const hoursDifference = differenceInHours(sessionDate, new Date());
 
     if (hoursDifference < 4) {
-      toast.error('Faltam menos de 4 horas para a aula. Entre em contato direto com o profissional para cancelar.');
+      toast.error('Faltam menos de 4 horas para a aula. Entre em contato direto com o organizador para cancelar.');
       return;
     }
 
@@ -104,7 +104,7 @@ const MyBookings = () => {
     try {
       await cancelBooking(booking.id);
       toast.success('Reserva cancelada com sucesso.');
-    } catch (error) {
+    } catch {
       toast.error('Erro ao cancelar reserva.');
     } finally {
       setCancelingId(null);
@@ -150,7 +150,7 @@ const MyBookings = () => {
                 com {booking.professional?.full_name}
               </p>
             </div>
-            <span className={`text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${statusColor} border-0 shadow-sm`}>
+            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${statusColor} border-0 shadow-sm`}>
               {statusText}
             </span>
           </div>

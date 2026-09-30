@@ -28,12 +28,12 @@ const Landing = () => {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="text-center mb-10"
         >
-          <h1 className="text-3xl font-bold font-display text-ink leading-tight mb-4">
+          <h1 className="type-display mb-4">
             Sua carreira esportiva{' '}
             <span className="text-brand">sem intermediários.</span>
           </h1>
           <p className="text-ink-muted text-base leading-relaxed max-w-xs mx-auto">
-            Crie suas turmas, defina seu preço e receba alunos em um só lugar. Sem academia, sem matrícula.
+            Crie suas turmas, defina seu preço e receba participantes em um só lugar. Sem academia, sem matrícula.
           </p>
         </motion.div>
 
@@ -50,7 +50,7 @@ const Landing = () => {
             onClick={() => navigate('/signup?role=professional')}
           >
             <Shield className="w-5 h-5 mr-2" />
-            Sou Profissional
+            Sou Organizador
             <ArrowRight className="w-5 h-5 ml-2" />
           </Button>
 
@@ -90,14 +90,14 @@ const Landing = () => {
         transition={{ duration: 0.6, delay: 0.8 }}
         className="px-6 pb-10"
       >
-        <h2 className="text-sm font-semibold text-ink-muted uppercase tracking-wider mb-4 text-center">
+        <h2 className="type-subtitle mb-4 text-center">
           Como funciona
         </h2>
         <div className="space-y-3">
           {[
-            { icon: Shield, text: 'Crie sua vitrine profissional e atraia alunos', color: 'text-brand' },
+            { icon: Shield, text: 'Crie sua vitrine organizador e atraia participantes', color: 'text-brand' },
             { icon: MapPin, text: 'Publique aulas em parques, praias ou estúdios', color: 'text-brand' },
-            { icon: DollarSign, text: 'Receba o pagamento direto dos seus alunos', color: 'text-accent' },
+            { icon: DollarSign, text: 'Receba o pagamento direto dos seus participantes', color: 'text-accent' },
             { icon: Star, text: 'Construa sua reputação com avaliações reais', color: 'text-slate' },
           ].map((step, i) => (
             <div key={i} className="glass-card p-4 flex items-center gap-4">

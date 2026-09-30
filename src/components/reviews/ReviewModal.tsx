@@ -56,7 +56,7 @@ export function ReviewModal({ booking, isOpen, onClose, onSuccess }: ReviewModal
         toast.success('Avaliação enviada! Obrigado pelo feedback.');
         onSuccess();
       }
-    } catch (error) {
+    } catch {
       console.error(error);
       toast.error('Erro ao enviar avaliação.');
     } finally {

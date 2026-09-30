@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Toaster as SonnerToaster } from '@/components/ui/sonner';
@@ -12,28 +13,28 @@ import { ViewModeProvider } from '@/contexts/ViewModeContext';
 import { GlobalErrorBoundary } from '@/components/GlobalErrorBoundary';
 
 // Pages - Auth & Public
-import Landing from '@/pages/Landing';
-import Login from '@/pages/Login';
-import Signup from '@/pages/Signup';
-import ForgotPassword from '@/pages/ForgotPassword';
-import ResetPassword from '@/pages/ResetPassword';
-import NotFound from '@/pages/NotFound';
+const Landing = lazy(() => import('@/pages/Landing'));
+const Login = lazy(() => import('@/pages/Login'));
+const Signup = lazy(() => import('@/pages/Signup'));
+const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
+const NotFound = lazy(() => import('@/pages/NotFound'));
 
 // Pages - App Core
-import OnboardingPro from '@/pages/OnboardingPro';
-import OnboardingStudent from '@/pages/OnboardingStudent';
-import CreateSession from '@/pages/CreateSession';
-import EditSession from '@/pages/EditSession';
-import SessionDetails from '@/pages/SessionDetails';
-import SessionAttendance from '@/pages/SessionAttendance';
-import Feed from '@/pages/Feed';
-import MyBookings from '@/pages/MyBookings';
-import MySessionsPro from '@/pages/MySessionsPro';
-import DashboardPro from '@/pages/DashboardPro';
-import ProfessionalProfile from '@/pages/ProfessionalProfile';
-import ProfileEdit from '@/pages/ProfileEdit';
+const OnboardingPro = lazy(() => import('@/pages/OnboardingPro'));
+const OnboardingStudent = lazy(() => import('@/pages/OnboardingStudent'));
+const CreateSession = lazy(() => import('@/pages/CreateSession'));
+const EditSession = lazy(() => import('@/pages/EditSession'));
+const SessionDetails = lazy(() => import('@/pages/SessionDetails'));
+const SessionAttendance = lazy(() => import('@/pages/SessionAttendance'));
+const Feed = lazy(() => import('@/pages/Feed'));
+const MyBookings = lazy(() => import('@/pages/MyBookings'));
+const MySessionsPro = lazy(() => import('@/pages/MySessionsPro'));
+const DashboardPro = lazy(() => import('@/pages/DashboardPro'));
+const ProfessionalProfile = lazy(() => import('@/pages/ProfessionalProfile'));
+const ProfileEdit = lazy(() => import('@/pages/ProfileEdit'));
 import Explore from '@/pages/Explore';
-import Earnings from '@/pages/Earnings';
+const Earnings = lazy(() => import('@/pages/Earnings'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -55,7 +56,8 @@ function App() {
               <SonnerToaster theme="system" position="top-center" />
               <ModeBanner />
 
-            <Routes>
+            <Suspense fallback={<div className="flex h-screen w-full items-center justify-center"><div className="w-8 h-8 border-4 border-brand border-t-transparent rounded-full animate-spin"></div></div>}>
+              <Routes>
               {/* Public Routes */}
               <Route path="/" element={<PublicRoute><Landing /></PublicRoute>} />
               <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
@@ -89,6 +91,7 @@ function App() {
               {/* Fallback */}
               <Route path="*" element={<NotFound />} />
             </Routes>
+              </Suspense>
             
             {/* Navigation */}
             <BottomNav />

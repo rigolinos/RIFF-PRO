@@ -2,14 +2,14 @@
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { SessionForm } from '@/components/forms/SessionForm';
-import { useSessions } from '@/hooks/useSessions';
+import { useSessions, useSessionById } from '@/hooks/useSessions';
 
 const EditSession = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getSessionById, updateSession, isUpdating } = useSessions();
+  const { updateSession, isUpdating } = useSessions();
   
-  const { data: session, isLoading } = getSessionById(id || '');
+  const { data: session, isLoading } = useSessionById(id || '');
 
   const handleSubmit = async (data: any) => {
     try {

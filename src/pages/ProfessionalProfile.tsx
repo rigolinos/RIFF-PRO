@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ShieldCheck, Star, Camera, Share2, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -29,7 +29,7 @@ export default function ProfessionalProfile() {
       <div className="min-h-[100dvh] bg-bg flex flex-col items-center justify-center p-6 text-center">
         <EmptyState 
           title="Perfil não encontrado" 
-          description="Este profissional não existe ou alterou seu link."
+          description="Este organizador não existe ou alterou seu link."
           action={{ label: 'Ir para Home', onClick: () => navigate('/') }}
         />
       </div>
@@ -93,7 +93,7 @@ export default function ProfessionalProfile() {
         </h1>
         
         {profile.credential_number && (
-          <p className="text-xs text-ink-muted font-medium mb-3 uppercase tracking-wider flex items-center justify-center gap-1">
+          <p className="type-label mb-3 flex items-center justify-center gap-1">
             {profile.credential_type} {profile.credential_number}
           </p>
         )}
@@ -115,19 +115,19 @@ export default function ProfessionalProfile() {
                   <span className="font-bold text-ink font-display text-lg">{(profile.rating_avg ?? 0).toFixed(1).replace('.', ',')}</span>
                   <Star className="w-4 h-4 fill-brand text-brand" />
                 </div>
-                <span className="text-xs text-ink-muted uppercase tracking-wider font-semibold">Avaliações</span>
+                <span className="type-label">Avaliações</span>
               </div>
               <div className="w-px h-8 bg-line" />
             </>
           )}
           <div className="flex flex-col items-center">
-            <span className="font-bold text-ink font-display text-lg">{profile.total_sessions_given || 0}</span>
-            <span className="text-xs text-ink-muted uppercase tracking-wider font-semibold">Aulas Dadas</span>
+            <span className="type-number text-lg text-ink">{profile.total_sessions_given || 0}</span>
+            <span className="type-label">Aulas Dadas</span>
           </div>
           <div className="w-px h-8 bg-line" />
           <div className="flex flex-col items-center">
-            <span className="font-bold text-ink font-display text-lg">{profile.total_students_served || 0}</span>
-            <span className="text-xs text-ink-muted uppercase tracking-wider font-semibold">Alunos</span>
+            <span className="type-number text-lg text-ink">{profile.total_students_served || 0}</span>
+            <span className="type-label">Participantes</span>
           </div>
         </div>
 
@@ -140,11 +140,11 @@ export default function ProfessionalProfile() {
       </div>
 
       <div className="px-5 mb-8">
-        <h2 className="font-display font-bold text-xl text-ink mb-4">Próximas aulas</h2>
+        <h2 className="type-subtitle mb-4">Próximas aulas</h2>
         {sessions.length === 0 ? (
           <EmptyState 
             title="Nenhuma aula programada" 
-            description="O profissional ainda não possui turmas abertas." 
+            description="O organizador ainda não possui turmas abertas." 
           />
         ) : (
           <div className="space-y-4">
@@ -159,7 +159,7 @@ export default function ProfessionalProfile() {
       {reviews.length > 0 && (
         <div className="px-5 mb-10">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-display font-bold text-xl text-ink">Avaliações</h2>
+            <h2 className="type-subtitle">Avaliações</h2>
             <RatingBadge rating={profile.rating_avg} count={profile.total_reviews} showCount={false} />
           </div>
           <div className="flex overflow-x-auto hide-scrollbar snap-x snap-mandatory pb-4 -mx-5 px-5 gap-4">
@@ -168,7 +168,7 @@ export default function ProfessionalProfile() {
                 <div className="flex items-center gap-3 mb-3">
                   <Avatar src={review.reviewer?.avatar_url} name={review.reviewer?.full_name} className="w-10 h-10" />
                   <div>
-                    <h4 className="font-semibold text-sm text-ink">{review.reviewer?.full_name?.split(' ')[0] || 'Aluno'}</h4>
+                    <h4 className="font-semibold text-sm text-ink">{review.reviewer?.full_name?.split(' ')[0] || 'Participante'}</h4>
                     <div className="flex gap-0.5 mt-0.5">
                       {[1, 2, 3, 4, 5].map(star => (
                         <Star key={star} className={`w-3 h-3 ${star <= review.rating ? 'fill-brand text-brand' : 'fill-line text-line'}`} />

@@ -798,7 +798,7 @@ export default function ProfileEdit() {
 
 
 
-    } catch (err) {
+    } catch {
 
 
 
@@ -1166,7 +1166,7 @@ export default function ProfileEdit() {
 
 
 
-            <h3 className="text-sm font-semibold text-brand uppercase tracking-wider">Identificação</h3>
+            <h3 className="type-subtitle">Identificação</h3>
 
 
 
@@ -1526,7 +1526,7 @@ export default function ProfileEdit() {
 
 
 
-            <h3 className="text-sm font-semibold text-brand uppercase tracking-wider">Contato e Localização</h3>
+            <h3 className="type-subtitle">Contato e Localização</h3>
 
 
 
@@ -1766,7 +1766,7 @@ export default function ProfileEdit() {
 
 
 
-              <h3 className="text-sm font-semibold text-brand uppercase tracking-wider">Sobre você (Opcional)</h3>
+              <h3 className="type-subtitle">Sobre você (Opcional)</h3>
 
 
 
@@ -1870,7 +1870,7 @@ export default function ProfileEdit() {
 
 
 
-              <h3 className="text-sm font-semibold text-brand uppercase tracking-wider">Vitrine Profissional</h3>
+              <h3 className="type-subtitle">Vitrine do Organizador</h3>
 
 
 
@@ -2014,7 +2014,7 @@ export default function ProfileEdit() {
 
 
 
-                  <label className="text-sm font-medium">WhatsApp Profissional (Reservas)</label>
+                  <label className="text-sm font-medium">WhatsApp Organizador (Reservas)</label>
 
 
 
@@ -2054,7 +2054,7 @@ export default function ProfileEdit() {
 
 
 
-              <h3 className="text-sm font-semibold text-brand uppercase tracking-wider pt-4">Dados Bancários (Recebimento)</h3>
+              <h3 className="type-subtitle pt-4">Dados Bancários (Recebimento)</h3>
 
 
 
@@ -2358,7 +2358,7 @@ export default function ProfileEdit() {
 
 
 
-          <h3 className="text-sm font-semibold text-danger uppercase tracking-wider">Zona de Perigo</h3>
+          <h3 className="type-subtitle text-danger">Zona de Perigo</h3>
 
 
 

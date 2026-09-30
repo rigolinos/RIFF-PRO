@@ -79,7 +79,7 @@ const Signup = () => {
           }`}
         >
           <Shield className="w-6 h-6" />
-          <span className="text-sm font-medium">Profissional</span>
+          <span className="text-sm font-medium">Organizador</span>
         </button>
         <button
           type="button"
@@ -91,7 +91,7 @@ const Signup = () => {
           }`}
         >
           <Users className="w-6 h-6" />
-          <span className="text-sm font-medium">Aluno</span>
+          <span className="text-sm font-medium">Participante</span>
         </button>
       </motion.div>
 
