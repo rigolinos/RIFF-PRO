@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { SessionWithJoins } from '@/types/session';
 import { Search } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -16,7 +17,12 @@ import { useProfile } from '@/hooks/useProfile';
 import { EmptyState } from '@/components/domain';
 import { KINDS, ActivityKind } from '@/lib/copy';
 
+// Compara cidades sem acento, caixa ou espaços ("Porto alegre" = "Porto Alegre").
+const normalizeCity = (city?: string | null) =>
+  (city ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toLowerCase();
+
 export const Feed = () => {
+  const navigate = useNavigate();
   const { profile } = useProfile();
   const { feed: sessions, isLoadingFeed, isErrorFeed, errorFeed } = useSessions();
   if (isErrorFeed && errorFeed) console.error('Error fetching feed:', errorFeed);
@@ -37,6 +43,17 @@ export const Feed = () => {
     
   }, [sessions, selectedCategory, selectedKind]);
 
+  // Cidade da pessoa primeiro; as outras cidades vêm numa seção abaixo.
+  const myCity = normalizeCity(profile?.city);
+  const localSessions = useMemo(
+    () => (myCity ? filteredSessions.filter((s) => normalizeCity(s.city) === myCity) : filteredSessions),
+    [filteredSessions, myCity],
+  );
+  const otherCitySessions = useMemo(
+    () => (myCity ? filteredSessions.filter((s) => normalizeCity(s.city) !== myCity) : []),
+    [filteredSessions, myCity],
+  );
+
   // Group by date logic
   const groupedSessions = useMemo(() => {
     const groups: { label: string; dateGroupStr: string; sessions: SessionWithJoins[] }[] = [];
@@ -44,7 +61,7 @@ export const Feed = () => {
     // Create a map to group
     const map = new Map<string, { label: string; sessions: SessionWithJoins[] }>();
     
-    filteredSessions.forEach(session => {
+    localSessions.forEach(session => {
       const date = parseISO(session.date);
       let label = format(date, "EEEE, d 'de' MMMM", { locale: ptBR });
       // capitalize first letter
@@ -71,7 +88,7 @@ export const Feed = () => {
 
     // Sort groups chronologically
     return groups.sort((a, b) => a.dateGroupStr.localeCompare(b.dateGroupStr));
-  }, [filteredSessions]);
+  }, [localSessions]);
 
   const handleBookClick = (session: SessionWithJoins) => {
     setSelectedSession(session);
@@ -83,14 +100,18 @@ export const Feed = () => {
       <div className="pt-12 pb-4 px-6 sticky top-0 z-30 bg-bg/90 backdrop-blur-xl border-b border-line">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="text-sm text-ink-muted">Local atual</p>
+            <p className="text-sm text-ink-muted">Sua cidade</p>
             <div className="flex items-center gap-1">
               <h2 className="type-title">
                 {profile?.city || 'Sua Cidade'}
               </h2>
             </div>
           </div>
-          <button className="w-12 h-12 rounded-full bg-surface border border-line flex items-center justify-center text-ink hover:bg-elevated transition-colors">
+          <button
+            onClick={() => navigate('/explore')}
+            aria-label="Buscar organizadores"
+            className="w-12 h-12 rounded-full bg-surface border border-line flex items-center justify-center text-ink hover:bg-elevated transition-colors"
+          >
             <Search className="w-5 h-5" />
           </button>
         </div>
@@ -164,7 +185,7 @@ export const Feed = () => {
             <SessionCardSkeleton />
             <SessionCardSkeleton />
           </div>
-        ) : groupedSessions.length === 0 ? (
+        ) : groupedSessions.length === 0 && otherCitySessions.length === 0 ? (
           <motion.div 
             initial={{ opacity: 0, y: 10 }} 
             animate={{ opacity: 1, y: 0 }}
@@ -185,6 +206,11 @@ export const Feed = () => {
           </motion.div>
         ) : (
           <div className="space-y-8">
+            {groupedSessions.length === 0 && (
+              <p className="text-sm text-ink-muted">
+                Ainda não há atividades em {profile?.city}. Veja o que está rolando em outras cidades.
+              </p>
+            )}
             {groupedSessions.map((group, groupIndex) => (
               <div key={group.dateGroupStr}>
                 <h3 className="type-subtitle text-ink mb-4">{group.label}</h3>
@@ -202,6 +228,16 @@ export const Feed = () => {
                 </div>
               </div>
             ))}
+            {otherCitySessions.length > 0 && (
+              <div>
+                <h3 className="type-subtitle text-ink mb-4">Em outras cidades</h3>
+                <div className="space-y-4">
+                  {otherCitySessions.map((session) => (
+                    <SessionCard key={session.id} session={session as unknown as SessionWithJoins} onBookClick={handleBookClick} />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
