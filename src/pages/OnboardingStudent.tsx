@@ -93,7 +93,7 @@ const OnboardingStudent = () => {
           <div className="mt-auto pt-6">
             <Button 
               type="submit" 
-              className="w-full h-14 bg-brand hover:brightness-105 text-brand-ink font-bold rounded-xl glow-emerald text-lg"
+              className="w-full h-14 bg-brand hover:brightness-105 text-brand-ink font-bold rounded-xl glow-brand text-lg"
               disabled={isUpdating}
             >
               {isUpdating ? 'Salvando...' : 'Começar a Treinar'}

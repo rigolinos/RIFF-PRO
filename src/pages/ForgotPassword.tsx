@@ -81,7 +81,7 @@ const ForgotPassword = () => {
           </p>
           <button
             onClick={() => navigate('/login')}
-            className="w-full h-12 bg-brand hover:brightness-105 text-brand-ink font-semibold rounded-xl glow-emerald transition-all"
+            className="w-full h-12 bg-brand hover:brightness-105 text-brand-ink font-semibold rounded-xl glow-brand transition-all"
           >
             Voltar ao Login
           </button>
@@ -109,7 +109,7 @@ const ForgotPassword = () => {
           <button
             type="submit"
             disabled={isLoading || !email}
-            className="w-full h-12 bg-brand hover:brightness-105 disabled:opacity-50 text-brand-ink font-semibold rounded-xl flex items-center justify-center gap-2 transition-all glow-emerald"
+            className="w-full h-12 bg-brand hover:brightness-105 disabled:opacity-50 text-brand-ink font-semibold rounded-xl flex items-center justify-center gap-2 transition-all glow-brand"
           >
             {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Enviar Link de Recuperação'}
           </button>

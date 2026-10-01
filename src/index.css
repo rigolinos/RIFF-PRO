@@ -146,7 +146,6 @@
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-1);
 }
-/* glow-emerald: renomear para glow-brand quando o componente for refatorado */
-.glow-brand, .glow-emerald {
+.glow-brand {
   box-shadow: var(--shadow-cta);
 }

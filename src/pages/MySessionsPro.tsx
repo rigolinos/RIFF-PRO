@@ -431,7 +431,7 @@ const MySessionsPro = () => {
                     <Button
                       onClick={handleCloseSession}
                       disabled={isClosing}
-                      className="flex-1 h-12 bg-brand hover:bg-brand text-brand-ink font-bold glow-emerald"
+                      className="flex-1 h-12 bg-brand hover:bg-brand text-brand-ink font-bold glow-brand"
                     >
                       {isClosing ? <Loader2 className="w-5 h-5 animate-spin" /> : '✅ Encerrar Atividade'}
                     </Button>

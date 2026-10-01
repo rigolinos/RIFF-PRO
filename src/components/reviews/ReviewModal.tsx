@@ -115,7 +115,7 @@ export function ReviewModal({ booking, isOpen, onClose, onSuccess }: ReviewModal
           <Button
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="flex-1 bg-brand hover:brightness-105 text-brand-ink font-bold glow-emerald"
+            className="flex-1 bg-brand hover:brightness-105 text-brand-ink font-bold glow-brand"
           >
             {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Enviar Avaliação'}
           </Button>

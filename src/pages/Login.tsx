@@ -133,7 +133,7 @@ const Login = () => {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full h-12 bg-brand hover:brightness-105 disabled:opacity-50 text-brand-ink font-semibold rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] mt-4 glow-emerald"
+          className="w-full h-12 bg-brand hover:brightness-105 disabled:opacity-50 text-brand-ink font-semibold rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] mt-4 glow-brand"
         >
           {isLoading ? (
             <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />

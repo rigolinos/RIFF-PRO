@@ -9,7 +9,7 @@ const NotFound = () => {
       <p className="text-muted-foreground text-sm mb-8">Essa página não existe ou foi removida.</p>
       <button
         onClick={() => navigate('/')}
-        className="h-12 px-8 bg-brand hover:brightness-105 text-brand-ink font-semibold rounded-xl transition-all active:scale-[0.98] glow-emerald"
+        className="h-12 px-8 bg-brand hover:brightness-105 text-brand-ink font-semibold rounded-xl transition-all active:scale-[0.98] glow-brand"
       >
         Voltar ao início
       </button>

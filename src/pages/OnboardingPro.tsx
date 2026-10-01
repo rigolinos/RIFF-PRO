@@ -207,7 +207,7 @@ const OnboardingPro = () => {
                 </Button>
                 <Button 
                   type="submit" 
-                  className="h-12 flex-1 bg-brand hover:brightness-105 text-brand-ink font-semibold rounded-xl glow-emerald"
+                  className="h-12 flex-1 bg-brand hover:brightness-105 text-brand-ink font-semibold rounded-xl glow-brand"
                   disabled={isUpdating}
                 >
                   {isUpdating ? 'Salvando...' : 'Finalizar Perfil'}
