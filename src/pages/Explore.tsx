@@ -24,7 +24,8 @@ export default function Explore() {
         let query = supabase
           .from('profiles')
           .select('id, full_name, avatar_url, public_slug, city, rating_avg, total_reviews, specialties')
-          .eq('role', 'professional');
+          .eq('role', 'professional')
+          .is('deleted_at', null);
 
         if (debouncedSearch) {
           query = query.ilike('full_name', `%${debouncedSearch}%`);

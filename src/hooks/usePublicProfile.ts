@@ -15,6 +15,7 @@ export function usePublicProfile(slugOrId: string) {
         .from('profiles')
         .select('id, full_name, avatar_url, bio, city, state, role, professional_type, credential_type, credential_number, credential_verified, specialties, experience_years, public_slug, instagram_handle, rating_avg, total_reviews, total_sessions_given, total_students_served')
         .eq('public_slug', slugOrId)
+        .is('deleted_at', null)
         .single();
 
       if (!profile && slugOrId.includes('-')) {
@@ -22,6 +23,7 @@ export function usePublicProfile(slugOrId: string) {
           .from('profiles')
           .select('id, full_name, avatar_url, bio, city, state, role, professional_type, credential_type, credential_number, credential_verified, specialties, experience_years, public_slug, instagram_handle, rating_avg, total_reviews, total_sessions_given, total_students_served')
           .eq('id', slugOrId)
+          .is('deleted_at', null)
           .single();
         profile = profileById;
       }
