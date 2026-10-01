@@ -49,9 +49,9 @@ export const Header = ({
         )}
       </div>
 
-      <div className="flex-1 flex justify-center px-2">
+      <div className="flex-1 min-w-0 flex justify-center px-2">
         {title && (
-          <h1 className="type-subtitle text-center">
+          <h1 className="type-subtitle text-center whitespace-nowrap truncate">
             {title}
           </h1>
         )}
