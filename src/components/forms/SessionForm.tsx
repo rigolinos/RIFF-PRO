@@ -44,6 +44,15 @@ interface SessionFormProps {
   isSubmitting: boolean;
 }
 
+// Rascunho da criação de atividade; dado inválido ou armazenamento bloqueado não derruba a tela.
+function readDraft() {
+  try {
+    return JSON.parse(localStorage.getItem('riff-session-draft') || 'null');
+  } catch {
+    return null;
+  }
+}
+
 export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionFormProps) {
   const { data: categories } = useCategories();
   const { profile } = useProfile();
@@ -58,7 +67,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
   const hasParticipants = isEditMode && (initialData.current_participants ?? 0) > 0;
 
   
-  const savedDraft = !isEditMode ? JSON.parse(localStorage.getItem('riff-session-draft') || 'null') : null;
+  const savedDraft = !isEditMode ? readDraft() : null;
   
   const form = useForm({
     defaultValues: savedDraft ? { ...savedDraft, kind: savedDraft.kind || initialData?.kind || 'class' } : {
@@ -83,7 +92,11 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
   useEffect(() => {
     if (!isEditMode) {
       const timeout = setTimeout(() => {
-        localStorage.setItem('riff-session-draft', JSON.stringify(formData));
+        try {
+          localStorage.setItem('riff-session-draft', JSON.stringify(formData));
+        } catch {
+          // armazenamento indisponível: segue sem rascunho
+        }
       }, 1000);
       return () => clearTimeout(timeout);
     }

@@ -13,6 +13,12 @@ const CreateSession = () => {
   const handleSubmit = async (data: TablesInsert<'sessions'>) => {
     try {
       await createSession(data);
+      // Publicada: o rascunho não deve reaparecer na próxima atividade
+      try {
+        localStorage.removeItem('riff-session-draft');
+      } catch {
+        // armazenamento indisponível (aba anônima etc.): nada a limpar
+      }
       toast.success('Atividade criada com sucesso! 🎉');
       navigate('/my-sessions');
     } catch (error: unknown) {
