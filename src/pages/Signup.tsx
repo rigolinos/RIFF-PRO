@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { Eye, EyeOff, Dumbbell, ArrowLeft, Users, Shield } from 'lucide-react';
+import { Eye, EyeOff, ArrowLeft, Users, Shield } from 'lucide-react';
+import { Logo } from '@/components/ui/logo';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -53,9 +54,7 @@ const Signup = () => {
         className="mb-8"
       >
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-8 h-8 rounded-lg bg-brand flex items-center justify-center">
-            <Dumbbell className="w-5 h-5 text-brand-ink" />
-          </div>
+          <Logo variant="icon" size="md" />
           <span className="text-lg font-bold text-foreground">Riff <span className="text-brand">Pro</span></span>
         </div>
         <h1 className="type-display">Criar conta</h1>

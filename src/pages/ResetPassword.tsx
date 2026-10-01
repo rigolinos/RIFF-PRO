@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Loader2, Dumbbell } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Logo } from '@/components/ui/logo';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 
@@ -63,9 +64,7 @@ const ResetPassword = () => {
     <div className="min-h-screen bg-background flex flex-col px-6 py-8">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-8 mt-12">
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-8 h-8 rounded-lg bg-brand flex items-center justify-center">
-            <Dumbbell className="w-5 h-5 text-brand-ink" />
-          </div>
+          <Logo variant="icon" size="md" />
           <span className="text-lg font-bold text-foreground">Riff <span className="text-brand">Pro</span></span>
         </div>
         <h1 className="type-display">Definir Nova Senha</h1>
