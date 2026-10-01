@@ -6,11 +6,13 @@
  * "activity" is the definitive product decision.
  */
 
+import { BRAND } from '@/brand';
+
 export const COPY = {
   organizer:   { singular: 'Organizador', plural: 'Organizadores', alt: 'Anfitrião', altEn: 'Host' },
   participant: { singular: 'Participante', plural: 'Participantes' },
   activity:    { singular: 'atividade', plural: 'atividades' },
-  tagline: 'Organize. Participe. Jogue junto.',
+  tagline: BRAND.tagline,
 } as const;
 
 export type ActivityKind = 'class' | 'match' | 'tournament' | 'event' | 'other';

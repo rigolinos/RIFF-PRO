@@ -7,6 +7,7 @@ import { ptBR } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { supabase } from '@/integrations/supabase/client';
+import { BRAND } from '@/brand';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import {
@@ -141,10 +142,10 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
     const cleanPhone = proPhone.replace(/\D/g, '');
     const finalPhone = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
     const studentName = studentProfile?.full_name?.split(' ')[0] || 'Participante';
-    const proName = paymentInfo?.pro_name?.split(' ')[0] || 'Prof';
+    const proName = paymentInfo?.pro_name?.split(' ')[0];
     const text = encodeURIComponent(
-      `Olá ${proName}! Aqui é o(a) ${studentName}. ` +
-      `Acabei de reservar a atividade "${session.category?.name || session.title}" pelo Riff. ` +
+      `${proName ? `Olá ${proName}!` : 'Olá!'} Aqui é o(a) ${studentName}. ` +
+      `Acabei de reservar a atividade "${session.category?.name || session.title}" pelo ${BRAND.name}. ` +
       `Segue o comprovante do Pix!`
     );
 
@@ -160,7 +161,7 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
   const generateCalendarLink = () => {
     // Generate an ICS or Google Calendar link
     const text = encodeURIComponent(`Atividade: ${session.title}`);
-    const details = encodeURIComponent(`Local: ${session.location_name}\n\nReservado via Riff`);
+    const details = encodeURIComponent(`Local: ${session.location_name}\n\nReservado via ${BRAND.name}`);
     const location = encodeURIComponent(session.location_address || session.location_name);
     // Simple Google Calendar link
     

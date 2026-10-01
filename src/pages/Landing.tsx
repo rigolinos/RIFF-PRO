@@ -96,7 +96,7 @@ const Landing = () => {
         </h2>
         <div className="space-y-3">
           {[
-            { icon: Shield, text: 'Crie sua vitrine organizador e atraia participantes', color: 'text-brand' },
+            { icon: Shield, text: 'Monte sua vitrine de organizador e atraia participantes', color: 'text-brand' },
             { icon: MapPin, text: 'Publique atividades em parques, praias ou estúdios', color: 'text-brand' },
             { icon: DollarSign, text: 'Receba o pagamento direto dos seus participantes', color: 'text-accent' },
             { icon: Star, text: 'Construa sua reputação com avaliações reais', color: 'text-slate' },
