@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { errorMessage } from '@/lib/utils';
 import { SessionForm } from '@/components/forms/SessionForm';
 import { useSessions } from '@/hooks/useSessions';
 
@@ -15,7 +16,7 @@ const CreateSession = () => {
       toast.success('Atividade criada com sucesso! 🎉');
       navigate('/my-sessions');
     } catch (error: unknown) {
-      toast.error((error instanceof Error ? error.message : 'Erro desconhecido') || 'Erro ao criar atividade.');
+      toast.error(errorMessage(error, 'Erro ao criar atividade.'));
     }
   };
 

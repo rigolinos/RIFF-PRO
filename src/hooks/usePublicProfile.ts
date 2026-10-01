@@ -38,7 +38,7 @@ export function usePublicProfile(slugOrId: string) {
           location_name, location_address, max_participants, current_participants,
           price_per_slot, status, session_type, skill_level, kind,
           category:categories(name, emoji),
-          professional:profiles!sessions_professional_id_fkey(id, full_name, avatar_url, public_slug, rating_avg)
+          professional:profiles!sessions_professional_id_fkey(id, full_name, avatar_url, public_slug, rating_avg, total_reviews)
         `)
         .eq('professional_id', profile.id)
         .in('status', ['active', 'full'])

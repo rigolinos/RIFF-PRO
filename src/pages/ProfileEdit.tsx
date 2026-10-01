@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
+import { errorMessage } from '@/lib/utils';
 import { Loader2, AtSign, Phone, MapPin, Link as LinkIcon, Camera } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -86,7 +87,7 @@ export default function ProfileEdit() {
       await updateProfile({ avatar_url: data.publicUrl });
       toast.success('Foto de perfil atualizada!');
     } catch (error: Error | unknown) {
-      toast.error((error instanceof Error ? error.message : 'Erro desconhecido') || 'Erro ao fazer upload da imagem.');
+      toast.error(errorMessage(error, 'Erro ao fazer upload da imagem.'));
     } finally {
       setIsUploading(false);
     }

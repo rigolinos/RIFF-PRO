@@ -1,6 +1,7 @@
 import { SessionWithJoins } from '@/types/session';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
+import { errorMessage } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
 import { SessionForm } from '@/components/forms/SessionForm';
 import { useSessions, useSessionById } from '@/hooks/useSessions';
@@ -21,7 +22,7 @@ const EditSession = () => {
       toast.success('Atividade atualizada com sucesso!');
       navigate('/my-sessions');
     } catch (error: unknown) {
-      toast.error((error instanceof Error ? error.message : 'Erro desconhecido') || 'Erro ao atualizar atividade.');
+      toast.error(errorMessage(error, 'Erro ao atualizar atividade.'));
     }
   };
 

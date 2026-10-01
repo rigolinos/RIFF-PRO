@@ -42,7 +42,7 @@ export const Feed = () => {
     const groups: { label: string; dateGroupStr: string; sessions: SessionWithJoins[] }[] = [];
     
     // Create a map to group
-    const map = new Map<string, SessionWithJoins[]>();
+    const map = new Map<string, { label: string; sessions: SessionWithJoins[] }>();
     
     filteredSessions.forEach(session => {
       const date = parseISO(session.date);
@@ -58,20 +58,15 @@ export const Feed = () => {
         label = 'Amanhã';
       }
 
-      const key = session.date + '-' + label; // ensures ordering and grouping uniqueness
-      if (!map.has(key)) {
-        map.set(key, []);
+      // Agrupa pela data (AAAA-MM-DD); o rótulo vai junto, sem precisar ser extraído da chave.
+      if (!map.has(session.date)) {
+        map.set(session.date, { label, sessions: [] });
       }
-      map.get(key)!.push(session as unknown as SessionWithJoins); // actually sessions are already typed hopefully
+      map.get(session.date)!.sessions.push(session as unknown as SessionWithJoins);
     });
 
-    for (const [key, items] of Array.from(map.entries())) {
-      const [dateGroupStr, label] = key.split('-');
-      groups.push({
-        label,
-        dateGroupStr,
-        sessions: items
-      });
+    for (const [dateGroupStr, { label, sessions }] of Array.from(map.entries())) {
+      groups.push({ label, dateGroupStr, sessions });
     }
 
     // Sort groups chronologically

@@ -14,6 +14,7 @@ import { useBookings } from '@/hooks/useBookings';
 import { buildWhatsAppUrl } from '@/lib/whatsapp';
 import { useProfile } from '@/hooks/useProfile';
 import { ReviewModal } from '@/components/reviews/ReviewModal';
+import { ConfirmDialog } from '@/components/domain/ConfirmDialog';
 import { supabase } from '@/integrations/supabase/client';
 
 type BookingType = NonNullable<ReturnType<typeof useBookings>['bookings']>[number];
@@ -23,6 +24,7 @@ const MyBookings = () => {
   const { bookings, isLoading, isError, error, cancelBooking } = useBookings();
   if (isError && error) console.error('Error fetching bookings:', error);
   const [cancelingId, setCancelingId] = useState<string | null>(null);
+  const [bookingToCancel, setBookingToCancel] = useState<BookingType | null>(null);
   const [reviewBooking, setReviewBooking] = useState<BookingType | null>(null);
 
   // Split bookings between upcoming and history
@@ -99,8 +101,12 @@ const MyBookings = () => {
       return;
     }
 
-    if (!window.confirm('Tem certeza que deseja cancelar esta reserva?')) return;
+    setBookingToCancel(booking);
+  };
 
+  const confirmCancel = async () => {
+    const booking = bookingToCancel;
+    if (!booking) return;
     setCancelingId(booking.id);
     try {
       await cancelBooking(booking.id);
@@ -109,6 +115,7 @@ const MyBookings = () => {
       toast.error('Erro ao cancelar reserva.');
     } finally {
       setCancelingId(null);
+      setBookingToCancel(null);
     }
   };
 
@@ -186,7 +193,7 @@ const MyBookings = () => {
               className="flex-1 h-10 rounded-lg bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 font-medium text-sm transition-colors flex items-center justify-center gap-2"
             >
               <MessageCircle className="w-4 h-4" />
-              Falar com o Prof.
+              Falar com o organizador
             </button>
             
             <button
@@ -263,6 +270,17 @@ const MyBookings = () => {
         )}
       </div>
 
+      <ConfirmDialog
+        open={!!bookingToCancel}
+        onOpenChange={(open) => !open && setBookingToCancel(null)}
+        title="Cancelar reserva?"
+        description={bookingToCancel ? `Sua vaga em "${bookingToCancel.session.title}" será liberada para outra pessoa.` : ''}
+        cancelLabel="Manter reserva"
+        confirmLabel="Cancelar reserva"
+        isDestructive
+        isLoading={!!cancelingId}
+        onConfirm={confirmCancel}
+      />
       <ReviewModal 
         booking={reviewBooking}
         isOpen={!!reviewBooking}

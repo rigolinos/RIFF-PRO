@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 import { supabase } from '@/integrations/supabase/client';
 import { BRAND } from '@/brand';
+import { errorMessage } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import {
@@ -104,8 +105,7 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
         triggerSuccess();
       }
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Erro ao processar reserva';
-      toast.error(message);
+      toast.error(errorMessage(err, 'Erro ao processar reserva.'));
     } finally {
       setIsBooking(false);
     }
@@ -298,6 +298,38 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
                       Já paguei / Pagar depois
                     </button>
                   </div>
+                </div>
+              </motion.div>
+            )}
+
+            {step === 'payment' && !paymentInfo?.pix_key && (
+              <motion.div
+                key="payment-no-pix"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+              >
+                <DrawerHeader className="pb-2">
+                  <DrawerTitle className="font-display text-xl text-ink">Vaga pré-reservada</DrawerTitle>
+                  <DrawerDescription className="text-ink-muted">
+                    O organizador ainda não cadastrou a chave Pix. Combine o pagamento de{' '}
+                    R$ {session.price_per_slot.toFixed(2).replace('.', ',')} direto com ele.
+                  </DrawerDescription>
+                </DrawerHeader>
+
+                <div className="p-6 space-y-3">
+                  {paymentInfo?.whatsapp_number && (
+                    <Button
+                      onClick={handleWhatsApp}
+                      className="w-full h-14 bg-[#25D366] hover:bg-[#20bd5a] text-bg font-semibold text-lg rounded-xl gap-2 border-0"
+                    >
+                      <MessageCircle className="w-6 h-6" />
+                      Falar com o organizador
+                    </Button>
+                  )}
+                  <Button onClick={triggerSuccess} variant="outline" className="w-full h-12 rounded-xl">
+                    Entendi
+                  </Button>
                 </div>
               </motion.div>
             )}
