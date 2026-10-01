@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { BRAND } from '@/brand';
 import { errorMessage } from '@/lib/utils';
+import { buildPixPayload } from '@/lib/pix';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import {
@@ -68,6 +69,15 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
   if (!session) return null;
 
   const isFree = session.price_per_slot === 0;
+  const pixPayload = paymentInfo?.pix_key
+    ? buildPixPayload({
+        key: paymentInfo.pix_key,
+        keyType: paymentInfo.pix_key_type,
+        amount: session.price_per_slot,
+        name: paymentInfo.pro_name,
+        city: session.city,
+      })
+    : null;
   const dateStr = format(parseISO(session.date), "EEE, d 'de' MMM", { locale: ptBR });
   const timeStr = session.start_time.substring(0, 5);
 
@@ -119,15 +129,14 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
   };
 
   const handleCopyPix = () => {
-    const pixKey = paymentInfo?.pix_key;
-    if (!pixKey) {
+    if (!pixPayload) {
       toast.error('Chave Pix não encontrada.');
       return;
     }
 
-    navigator.clipboard.writeText(pixKey);
+    navigator.clipboard.writeText(pixPayload);
     setCopied(true);
-    toast.success('Chave Pix copiada!');
+    toast.success('Pix copia e cola copiado!');
     setTimeout(() => setCopied(false), 3000);
   };
 
@@ -251,7 +260,7 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
                     <div className="flex justify-center mb-6">
                       <div className="p-3 bg-white rounded-xl shadow-sm">
                         <QRCode 
-                          value={paymentInfo.pix_key} 
+                          value={pixPayload ?? ''} 
                           size={160} 
                           bgColor="#FFFFFF"
                           fgColor="#000000"
@@ -261,10 +270,10 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
                     </div>
 
                     <div className="space-y-2">
-                      <p className="text-xs text-ink-muted font-medium text-left ml-1">Chave Pix Copia e Cola:</p>
+                      <p className="text-xs text-ink-muted font-medium text-left ml-1">Pix copia e cola (valor já incluso):</p>
                       <div className="flex gap-2">
                         <div className="h-12 bg-elevated rounded-xl px-4 flex items-center flex-1 font-mono text-sm border border-line truncate select-all text-ink">
-                          {paymentInfo.pix_key}
+                          {pixPayload}
                         </div>
                         <Button
                           variant="primary"
@@ -342,8 +351,10 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
                 className="p-6 pt-8"
               >
                 <div className="text-center mb-6">
-                  <h2 className="type-title text-ink">Reserva confirmada</h2>
-                  <p className="text-ink-muted text-sm mt-1">Sua vaga está garantida!</p>
+                  <h2 className="type-title text-ink">{isFree ? 'Reserva confirmada' : 'Vaga pré-reservada até o pagamento'}</h2>
+                  <p className="text-ink-muted text-sm mt-1">
+                    {isFree ? 'Sua vaga está garantida!' : 'Sua vaga fica garantida quando o organizador confirmar o Pix.'}
+                  </p>
                 </div>
 
                 {/* Ticket Component */}
