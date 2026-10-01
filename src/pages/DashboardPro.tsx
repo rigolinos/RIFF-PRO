@@ -30,7 +30,7 @@ export default function DashboardPro() {
                 navigate('/feed');
               }}
             >
-              <RefreshCw className="w-3.5 h-3.5" /> Ver como Participante
+              <RefreshCw className="w-3.5 h-3.5" /> Participante
             </Button>}>
         <div className="flex-1 flex items-center justify-center">
           <Loader2 className="w-8 h-8 text-brand animate-spin" />
@@ -79,7 +79,7 @@ export default function DashboardPro() {
                 navigate('/feed');
               }}
             >
-              <RefreshCw className="w-3.5 h-3.5" /> Ver como Participante
+              <RefreshCw className="w-3.5 h-3.5" /> Participante
             </Button>}>
       <div className="px-6 py-6 flex-1 flex flex-col space-y-8 pb-32">
         
