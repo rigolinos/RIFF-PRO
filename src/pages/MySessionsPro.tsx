@@ -3,7 +3,7 @@ import { format, parseISO, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
   Users, Clock, Loader2, CheckCircle2,
-  Edit, XCircle, Copy, Share2, ClipboardCheck, CalendarDays, AlertCircle
+  Edit, XCircle, Copy, Share2, ClipboardCheck, CalendarDays
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -431,7 +431,7 @@ const MySessionsPro = () => {
                     <Button
                       onClick={handleCloseSession}
                       disabled={isClosing}
-                      className="flex-1 h-12 bg-brand hover:bg-brand text-brand-ink font-bold glow-emerald"
+                      className="flex-1 h-12 bg-brand hover:bg-brand text-brand-ink font-bold glow-brand"
                     >
                       {isClosing ? <Loader2 className="w-5 h-5 animate-spin" /> : '✅ Encerrar Atividade'}
                     </Button>

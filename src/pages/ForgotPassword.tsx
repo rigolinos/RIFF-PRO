@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Mail, Loader2, Dumbbell } from 'lucide-react';
+import { ArrowLeft, Mail, Loader2 } from 'lucide-react';
+import { Logo } from '@/components/ui/logo';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import * as z from 'zod';
@@ -60,9 +61,7 @@ const ForgotPassword = () => {
 
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-8 h-8 rounded-lg bg-brand flex items-center justify-center">
-            <Dumbbell className="w-5 h-5 text-brand-ink" />
-          </div>
+          <Logo variant="icon" size="md" />
           <span className="text-lg font-bold text-foreground">Riff <span className="text-brand">Pro</span></span>
         </div>
         <h1 className="type-display">Recuperar Senha</h1>
@@ -82,7 +81,7 @@ const ForgotPassword = () => {
           </p>
           <button
             onClick={() => navigate('/login')}
-            className="w-full h-12 bg-brand hover:brightness-105 text-brand-ink font-semibold rounded-xl glow-emerald transition-all"
+            className="w-full h-12 bg-brand hover:brightness-105 text-brand-ink font-semibold rounded-xl glow-brand transition-all"
           >
             Voltar ao Login
           </button>
@@ -110,7 +109,7 @@ const ForgotPassword = () => {
           <button
             type="submit"
             disabled={isLoading || !email}
-            className="w-full h-12 bg-brand hover:brightness-105 disabled:opacity-50 text-brand-ink font-semibold rounded-xl flex items-center justify-center gap-2 transition-all glow-emerald"
+            className="w-full h-12 bg-brand hover:brightness-105 disabled:opacity-50 text-brand-ink font-semibold rounded-xl flex items-center justify-center gap-2 transition-all glow-brand"
           >
             {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Enviar Link de Recuperação'}
           </button>

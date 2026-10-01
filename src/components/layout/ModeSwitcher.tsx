@@ -1,7 +1,7 @@
 ﻿import { useState } from "react";
 import { useViewMode } from "@/contexts/ViewModeContext";
 import { useProfile } from "@/hooks/useProfile";
-import { ChevronDown, Check, UserPlus } from "lucide-react";
+import { ChevronDown, UserPlus } from "lucide-react";
 import { Drawer, DrawerTrigger, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { useNavigate } from "react-router-dom";
 

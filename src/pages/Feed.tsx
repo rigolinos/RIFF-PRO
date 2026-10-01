@@ -7,9 +7,7 @@ import { ptBR } from 'date-fns/locale';
 
 import { PageContainer } from '@/components/layout/PageContainer';
 import { ModeSwitcher } from '@/components/layout/ModeSwitcher';
-import { useSessions, useCities } from '@/hooks/useSessions';
-import { Drawer, DrawerTrigger, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
-import { useEffect } from 'react';
+import { useSessions } from '@/hooks/useSessions';
 import { useCategories } from '@/hooks/useCategories';
 import { SessionCard } from '@/components/cards/SessionCard';
 import { SessionCardSkeleton } from '@/components/skeletons/SessionCardSkeleton';

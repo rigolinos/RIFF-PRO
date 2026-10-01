@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { Star, ArrowLeft, CheckCircle2, AlertCircle } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
+import { BRAND } from '@/brand';
 
 import { usePublicProfile } from '@/hooks/usePublicProfile';
 import { SessionCard } from '@/components/cards/SessionCard';
@@ -66,9 +67,9 @@ export default function ProfessionalProfile() {
   return (
     <div className="min-h-[100dvh] bg-bg text-ink pb-28 w-full max-w-[480px] mx-auto overflow-x-hidden relative">
       <Helmet>
-        <title>{profile.full_name} | Riff</title>
+        <title>{`${profile.full_name} | ${BRAND.name}`}</title>
         <meta name="description" content={profile.bio || "Confira os horários disponíveis e reserve sua vaga online."} />
-        <meta property="og:image" content={profile.avatar_url || 'https://riff.pro/og-image.jpg'} />
+        <meta property="og:image" content={profile.avatar_url || `https://${BRAND.domain}${BRAND.ogImage}`} />
       </Helmet>
 
       {/* Header with Cover */}

@@ -94,8 +94,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
     return categories?.find(c => c.id === formData.category_id)?.slug;
   }, [categories, formData.category_id]);
 
-  const formDataKind = form.watch('kind');
-  const activeTemplates = (selectedCategorySlug && formDataKind === 'class') ? TEMPLATES[selectedCategorySlug] : [];
+  const activeTemplates = (selectedCategorySlug && formData.kind === 'class') ? TEMPLATES[selectedCategorySlug] : [];
 
   const handleTemplateClick = (temp: { title: string; description: string }) => {
     setValue('title', temp.title, { shouldValidate: true });
@@ -340,7 +339,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-ink">{formDataKind ? KINDS[formDataKind as ActivityKind]?.capacityLabel : 'Capacidade (Vagas)'}</label>
+                    <label className="text-sm font-medium text-ink">{formData.kind ? KINDS[formData.kind as ActivityKind]?.capacityLabel : 'Capacidade (Vagas)'}</label>
                     <div className="relative">
                       <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted" />
                       <Input {...register('max_participants')} type="number" min="1" className="h-12 pl-10 bg-surface border-line text-base focus:border-brand/50" />

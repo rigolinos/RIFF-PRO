@@ -1,4 +1,4 @@
-﻿import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+﻿import { createContext, useContext, useState, ReactNode } from 'react';
 import { useProfile } from '@/hooks/useProfile';
 
 type ViewMode = 'professional' | 'student';
@@ -11,33 +11,25 @@ interface ViewModeContextType {
 
 const ViewModeContext = createContext<ViewModeContextType | undefined>(undefined);
 
+function readSavedMode(): ViewMode | null {
+  try {
+    const saved = localStorage.getItem('riff-mode');
+    return saved === 'professional' || saved === 'student' ? saved : null;
+  } catch (e) {
+    console.error('Error reading riff-mode from localStorage', e);
+    return null;
+  }
+}
+
 export function ViewModeProvider({ children }: { children: ReactNode }) {
   const { profile } = useProfile();
-  const [viewMode, setViewModeState] = useState<ViewMode>('student');
-
-  useEffect(() => {
-    if (!profile) return;
-    
-    // Default fallback based on profile
-    let defaultMode: ViewMode = profile.role === 'professional' ? 'professional' : 'student';
-    let currentMode = defaultMode;
-
-    try {
-      const saved = localStorage.getItem('riff-mode');
-      if (saved === 'professional' || saved === 'student') {
-        currentMode = saved as ViewMode;
-      } else {
-        localStorage.setItem('riff-mode', defaultMode);
-      }
-    } catch (e) {
-      console.error('Error reading riff-mode from localStorage', e);
-    }
-    
-    setViewModeState(currentMode);
-  }, [profile]);
+  // Modo escolhido pelo usuário; sem escolha salva, segue o papel do perfil.
+  const [savedMode, setSavedMode] = useState<ViewMode | null>(readSavedMode);
+  const defaultMode: ViewMode = profile?.role === 'professional' ? 'professional' : 'student';
+  const viewMode = savedMode ?? defaultMode;
 
   const handleSetViewMode = (mode: ViewMode) => {
-    setViewModeState(mode);
+    setSavedMode(mode);
     try {
       localStorage.setItem('riff-mode', mode);
     } catch (e) {
