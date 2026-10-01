@@ -221,6 +221,19 @@ await q("UPDATE public.venues SET visibility = 'public' WHERE id = $1", [s1.venu
 r = await as('authenticated', PART, 'SELECT profile_id FROM public.organization_members');
 ok(r.rows?.length === 0, 'participante não lista membros de organizações alheias');
 
+// ── Aceites legais ──────────────────────────────────────────────────────
+console.log('Aceites legais:');
+r = await as('authenticated', PART, "INSERT INTO public.legal_acceptances (profile_id, document, version, accepted_at) VALUES ($1, 'terms', '2026-10-01', '2000-01-01') RETURNING accepted_at > now() - interval '1 minute' AS server_time", [pPart]);
+ok(!r.err && r.rows?.[0]?.server_time, 'participante registra o próprio aceite (data vem do servidor)' + (r.err ? ` (${r.err})` : ''));
+r = await as('authenticated', PART, "INSERT INTO public.legal_acceptances (profile_id, document, version) VALUES ($1, 'terms', '2026-10-01')", [pPart2]);
+ok(r.err, 'não registra aceite em nome de outra pessoa');
+r = await as('authenticated', PART, "UPDATE public.legal_acceptances SET version = 'x' WHERE profile_id = $1 RETURNING id", [pPart]);
+ok(!r.err && r.rows.length === 0, 'aceite não pode ser alterado');
+r = await as('authenticated', PART, 'DELETE FROM public.legal_acceptances WHERE profile_id = $1 RETURNING id', [pPart]);
+ok(!r.err && r.rows.length === 0, 'aceite não pode ser apagado');
+r = await as('authenticated', PART2, 'SELECT id FROM public.legal_acceptances WHERE profile_id = $1', [pPart]);
+ok(r.rows?.length === 0, 'ninguém lê os aceites dos outros');
+
 // ── Exclusão de conta: participante ─────────────────────────────────────
 console.log('Exclusão de conta (participante):');
 r = await as('authenticated', PART, 'SELECT public.delete_user_account()');
@@ -242,6 +255,7 @@ ok((await count('SELECT count(*)::int n FROM public.booking_private_notes WHERE 
 ok((await count('SELECT count(*)::int n FROM public.notifications WHERE user_id = $1', [PART])) === 0, 'notificações apagadas');
 ok((await count('SELECT count(*)::int n FROM public.favorites WHERE student_id = $1', [pPart])) === 0, 'favoritos apagados');
 ok((await one('SELECT attendance_status s FROM public.bookings WHERE id = $1', [bClose1])).s === 'present', 'presença registrada continua guardada');
+ok((await count('SELECT count(*)::int n FROM public.legal_acceptances WHERE profile_id = $1', [pPart])) === 1, 'aceites continuam guardados (prova)');
 
 // ── Exclusão de conta: organizador ──────────────────────────────────────
 console.log('Exclusão de conta (organizador):');

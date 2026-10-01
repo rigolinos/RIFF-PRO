@@ -217,6 +217,9 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
                       {isFree ? 'Gratuito' : `R$ ${session.price_per_slot.toFixed(2).replace('.', ',')}`}
                     </span>
                   </div>
+                  <p className="text-xs text-ink-muted leading-relaxed">
+                    A atividade é de responsabilidade do organizador.{!isFree && ' O pagamento vai direto para ele, e reembolsos são tratados com ele.'}
+                  </p>
                 </div>
 
                 <DrawerFooter className="pt-2">

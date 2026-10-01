@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Share2, MapPin, Clock, Calendar, CheckCircle2 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
@@ -222,10 +222,12 @@ const SessionDetails = () => {
 
         {/* Policies */}
         <div className="mb-4">
-          <h3 className="type-subtitle text-ink mb-2">Política de Cancelamento</h3>
+          <h3 className="type-subtitle text-ink mb-2">Pagamento, cancelamento e responsabilidade</h3>
           <p className="text-sm text-ink-muted leading-relaxed">
-            Cancelamentos podem ser feitos com reembolso integral até 4 horas antes do início da atividade.
-            Em caso de chuva forte que inviabilize a prática (para atividades ao ar livre), a atividade será remarcada ou reembolsada.
+            Esta atividade é organizada e de responsabilidade de quem a publicou. O pagamento é feito direto ao
+            organizador, e cancelamento, remarcação e reembolso são combinados com ele. Pelo app, você pode cancelar
+            a reserva até 4 horas antes do início.{' '}
+            <Link to="/termos" className="text-brand underline underline-offset-4">Termos de Uso</Link>
           </p>
         </div>
       </div>
