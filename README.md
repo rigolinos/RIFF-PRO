@@ -1,18 +1,36 @@
-﻿# Riff Profissionais
+# Riff Pro
 
-O Riff Profissionais é um Progressive Web App (PWA) projetado...
+App da Riff Sports para organizadores (educadores físicos, organizadores de eventos, campeonatos e jogos) venderem atividades direto para o próprio público, sem intermediários. PWA em React + Vite, com Supabase como backend.
 
-## Comandos Úteis
+Contexto do produto, decisões de arquitetura e regras de trabalho: [CLAUDE.md](CLAUDE.md).
 
-- **Dev:** `npm run dev`
-- **Build:** `npm run build`
-- **Lint:** `npm run lint`
+## Rodando localmente
 
-## Sincronização com o Banco de Dados (Supabase)
+```bash
+npm ci
+cp .env.example .env.local   # preencha VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY
+npm run dev
+```
 
-> **ATENÇÃO:** Sempre que fizer um `git pull` e receber novos arquivos na pasta `supabase/migrations`, é obrigatório rodar o comando abaixo para aplicar as alterações no seu banco de dados (seja ele local ou remoto):
->
-> ```bash
-> npx supabase db push
-> ```
-> Sem isso, as novas colunas (como `kind` ou `city`) não existirão e as inserções (INSERT) irão falhar silenciosamente ou gerar erros 400.
+## Checks (os mesmos do CI)
+
+```bash
+npm run lint            # oxlint, falha com qualquer aviso
+npm run check:ds        # design system: cores e fontes só por tokens
+npm run check:encoding  # sem mojibake nos fontes
+npm run build           # tsc + vite build
+```
+
+## Banco de dados (Supabase)
+
+As migrations ficam em `supabase/migrations`. Quando um `git pull` trouxer migrations novas, elas precisam ser aplicadas no banco, senão as colunas novas não existem e os INSERTs falham com erro 400.
+
+Antes de aplicar, confirme em qual projeto o CLI está ligado e o que falta aplicar:
+
+```bash
+npx supabase link --project-ref <ref-do-projeto>
+npx supabase migration list
+npx supabase db push
+```
+
+Nunca rode `db push` sem saber qual banco está ligado.
