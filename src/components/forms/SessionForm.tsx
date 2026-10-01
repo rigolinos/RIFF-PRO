@@ -136,10 +136,44 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
     initialData.location_name !== formData.location_name
   );
 
-  const nextStep = () => setStep(s => Math.min(s + 1, totalSteps));
+  // Campos obrigatórios de cada passo; sem eles não dá para avançar nem publicar.
+  const missingInStep = (s: number): string | null => {
+    if (s === 2) {
+      if (!formData.category_id) return 'Escolha a modalidade.';
+      if (!formData.title?.trim()) return 'Dê um título para a atividade.';
+      if (!(Number(formData.max_participants) >= 1)) return 'Informe quantas vagas a atividade tem.';
+    }
+    if (s === 3) {
+      if (!formData.date) return 'Escolha a data.';
+      if (!formData.start_time) return 'Escolha o horário.';
+      if (!formData.location_name?.trim()) return 'Informe o local.';
+    }
+    return null;
+  };
+
+  const nextStep = () => {
+    const missing = missingInStep(step);
+    if (missing) {
+      toast.error(missing);
+      return;
+    }
+    setStep(s => Math.min(s + 1, totalSteps));
+  };
   const prevStep = () => setStep(s => Math.max(s - 1, 1));
 
   const onFinalSubmit = async (data: TablesInsert<'sessions'>) => {
+    for (const s of [2, 3]) {
+      const missing = missingInStep(s);
+      if (missing) {
+        setStep(s);
+        toast.error(missing);
+        return;
+      }
+    }
+    // Cidade da atividade: a do perfil do organizador (usada no filtro do feed).
+    if (!isEditMode && !data.city && profile?.city) {
+      data.city = profile.city;
+    }
     await onSubmit(data);
   };
 
@@ -233,7 +267,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
                           onClick={() => {
                              if (hasParticipants) return;
                              setValue('kind', k as ActivityKind);
-                             setStep(2);
+                             if (!isEditMode) setValue('duration_minutes', KINDS[k as ActivityKind].defaultDuration);
                           }}
                           className={`relative flex items-start gap-4 p-4 rounded-xl border-2 transition-all cursor-pointer ${
                             hasParticipants ? 'opacity-50 cursor-not-allowed border-line/50 bg-surface/50' : 
@@ -448,11 +482,11 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
           )}
           
           {step < totalSteps ? (
-            <Button type="button" onClick={nextStep} className="h-12 flex-1 rounded-xl bg-brand hover:bg-brand text-brand-ink font-bold text-base shadow-[0_8px_24px_var(--shadow-cta)]">
+            <Button key="next" type="button" onClick={nextStep} className="h-12 flex-1 rounded-xl bg-brand hover:bg-brand text-brand-ink font-bold text-base shadow-[0_8px_24px_var(--shadow-cta)]">
               Próximo <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           ) : (
-            <Button type="submit" form="session-form" disabled={isSubmitting} className="h-12 flex-1 rounded-xl bg-brand hover:bg-brand text-brand-ink font-bold text-base shadow-[0_8px_24px_var(--shadow-cta)]">
+            <Button key="submit" type="submit" form="session-form" disabled={isSubmitting} className="h-12 flex-1 rounded-xl bg-brand hover:bg-brand text-brand-ink font-bold text-base shadow-[0_8px_24px_var(--shadow-cta)]">
               {isSubmitting ? 'Salvando...' : (isEditMode ? 'Salvar Alterações' : 'Publicar Atividade')} 
               {!isSubmitting && <Check className="w-4 h-4 ml-1.5" />}
             </Button>

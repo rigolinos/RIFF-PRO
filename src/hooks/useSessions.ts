@@ -38,7 +38,7 @@ export function useSessions(cityFilter?: string | null) {
           id, title, description, date, start_time, duration_minutes,
           location_name, location_address, max_participants, current_participants,
           price_per_slot, status, session_type, skill_level, category_id, kind, city,
-          professional:profiles(id, full_name, avatar_url, rating_avg, public_slug),
+          professional:profiles(id, full_name, avatar_url, rating_avg, total_reviews, public_slug),
           category:categories(name, icon, emoji)
         `)
         .in('status', ['active', 'full'])
@@ -105,7 +105,7 @@ export function useSessionById(id: string) {
         .from('sessions')
         .select(`
           *,
-          professional:profiles(id, full_name, avatar_url, rating_avg, public_slug),
+          professional:profiles(id, full_name, avatar_url, rating_avg, total_reviews, public_slug),
           category:categories(name, emoji)
         `)
         .eq('id', id)

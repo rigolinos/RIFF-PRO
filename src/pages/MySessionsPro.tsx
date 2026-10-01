@@ -8,6 +8,7 @@ import {
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { errorMessage } from '@/lib/utils';
 
 import { PageContainer } from '@/components/layout/PageContainer';
 import { useProSessions } from '@/hooks/useProSessions';
@@ -72,7 +73,7 @@ const MySessionsPro = () => {
       toast.success('Atividade encerrada com sucesso!');
       setSelectedSession(null);
     } catch (error: unknown) {
-      toast.error((error instanceof Error ? error.message : 'Erro desconhecido') || 'Erro ao encerrar atividade.');
+      toast.error(errorMessage(error, 'Erro ao encerrar atividade.'));
     } finally {
       setIsClosing(false);
     }
@@ -94,7 +95,7 @@ const MySessionsPro = () => {
         window.open(`https://wa.me/?text=${text}`, '_blank');
       }
     } catch (error: unknown) {
-      toast.error((error instanceof Error ? error.message : 'Erro desconhecido') || 'Erro ao cancelar atividade.');
+      toast.error(errorMessage(error, 'Erro ao cancelar atividade.'));
     }
   };
 
@@ -103,7 +104,7 @@ const MySessionsPro = () => {
       await updateSessionStatus({ sessionId: session.id, status: 'full' });
       toast.success('Inscrições encerradas antecipadamente.');
     } catch (error: unknown) {
-      toast.error((error instanceof Error ? error.message : 'Erro desconhecido') || 'Erro ao encerrar inscrições.');
+      toast.error(errorMessage(error, 'Erro ao encerrar inscrições.'));
     }
   };
 
@@ -127,7 +128,7 @@ const MySessionsPro = () => {
       });
       toast.success(`Atividade duplicada para ${format(parseISO(nextWeekDate), "EEE, d 'de' MMM", { locale: ptBR })}!`);
     } catch (error: unknown) {
-      toast.error((error instanceof Error ? error.message : 'Erro desconhecido') || 'Erro ao duplicar atividade.');
+      toast.error(errorMessage(error, 'Erro ao duplicar atividade.'));
     } finally {
       setIsDuplicating(null);
     }
@@ -189,15 +190,15 @@ const MySessionsPro = () => {
                     )}
                   </div>
 
-                  <div className="flex items-center justify-between mt-3">
+                  <div className="flex flex-wrap items-center justify-between gap-3 mt-3">
                     <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate(`/session/${session.id}/attendance`)}>
                       <div className="flex items-center gap-1.5 text-xs text-ink-muted bg-white/5 px-2 py-1 rounded-md">
                         <Clock className="w-3.5 h-3.5" />
-                        <span className="capitalize">{dateStr} • {timeStr}</span>
+                        <span className="whitespace-nowrap">{dateStr} • {timeStr}</span>
                       </div>
                       <div className="flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-md bg-white/5">
                         <Users className="w-3.5 h-3.5 text-brand" />
-                        <span>{activeBookings.length} / {session.max_participants}</span>
+                        <span className="whitespace-nowrap">{activeBookings.length} / {session.max_participants}</span>
                       </div>
                     </div>
 

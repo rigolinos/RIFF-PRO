@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Loader2, User, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { errorMessage } from '@/lib/utils';
 
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -74,7 +75,7 @@ export default function SessionAttendance() {
       toast.success('Atividade encerrada com sucesso!');
       navigate(-1);
     } catch (error: unknown) {
-      toast.error((error instanceof Error ? error.message : 'Erro desconhecido') || 'Erro ao encerrar atividade.');
+      toast.error(errorMessage(error, 'Erro ao encerrar atividade.'));
     } finally {
       setIsClosing(false);
     }
