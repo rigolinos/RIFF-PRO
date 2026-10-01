@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Star, Loader2, MapPin } from 'lucide-react';
+import { Search, Star, Loader2, MapPin, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { Input } from '@/components/ui/input';
-import { useDebounce } from '@/hooks/useDebounce'; // We will create this
+import { useDebounce } from '@/hooks/useDebounce';
+import { EmptyState } from '@/components/domain';
 import type { Tables } from '@/integrations/supabase/types';
 
 export default function Explore() {
@@ -18,6 +19,7 @@ export default function Explore() {
   useEffect(() => {
     async function searchPros() {
       setIsLoading(true);
+      setErrorState(null);
       try {
         let query = supabase
           .from('profiles')
@@ -41,6 +43,7 @@ export default function Explore() {
         }
       } catch (err: unknown) {
         console.error(err);
+        setErrorState(err instanceof Error ? err : new Error(String(err)));
       } finally {
         setIsLoading(false);
       }
@@ -68,6 +71,13 @@ export default function Explore() {
           <div className="flex justify-center py-12">
             <Loader2 className="w-8 h-8 text-brand animate-spin" />
           </div>
+        ) : errorState ? (
+          <EmptyState
+            icon={AlertCircle}
+            title="Erro ao carregar organizadores"
+            description="Ocorreu um erro ao buscar os organizadores. O banco de dados pode estar indisponível."
+            action={{ label: 'Tentar novamente', onClick: () => window.location.reload() }}
+          />
         ) : professionals.length === 0 ? (
           <div className="text-center py-12 text-ink-muted">
             Nenhum organizador encontrado.

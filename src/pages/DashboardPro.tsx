@@ -5,7 +5,6 @@ import { Link2, Share2, Wallet, Users, Calendar, Loader2, CheckCircle2, RefreshC
 import { toast } from 'sonner';
 
 import { PageContainer } from '@/components/layout/PageContainer';
-import { ModeSwitcher } from '@/components/layout/ModeSwitcher';
 import { useProfile } from '@/hooks/useProfile';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import { useViewMode } from '@/contexts/ViewModeContext';

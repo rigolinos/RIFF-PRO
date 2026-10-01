@@ -3,7 +3,7 @@ import { format, parseISO, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
   Users, Clock, Loader2, CheckCircle2,
-  Edit, XCircle, Copy, Share2, ClipboardCheck, CalendarDays, AlertCircle
+  Edit, XCircle, Copy, Share2, ClipboardCheck, CalendarDays
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
