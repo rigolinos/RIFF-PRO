@@ -32,6 +32,9 @@ jobs:
       - name: Encoding check
         run: npm run check:encoding
 
+      - name: Migrations (Postgres em memória)
+        run: npm run test:db
+
       - name: Build and Typecheck
         run: npm run build
 

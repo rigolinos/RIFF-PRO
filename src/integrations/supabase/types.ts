@@ -295,6 +295,7 @@ export type Database = {
           credential_number: string | null
           credential_type: string | null
           credential_verified: boolean | null
+          deleted_at: string | null
           experience_years: number | null
           full_name: string
           id: string
@@ -309,7 +310,7 @@ export type Database = {
           total_sessions_given: number | null
           total_students_served: number | null
           updated_at: string | null
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -319,6 +320,7 @@ export type Database = {
           credential_number?: string | null
           credential_type?: string | null
           credential_verified?: boolean | null
+          deleted_at?: string | null
           experience_years?: number | null
           full_name?: string
           id?: string
@@ -333,7 +335,7 @@ export type Database = {
           total_sessions_given?: number | null
           total_students_served?: number | null
           updated_at?: string | null
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -343,6 +345,7 @@ export type Database = {
           credential_number?: string | null
           credential_type?: string | null
           credential_verified?: boolean | null
+          deleted_at?: string | null
           experience_years?: number | null
           full_name?: string
           id?: string
@@ -357,7 +360,7 @@ export type Database = {
           total_sessions_given?: number | null
           total_students_served?: number | null
           updated_at?: string | null
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }

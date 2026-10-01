@@ -114,6 +114,16 @@ export default function ProfileEdit() {
 
     setIsDeleting(true);
     try {
+      // A função do banco não mexe no Storage: as fotos de perfil saem antes.
+      if (profile?.id) {
+        const { data: files, error: listError } = await supabase.storage.from('avatars').list('', { search: profile.id });
+        const paths = (files ?? []).map((f) => f.name).filter((name) => name.startsWith(`${profile.id}-`));
+        const { error: removeError } = paths.length
+          ? await supabase.storage.from('avatars').remove(paths)
+          : { error: null };
+        if (listError || removeError) console.error('Erro ao remover fotos de perfil', listError ?? removeError);
+      }
+
       const { error } = await supabase.rpc('delete_user_account');
       if (error) throw error;
 

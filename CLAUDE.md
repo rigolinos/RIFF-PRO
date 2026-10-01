@@ -55,13 +55,14 @@ Ponte entre os dois: condomínios e clubes precisam de instrutores, e os organiz
 - **Branch + PR com preview. Nunca push direto na `main`.** Lotes pequenos.
 - **Nada está "feito" sem o comando e a saída que provam.** Em todo PR, colar a saída de:
   ```bash
-  npm run lint && npm run check:ds && npm run check:encoding && npm run build
+  npm run lint && npm run check:ds && npm run check:encoding && npm run test:db && npm run build
   ```
-  O lint usa `--deny-warnings`: qualquer aviso quebra o CI.
+  O lint usa `--deny-warnings`: qualquer aviso quebra o CI. O `test:db` aplica todas as migrations num Postgres em memória (PGlite, `scripts/test-db.mjs`) e testa as regras críticas; toda migration nova precisa passar nele e, se mexer em regra de negócio, ganhar um teste ali.
 - **Migrations:**
   - Nunca aplicar em nenhum banco sem antes dizer qual banco é e esperar o OK do dono do produto.
   - Não apagar coluna de dados pessoais sem confirmação.
   - Nome no padrão `AAAAMMDDHHMMSS_descricao.sql`, com timestamp maior que o da última migration existente.
+  - O banco de produção (`elrgdjbprmihbmpuggdt`) recebeu as migrations à mão pelo SQL editor até 01/10/2026; confira `npx supabase migration list` antes de qualquer `db push`.
 - Cores e fontes só por tokens (o `check:ds` barra cores fixas). Sem `as any` em código novo.
 - Dados pessoais, documentos e menores seguem a LGPD.
 - **Edições por script:** não deixar scripts avulsos (`fix-*.js`, `script*.py`) na raiz. Se usar um script para editar arquivos, preserve o fim de linha original (o checkout no Windows usa CRLF) e confira `git diff --stat` antes de commitar. Uma edição desse tipo, feita sem script versionado, já multiplicou as linhas em branco de `Login.tsx` e `ProfileEdit.tsx` (1576 e 2852 linhas, a maioria vazias).
