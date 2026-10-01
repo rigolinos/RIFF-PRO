@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { SessionCard } from '@/components/cards/SessionCard';
 import { useCategories } from '@/hooks/useCategories';
 import { useProfile } from '@/hooks/useProfile';
+import { useMyVenues } from '@/hooks/useMyVenues';
 import { KINDS, ActivityKind } from '@/lib/copy';
 
 import { SessionWithJoins } from '@/types/session';
@@ -46,6 +47,7 @@ interface SessionFormProps {
 export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionFormProps) {
   const { data: categories } = useCategories();
   const { profile } = useProfile();
+  const { data: myVenues } = useMyVenues();
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -420,6 +422,27 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
                       <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted" />
                       <Input {...register('location_name')} placeholder="Ex: Parque Ibirapuera - Portão 7" className="h-12 pl-10 bg-surface border-line focus:border-brand/50" />
                     </div>
+                    {myVenues && myVenues.length > 0 && (
+                      <div className="flex flex-wrap gap-2 pt-1" aria-label="Seus locais">
+                        {myVenues.map((venue) => (
+                          <button
+                            key={venue.id}
+                            type="button"
+                            onClick={() => {
+                              setValue('location_name', venue.name, { shouldDirty: true });
+                              setValue('location_address', venue.address ?? null, { shouldDirty: true });
+                            }}
+                            className={`h-8 px-3 rounded-full text-xs font-medium border transition-colors ${
+                              formData.location_name === venue.name
+                                ? 'bg-brand text-brand-ink border-brand'
+                                : 'bg-surface border-line text-ink-muted hover:bg-elevated'
+                            }`}
+                          >
+                            {venue.name}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                 </motion.div>
