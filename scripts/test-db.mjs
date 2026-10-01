@@ -166,6 +166,20 @@ await q("INSERT INTO public.booking_private_notes (booking_id, professional_id, 
 await q("INSERT INTO public.notifications (user_id, type, title, message) VALUES ($1, 'system', 't', 'm')", [PART]);
 await q('INSERT INTO public.favorites (student_id, professional_id) VALUES ($1, $2)', [pPart, pOrg]);
 
+// ── Reserva ─────────────────────────────────────────────────────────────
+console.log('Reserva:');
+const sRebook = await newSession(pOrg, 4, 'Quadra Norte');
+let rb = await as('authenticated', PART2, 'SELECT public.create_booking($1) AS r', [sRebook]);
+const firstBooking = rb.rows?.[0]?.r?.booking_id;
+ok(rb.rows?.[0]?.r?.success, 'participante reserva');
+rb = await as('authenticated', PART2, "UPDATE public.bookings SET status = 'cancelled_by_student', cancelled_at = now() WHERE id = $1", [firstBooking]);
+ok(!rb.err, 'participante cancela a própria reserva' + (rb.err ? ` (${rb.err})` : ''));
+rb = await as('authenticated', PART2, 'SELECT public.create_booking($1) AS r', [sRebook]);
+ok(rb.rows?.[0]?.r?.success && rb.rows[0].r.booking_id === firstBooking, 'reserva de novo depois de cancelar (reativa a mesma reserva)' + (rb.err ? ` (${rb.err})` : ''));
+ok((await one('SELECT current_participants n FROM public.sessions WHERE id = $1', [sRebook])).n === 1, 'contagem de vagas volta a 1');
+rb = await as('authenticated', PART2, 'SELECT public.create_booking($1) AS r', [sRebook]);
+ok(rb.rows?.[0]?.r?.code === 'already_booked', 'reservar duas vezes é bloqueado');
+
 // ── Presença ────────────────────────────────────────────────────────────
 console.log('Presença:');
 let r = await as('authenticated', ORG, 'SELECT public.close_session($1, $2::jsonb)', [sClose, JSON.stringify([{ booking_id: bClose1, attended: true, paid: true }])]);
