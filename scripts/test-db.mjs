@@ -281,5 +281,63 @@ ok(r.err && /forbidden_profile_field/.test(r.err), 'usuário não preenche delet
 r = await as('authenticated', OTHER, 'SELECT public.ensure_solo_organization(public._profile_id())');
 ok(r.err && /permission denied/.test(r.err), 'usuário não chama funções internas (ensure_solo_organization)');
 
+// ── Dados de exemplo (supabase/seeds) ───────────────────────────────────
+console.log('Dados de exemplo:');
+const seedsDir = path.resolve('supabase/seeds');
+const runSeed = (file) => ex(fs.readFileSync(path.join(seedsDir, file), 'utf8').replace(/^﻿/, ''));
+await q(`INSERT INTO public.categories (name, slug) VALUES
+  ('Futevôlei', 'futevolei'), ('Funcional', 'funcional'), ('Beach Tennis', 'beach-tennis'),
+  ('Yoga', 'yoga'), ('Airsoft', 'airsoft') ON CONFLICT DO NOTHING`);
+const realCounts = async () => (await one(`SELECT
+  (SELECT count(*) FROM public.profiles WHERE id::text NOT LIKE 'de000000-%')::int AS profiles,
+  (SELECT count(*) FROM public.sessions WHERE id::text NOT LIKE 'de000000-%')::int AS sessions,
+  (SELECT count(*) FROM public.reviews WHERE id::text NOT LIKE 'de000000-%')::int AS reviews,
+  (SELECT count(*) FROM public.organizations)::int AS orgs_all,
+  (SELECT count(*) FROM public.venues)::int AS venues_all`));
+const realBefore = await realCounts();
+const realBookingsBefore = await count(`SELECT count(*)::int n FROM public.bookings WHERE id::text NOT LIKE 'de000000-%'`);
+try { await runSeed('demo_seed.sql'); ok(true, 'demo_seed.sql roda'); } catch (e) { ok(false, 'demo_seed.sql roda (' + e.message + ')'); }
+const demo = await one(`SELECT
+  (SELECT count(*) FROM public.profiles WHERE id::text LIKE 'de000000-%' AND role = 'professional')::int AS orgs,
+  (SELECT count(*) FROM public.profiles WHERE id::text LIKE 'de000000-%' AND role = 'student')::int AS people,
+  (SELECT count(*) FROM public.profiles WHERE id::text LIKE 'de000000-%' AND user_id IS NOT NULL)::int AS with_login,
+  (SELECT count(*) FROM public.sessions WHERE id::text LIKE 'de000000-%' AND status = 'completed')::int AS past,
+  (SELECT count(*) FROM public.sessions WHERE id::text LIKE 'de000000-%' AND status = 'active' AND date > current_date)::int AS future,
+  (SELECT count(*) FROM public.sessions WHERE id::text LIKE 'de000000-%' AND (venue_id IS NULL OR organization_id IS NULL))::int AS unlinked,
+  (SELECT count(*) FROM public.reviews WHERE id::text LIKE 'de000000-%')::int AS reviews,
+  (SELECT count(*) FROM public.activity_results WHERE id::text LIKE 'de000000-%' AND position IS NOT NULL)::int AS results,
+  (SELECT count(*) FROM public.profiles WHERE id::text LIKE 'de000000-%' AND role = 'professional' AND total_reviews > 0)::int AS rated,
+  (SELECT count(*) FROM public.sessions s WHERE id::text LIKE 'de000000-%' AND current_participants <>
+     (SELECT count(*) FROM public.bookings b WHERE b.session_id = s.id AND b.status NOT LIKE 'cancelled%'))::int AS bad_counts`);
+ok(demo.orgs === 6 && demo.people === 20, `6 organizadores e 20 participantes (${demo.orgs}/${demo.people})`);
+ok(demo.with_login === 0, 'nenhum perfil de exemplo tem login');
+ok(demo.past === 30 && demo.future === 12, `30 atividades encerradas e 12 futuras (${demo.past}/${demo.future})`);
+ok(demo.unlinked === 0, 'todas ligadas a organização e local (triggers do Lote 3)');
+ok(demo.reviews > 0 && demo.rated === 6, `avaliações criadas e nota nos 6 organizadores (${demo.reviews} avaliações)`);
+ok(demo.results > 0, `resultados com posição nos jogos (${demo.results})`);
+ok(demo.bad_counts === 0, 'vagas ocupadas batem com as reservas');
+const mid = await realCounts();
+ok(mid.profiles === realBefore.profiles && mid.sessions === realBefore.sessions && mid.reviews === realBefore.reviews
+  && (await count(`SELECT count(*)::int n FROM public.bookings WHERE id::text NOT LIKE 'de000000-%'`)) === realBookingsBefore,
+  'nenhum dado real alterado pelo seed');
+await runSeed('demo_seed.sql');
+ok((await count(`SELECT count(*)::int n FROM public.profiles WHERE id::text LIKE 'de000000-%'`)) === 26, 'rodar de novo não duplica');
+// usuário real reserva uma atividade de exemplo antes da limpeza
+const demoFuture = (await one(`SELECT id FROM public.sessions WHERE id::text LIKE 'de000000-%' AND status = 'active' AND current_participants < max_participants ORDER BY date LIMIT 1`)).id;
+r = await as('authenticated', OTHER, 'SELECT public.create_booking($1) AS r', [demoFuture]);
+ok(r.rows?.[0]?.r?.success, 'usuário real consegue reservar atividade de exemplo' + (r.err ? ` (${r.err})` : ''));
+try { await runSeed('demo_cleanup.sql'); ok(true, 'demo_cleanup.sql roda'); } catch (e) { ok(false, 'demo_cleanup.sql roda (' + e.message + ')'); }
+const left = await count(`SELECT (
+    (SELECT count(*) FROM public.profiles WHERE id::text LIKE 'de000000-%')
+  + (SELECT count(*) FROM public.sessions WHERE id::text LIKE 'de000000-%')
+  + (SELECT count(*) FROM public.bookings WHERE session_id::text LIKE 'de000000-%')
+  + (SELECT count(*) FROM public.reviews WHERE id::text LIKE 'de000000-%')
+  + (SELECT count(*) FROM public.activity_results WHERE id::text LIKE 'de000000-%'))::int AS n`);
+ok(left === 0, 'limpeza remove tudo, inclusive a reserva real na atividade de exemplo');
+const realAfter = await realCounts();
+ok(realAfter.profiles === realBefore.profiles && realAfter.sessions === realBefore.sessions && realAfter.reviews === realBefore.reviews
+  && realAfter.orgs_all === realBefore.orgs_all && realAfter.venues_all === realBefore.venues_all,
+  'limpeza não toca em dados reais (organizações e locais de exemplo também saem)');
+
 console.log(fails ? `\n${fails} falha(s)` : '\nTudo ok.');
 process.exit(fails ? 1 : 0);

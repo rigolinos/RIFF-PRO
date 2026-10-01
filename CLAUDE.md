@@ -65,6 +65,10 @@ Ponte entre os dois: condomínios e clubes precisam de instrutores, e os organiz
   - O banco de produção (`elrgdjbprmihbmpuggdt`) recebeu as migrations à mão pelo SQL editor até 01/10/2026; confira `npx supabase migration list` antes de qualquer `db push`.
 - Cores e fontes só por tokens (o `check:ds` barra cores fixas). Sem `as any` em código novo.
 - Dados pessoais, documentos e menores seguem a LGPD.
+- **Dados de exemplo** (demonstração): `supabase/seeds/demo_seed.sql` cria 6 organizadores e 20 participantes fictícios, sem login, com atividades passadas e futuras. Todo id começa com `de000000-`. **Antes de abrir para usuários reais, rodar `demo_cleanup.sql`**: avaliações fictícias não podem parecer reais (CDC art. 37). Os dois scripts são testados no `test:db`.
+  ```bash
+  npx supabase db query --linked -f supabase/seeds/demo_cleanup.sql
+  ```
 - **Documentos legais** ficam em `src/legal/documents.ts`. Mudou o texto? Suba a versão em `LEGAL_VERSIONS`: todo mundo terá de aceitar de novo (tela `/aceite`). Os aceites ficam em `legal_acceptances` e nunca são alterados ou apagados. O texto-base precisa de revisão jurídica antes do lançamento.
 - **Edições por script:** não deixar scripts avulsos (`fix-*.js`, `script*.py`) na raiz. Se usar um script para editar arquivos, preserve o fim de linha original (o checkout no Windows usa CRLF) e confira `git diff --stat` antes de commitar. Uma edição desse tipo, feita sem script versionado, já multiplicou as linhas em branco de `Login.tsx` e `ProfileEdit.tsx` (1576 e 2852 linhas, a maioria vazias).
 
