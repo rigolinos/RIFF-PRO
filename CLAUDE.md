@@ -76,6 +76,8 @@ Ponte entre os dois: condomínios e clubes precisam de instrutores, e os organiz
 - `src/integrations/supabase/`: cliente e `types.ts` gerado.
 - `src/contexts/ViewModeContext.tsx`: alternância entre modo organizador e participante.
 - `supabase/migrations/`, `supabase/tests/`, `supabase/seeds/`.
+- **Organizações e locais (Lote 3):** todo organizador tem uma `organizations` de `kind = 'solo'` (sem nome próprio: a vitrine é o perfil). Toda atividade (`sessions`) tem `organization_id` e `venue_id`, preenchidos por trigger a partir de `location_*`; atividades no mesmo lugar compartilham o `venue`. `condo`/`club` e `visibility = 'members'` já existem para o Riff Clubes.
+- **Presença e resultados:** `bookings.attendance_status` (`present`, `absent`, `late`, `excused`) acompanha o check-in do `close_session`; `activity_results` guarda placar/posição. Só o organizador da atividade e o próprio participante leem.
 - Variáveis de ambiente em `.env.local` (fora do git): `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`.
 
 ## 8. Perguntas em aberto

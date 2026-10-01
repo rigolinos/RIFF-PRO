@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -14,6 +14,64 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_results: {
+        Row: {
+          booking_id: string | null
+          details: Json
+          id: string
+          position: number | null
+          recorded_at: string
+          recorded_by: string | null
+          score: number | null
+          session_id: string
+          team: string | null
+        }
+        Insert: {
+          booking_id?: string | null
+          details?: Json
+          id?: string
+          position?: number | null
+          recorded_at?: string
+          recorded_by?: string | null
+          score?: number | null
+          session_id: string
+          team?: string | null
+        }
+        Update: {
+          booking_id?: string | null
+          details?: Json
+          id?: string
+          position?: number | null
+          recorded_at?: string
+          recorded_by?: string | null
+          score?: number | null
+          session_id?: string
+          team?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_results_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_results_recorded_by_fkey"
+            columns: ["recorded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_results_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       booking_private_notes: {
         Row: {
           booking_id: string
@@ -50,6 +108,9 @@ export type Database = {
       bookings: {
         Row: {
           amount_total: number
+          attendance_recorded_at: string | null
+          attendance_recorded_by: string | null
+          attendance_status: string | null
           cancellation_reason: string | null
           cancelled_at: string | null
           checked_in: boolean | null
@@ -69,6 +130,9 @@ export type Database = {
         }
         Insert: {
           amount_total: number
+          attendance_recorded_at?: string | null
+          attendance_recorded_by?: string | null
+          attendance_status?: string | null
           cancellation_reason?: string | null
           cancelled_at?: string | null
           checked_in?: boolean | null
@@ -88,6 +152,9 @@ export type Database = {
         }
         Update: {
           amount_total?: number
+          attendance_recorded_at?: string | null
+          attendance_recorded_by?: string | null
+          attendance_status?: string | null
           cancellation_reason?: string | null
           cancelled_at?: string | null
           checked_in?: boolean | null
@@ -106,6 +173,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "bookings_attendance_recorded_by_fkey"
+            columns: ["attendance_recorded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "bookings_professional_id_fkey"
             columns: ["professional_id"]
@@ -241,6 +315,83 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      organization_members: {
+        Row: {
+          created_at: string
+          organization_id: string
+          profile_id: string
+          role: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          organization_id: string
+          profile_id: string
+          role: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          organization_id?: string
+          profile_id?: string
+          role?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_members_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_members_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          kind: string
+          name: string | null
+          slug: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          kind: string
+          name?: string | null
+          slug?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          kind?: string
+          name?: string | null
+          slug?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organizations_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profile_private: {
         Row: {
@@ -464,6 +615,7 @@ export type Database = {
       sessions: {
         Row: {
           category_id: string
+          city: string | null
           cover_image_url: string | null
           created_at: string | null
           current_participants: number | null
@@ -473,15 +625,15 @@ export type Database = {
           end_time: string | null
           id: string
           is_recurring: boolean | null
+          kind: 'class' | 'match' | 'tournament' | 'event' | 'other'
           latitude: number | null
           location_address: string | null
           location_name: string
           location_type: string | null
           longitude: number | null
           max_participants: number | null
-          kind: 'class' | 'match' | 'tournament' | 'event' | 'other'
-            city: string | null
-            parent_session_id: string | null
+          organization_id: string | null
+          parent_session_id: string | null
           price_per_slot: number
           professional_id: string
           recurrence_rule: string | null
@@ -491,10 +643,12 @@ export type Database = {
           status: string | null
           title: string
           updated_at: string | null
+          venue_id: string | null
           what_to_bring: string | null
         }
         Insert: {
           category_id: string
+          city?: string | null
           cover_image_url?: string | null
           created_at?: string | null
           current_participants?: number | null
@@ -504,14 +658,14 @@ export type Database = {
           end_time?: string | null
           id?: string
           is_recurring?: boolean | null
+          kind?: 'class' | 'match' | 'tournament' | 'event' | 'other'
           latitude?: number | null
           location_address?: string | null
           location_name: string
           location_type?: string | null
           longitude?: number | null
           max_participants?: number | null
-          kind?: 'class' | 'match' | 'tournament' | 'event' | 'other'
-          city?: string | null
+          organization_id?: string | null
           parent_session_id?: string | null
           price_per_slot: number
           professional_id: string
@@ -522,10 +676,12 @@ export type Database = {
           status?: string | null
           title: string
           updated_at?: string | null
+          venue_id?: string | null
           what_to_bring?: string | null
         }
         Update: {
           category_id?: string
+          city?: string | null
           cover_image_url?: string | null
           created_at?: string | null
           current_participants?: number | null
@@ -535,13 +691,14 @@ export type Database = {
           end_time?: string | null
           id?: string
           is_recurring?: boolean | null
+          kind?: 'class' | 'match' | 'tournament' | 'event' | 'other'
           latitude?: number | null
           location_address?: string | null
           location_name?: string
           location_type?: string | null
           longitude?: number | null
           max_participants?: number | null
-          kind?: 'class' | 'match' | 'tournament' | 'event' | 'other'
+          organization_id?: string | null
           parent_session_id?: string | null
           price_per_slot?: number
           professional_id?: string
@@ -552,6 +709,7 @@ export type Database = {
           status?: string | null
           title?: string
           updated_at?: string | null
+          venue_id?: string | null
           what_to_bring?: string | null
         }
         Relationships: [
@@ -560,6 +718,13 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sessions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -574,6 +739,76 @@ export type Database = {
             columns: ["professional_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sessions_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      venues: {
+        Row: {
+          address: string | null
+          city: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          kind: string
+          latitude: number | null
+          longitude: number | null
+          name: string
+          organization_id: string | null
+          state: string | null
+          updated_at: string
+          visibility: string
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind?: string
+          latitude?: number | null
+          longitude?: number | null
+          name: string
+          organization_id?: string | null
+          state?: string | null
+          updated_at?: string
+          visibility?: string
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind?: string
+          latitude?: number | null
+          longitude?: number | null
+          name?: string
+          organization_id?: string | null
+          state?: string | null
+          updated_at?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "venues_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "venues_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -603,12 +838,30 @@ export type Database = {
       }
       create_booking: { Args: { p_session_id: string }; Returns: Json }
       delete_user_account: { Args: never; Returns: undefined }
+      ensure_solo_organization: { Args: { p_profile: string }; Returns: string }
       get_booking_payment_info: {
         Args: { p_booking_id: string }
         Returns: Json
       }
       get_professional_dashboard: { Args: never; Returns: Json }
+      is_org_member: {
+        Args: { p_org: string; p_roles?: string[] }
+        Returns: boolean
+      }
       job_auto_close_expired_sessions: { Args: never; Returns: undefined }
+      resolve_venue: {
+        Args: {
+          p_address: string
+          p_city: string
+          p_created_by: string
+          p_lat: number
+          p_lng: number
+          p_location_type: string
+          p_name: string
+          p_org: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
