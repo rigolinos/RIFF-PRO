@@ -163,6 +163,12 @@ const Signup = () => {
         </button>
       </motion.form>
 
+      <p className="text-center text-xs text-ink-muted mt-4 leading-relaxed">
+        Ao criar a conta você vai ler e aceitar os{' '}
+        <Link to="/termos" className="text-brand underline underline-offset-4">Termos de Uso</Link> e a{' '}
+        <Link to="/privacidade" className="text-brand underline underline-offset-4">Política de Privacidade</Link>.
+      </p>
+
       {/* Footer */}
       <p className="text-center text-muted-foreground text-sm mt-6">
         Já tem conta?{' '}

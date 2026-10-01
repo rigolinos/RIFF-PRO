@@ -443,6 +443,10 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
                     {!hasParticipants && formData.price_per_slot == 0 && (
                        <p className="text-xs text-brand/90 italic mt-1">Atividade 100% gratuita configurada (ótimo para atrair leads).</p>
                     )}
+                    <p className="text-xs text-ink-muted leading-relaxed mt-2">
+                      Você recebe o pagamento direto e é o responsável pela atividade, pela segurança dos participantes e por
+                      cancelamentos e reembolsos, conforme o Termo do Organizador.
+                    </p>
                   </div>
 
                   <div className="space-y-2">
