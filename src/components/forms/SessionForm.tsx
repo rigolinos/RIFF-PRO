@@ -238,7 +238,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
           <div className="block lg:hidden px-6 pt-6 pb-2 border-b border-line bg-white/[0.02]">
            <p className="type-label text-brand mb-3 flex items-center gap-1.5"><Sparkles className="w-3 h-3" /> Prévia ao Vivo</p>
            <div className="scale-95 origin-top">
-             <SessionCard session={previewSession as unknown as SessionWithJoins} onBookClick={() => {}} />
+             <div className="pointer-events-none"><SessionCard session={previewSession as unknown as SessionWithJoins} onBookClick={() => {}} /></div>
                         </div>
           </div>
           )}
@@ -509,7 +509,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
           </div>
           
           <div className="scale-105 shadow-[0_20px_60px_rgba(0,0,0,0.5),0_0_40px_var(--brand-soft)] rounded-3xl">
-            <SessionCard session={previewSession as unknown as SessionWithJoins} onBookClick={() => {}} />
+            <div className="pointer-events-none"><SessionCard session={previewSession as unknown as SessionWithJoins} onBookClick={() => {}} /></div>
           </div>
 
           <p className="text-center text-xs text-ink-muted mt-8 px-6">

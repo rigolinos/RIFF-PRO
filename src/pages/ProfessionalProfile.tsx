@@ -125,7 +125,7 @@ export default function ProfessionalProfile() {
                   <span className="font-bold text-ink font-display text-lg">{(profile.rating_avg ?? 0).toFixed(1).replace('.', ',')}</span>
                   <Star className="w-4 h-4 fill-brand text-brand" />
                 </div>
-                <span className="type-label">Avaliações</span>
+                <span className="type-label">{profile.total_reviews} {profile.total_reviews === 1 ? 'avaliação' : 'avaliações'}</span>
               </div>
               <div className="w-px h-8 bg-line" />
             </>
