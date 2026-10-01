@@ -219,7 +219,7 @@ export default function ProfileEdit() {
             </div>
           </div>
 
-          {/* ALUNO: BIO / OBJETIVOS */}
+          {/* PARTICIPANTE: BIO / OBJETIVOS */}
           {!isPro && (
             <div className="space-y-4 pt-4 border-t border-white/10">
               <h3 className="type-subtitle">Sobre você (Opcional)</h3>
@@ -232,7 +232,7 @@ export default function ProfileEdit() {
             </div>
           )}
 
-          {/* PROFISSIONAL: DETALHES DE NEGÓCIO */}
+          {/* ORGANIZADOR: DETALHES DE NEGÓCIO */}
           {isPro && (
             <div className="space-y-4 pt-4 border-t border-white/10">
               <h3 className="type-subtitle">Vitrine do Organizador</h3>

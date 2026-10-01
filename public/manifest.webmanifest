@@ -1,7 +1,7 @@
 {
-  "name": "Riff",
-  "short_name": "Riff",
-  "description": "Conectando atletas a profissionais.",
+  "name": "Riff Pro",
+  "short_name": "Riff Pro",
+  "description": "Organize. Participe. Jogue junto.",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",

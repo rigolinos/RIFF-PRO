@@ -73,7 +73,7 @@ const MyBookings = () => {
       const url = buildWhatsAppUrl({
         phone: proPhone,
         studentName: profile?.full_name?.split(' ')[0] || 'Participante',
-        proName: booking.professional?.full_name?.split(' ')[0] || 'Prof',
+        proName: booking.professional?.full_name?.split(' ')[0],
         sessionTitle: booking.session.category?.name || booking.session.title,
         sessionTime: booking.session.start_time.substring(0, 5),
       });

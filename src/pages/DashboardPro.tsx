@@ -108,7 +108,7 @@ export default function DashboardPro() {
                     {session.status === 'full' ? (
                       <StatusPill text="Lotada" variant="danger" />
                     ) : (
-                      <StatusPill text={`${session.current_participants}/${session.max_participants} alunos`} variant="info" />
+                      <StatusPill text={`${session.current_participants}/${session.max_participants} participantes`} variant="info" />
                     )}
                   </div>
                   
