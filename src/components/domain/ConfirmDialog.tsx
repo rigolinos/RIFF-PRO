@@ -1,6 +1,5 @@
 ﻿import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -50,18 +49,15 @@ export function ConfirmDialog({
               {cancelLabel}
             </Button>
           </AlertDialogCancel>
-          <AlertDialogAction asChild>
-            <Button 
-              variant={isDestructive ? 'danger' : 'primary'} 
-              onClick={(e) => {
-                e.preventDefault();
-                onConfirm();
-              }}
-              disabled={isLoading}
-            >
-              {isLoading ? 'Aguarde...' : confirmLabel}
-            </Button>
-          </AlertDialogAction>
+          {/* Button direto (sem AlertDialogAction asChild): o Action injeta as classes do botão
+              primário e o vermelho do destrutivo era sobrescrito pelo dourado. */}
+          <Button
+            variant={isDestructive ? 'danger' : 'primary'}
+            onClick={onConfirm}
+            disabled={isLoading}
+          >
+            {isLoading ? 'Aguarde...' : confirmLabel}
+          </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

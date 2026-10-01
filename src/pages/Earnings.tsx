@@ -123,7 +123,7 @@ export default function Earnings() {
                           {t.student?.full_name?.split(' ').map(n => n.charAt(0).toUpperCase() + n.slice(1).toLowerCase()).join(' ') || 'Participante'}
                         </p>
                         <div className="flex items-center gap-1.5 mt-0.5">
-                          <span className={`text-xs font-semibold px-2 py-0.5 rounded-md ${isPaid ? 'bg-brand/10 text-brand-ink' : 'bg-surface border border-line text-ink-muted'}`}>
+                          <span className={`text-xs font-semibold px-2 py-0.5 rounded-md whitespace-nowrap shrink-0 ${isPaid ? 'bg-success/15 text-success' : 'bg-surface border border-line text-ink-muted'}`}>
                             {isPaid ? 'Pix Recebido' : 'Pendente'}
                           </span>
                           <span className="text-xs text-ink-muted truncate">
