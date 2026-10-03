@@ -34,3 +34,19 @@ npx supabase db push
 ```
 
 Nunca rode `db push` sem saber qual banco está ligado.
+
+## Deploy (Vercel)
+
+O `vercel.json` já configura o build (Vite) e faz toda rota do app (`/@organizador`, `/session/...`) abrir o `index.html`.
+
+1. Importe o repositório na Vercel. O framework (Vite) é detectado.
+2. Em **Settings → Environment Variables**, para Production e Preview:
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY` (a chave *publishable*, nunca a secret)
+   - `VITE_PUBLIC_URL` (opcional): o domínio final, por exemplo `https://riff.pro`
+3. No Supabase, em **Authentication → URL Configuration**:
+   - **Site URL:** o domínio de produção.
+   - **Redirect URLs:** o domínio de produção e `https://*-<seu-time>.vercel.app/**`, para os previews.
+
+   Sem isso, os e-mails de confirmação e de "esqueci a senha" apontam para o endereço errado.
+4. Cada PR ganha um link de preview, e a `main` vira produção.
