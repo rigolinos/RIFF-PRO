@@ -281,6 +281,15 @@ ok(r.err && /forbidden_profile_field/.test(r.err), 'usuário não preenche delet
 r = await as('authenticated', OTHER, 'SELECT public.ensure_solo_organization(public._profile_id())');
 ok(r.err && /permission denied/.test(r.err), 'usuário não chama funções internas (ensure_solo_organization)');
 
+// ── Higiene de segurança (verificador do Supabase) ─────────────────────
+console.log('Higiene de segurança:');
+const noPath = (await q(`SELECT p.proname FROM pg_proc p WHERE p.pronamespace = 'public'::regnamespace
+  AND NOT EXISTS (SELECT 1 FROM unnest(coalesce(p.proconfig, '{}')) c WHERE c LIKE 'search_path=%')`)).rows.map((x) => x.proname);
+ok(noPath.length === 0, 'toda função em public tem search_path fixo' + (noPath.length ? ` (faltam: ${noPath.join(', ')})` : ''));
+const slowPolicies = (await q(`SELECT tablename || '.' || policyname AS p FROM pg_policies WHERE schemaname = 'public'
+  AND (coalesce(qual, '') || coalesce(with_check, '')) ~ '(^|[^(]\s*)auth\.uid\(\)' AND (coalesce(qual, '') || coalesce(with_check, '')) !~ 'SELECT auth\.uid\(\)'`)).rows.map((x) => x.p);
+ok(slowPolicies.length === 0, 'políticas chamam auth.uid() uma vez por consulta' + (slowPolicies.length ? ` (${slowPolicies.join(', ')})` : ''));
+
 // ── Dados de exemplo (supabase/seeds) ───────────────────────────────────
 console.log('Dados de exemplo:');
 const seedsDir = path.resolve('supabase/seeds');
