@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { Building2, KeyRound, LogOut } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Building2, KeyRound, LogOut, ChevronRight } from 'lucide-react';
 import { supabase } from '@riff/core/supabase/client';
 import { useProfile } from '@riff/core/hooks/useProfile';
 import { PageContainer } from '@riff/core/layout/PageContainer';
@@ -72,7 +73,7 @@ export default function Communities() {
             {communities.map((m) => (
               <li key={m.organization!.id}>
                 <div className="bg-surface border border-line rounded-2xl p-4">
-                  <div className="flex items-center gap-3">
+                  <Link to={`/c/${m.organization!.id}`} className="flex items-center gap-3">
                     <div className="w-11 h-11 rounded-xl bg-elevated border border-line flex items-center justify-center shrink-0">
                       <Building2 className="w-5 h-5 text-brand" />
                     </div>
@@ -82,7 +83,8 @@ export default function Communities() {
                         {m.organization!.kind === 'condo' ? 'Condomínio' : 'Clube'} · {ROLE_LABEL[m.role] ?? m.role}
                       </p>
                     </div>
-                  </div>
+                    <ChevronRight className="w-5 h-5 text-ink-muted shrink-0" />
+                  </Link>
                   {(m.role === 'owner' || m.role === 'admin') && (
                     <InviteMembers organizationId={m.organization!.id} organizationName={m.organization!.name ?? ''} />
                   )}
