@@ -1,13 +1,15 @@
-import { useParams, useNavigate, Navigate } from 'react-router-dom';
+import { Link, useParams, useNavigate, Navigate } from 'react-router-dom';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CalendarDays, Clock, MapPin, Plus } from 'lucide-react';
+import { CalendarDays, ChevronRight, ClipboardCheck, Clock, MapPin, Plus, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 import { PageContainer } from '@riff/core/layout/PageContainer';
 import { EmptyState, SpotsMeter, StatusPill } from '@riff/core/domain';
 import { Button } from '@riff/core/ui/button';
 import { KINDS, type ActivityKind } from '@riff/core/lib/copy';
+import { useProfile } from '@riff/core/hooks/useProfile';
 import { useCommunity, useCommunityAgenda, useAgendaActions, type AgendaItem } from '@/hooks/useCommunity';
+import { usePendingClose } from '@/hooks/useManagement';
 
 const ROLE_LABEL: Record<string, string> = { owner: 'Gestor', admin: 'Gestor', instructor: 'Instrutor', member: 'Membro' };
 
@@ -17,6 +19,9 @@ export default function Community() {
   const { data: community, isLoading } = useCommunity(orgId);
   const { data: agenda, isLoading: isLoadingAgenda, isError } = useCommunityAgenda(orgId);
   const { book, cancel } = useAgendaActions(orgId);
+  const { profile } = useProfile();
+  const { data: pendingClose } = usePendingClose(community?.canManage ? orgId : undefined, !!community?.isAdmin);
+  const canSeeRoster = (item: AgendaItem) => !!community?.isAdmin || item.professional_id === profile?.id;
 
   if (!isLoading && community === null) return <Navigate to="/inicio" replace />;
 
@@ -49,9 +54,43 @@ export default function Community() {
         )}
 
         {community?.canManage && (
-          <Button className="w-full" onClick={() => navigate(`/c/${orgId}/nova`)}>
-            <Plus className="w-4 h-4 mr-2" /> Nova atividade
-          </Button>
+          <div className="flex gap-2">
+            <Button className="flex-1" onClick={() => navigate(`/c/${orgId}/nova`)}>
+              <Plus className="w-4 h-4 mr-2" /> Nova atividade
+            </Button>
+            {community.isAdmin && (
+              <Button variant="secondary" className="flex-1" onClick={() => navigate(`/c/${orgId}/gestao`)}>
+                <Settings className="w-4 h-4 mr-2" /> Gestão
+              </Button>
+            )}
+          </div>
+        )}
+
+        {pendingClose && pendingClose.length > 0 && (
+          <section>
+            <h2 className="type-subtitle mb-3">Falta fechar a presença</h2>
+            <ul className="space-y-2">
+              {pendingClose.map((s) => (
+                <li key={s.id}>
+                  <Link
+                    to={`/c/${orgId}/atividade/${s.id}`}
+                    className="flex items-center gap-3 bg-surface border border-accent/40 rounded-xl px-4 py-3"
+                  >
+                    <ClipboardCheck className="w-5 h-5 text-accent shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-ink truncate">
+                        {s.category?.emoji} {s.title}
+                      </p>
+                      <p className="text-xs text-ink-muted">
+                        {format(parseISO(s.date), 'dd/MM', { locale: ptBR })} · {s.start_time.substring(0, 5)} · {s.current_participants ?? 0} inscritos
+                      </p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-ink-muted" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
         )}
 
         <section>
@@ -111,6 +150,12 @@ export default function Community() {
                     </div>
 
                     <SpotsMeter current={item.current_participants ?? 0} max={item.max_participants ?? 1} />
+
+                    {canSeeRoster(item) && (
+                      <Button variant="outline" size="sm" className="w-full" onClick={() => navigate(`/c/${orgId}/atividade/${item.id}`)}>
+                        <ClipboardCheck className="w-4 h-4 mr-2" /> Ver inscritos
+                      </Button>
+                    )}
 
                     {item.myBookingId ? (
                       <Button

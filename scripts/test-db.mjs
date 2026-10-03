@@ -399,6 +399,72 @@ r = await as('authenticated', MA, 'SELECT public.join_organization($1) AS r', [r
 ok(r.rows?.[0]?.r?.code === 'removed', 'morador removido não volta com um código novo');
 ok(pGA && pMB, 'perfis de teste do Clubes criados');
 
+// ── Riff Clubes: ferramentas do gestor (C4) ─────────────────────────────
+console.log('Riff Clubes (gestor):');
+const M2 = 'c1000000-0000-4000-8000-000000000006'; // novo morador do A
+const pM2 = await newUser(M2, 'morador2.a@teste.dev', 'Morador Dois', 'student');
+r = await as('authenticated', GA, 'SELECT public.create_invite($1) AS r', [orgA]);
+await as('authenticated', M2, 'SELECT public.join_organization($1) AS r', [r.rows[0].r.code]);
+const pIA = (await one('SELECT id FROM public.profiles WHERE user_id = $1', [IA])).id;
+const M3 = 'c1000000-0000-4000-8000-000000000007'; // outro morador do A
+await newUser(M3, 'morador3.a@teste.dev', 'Morador Três', 'student');
+r = await as('authenticated', GA, 'SELECT public.create_invite($1) AS r', [orgA]);
+await as('authenticated', M3, 'SELECT public.join_organization($1) AS r', [r.rows[0].r.code]);
+await ex("SELECT set_config('request.jwt.claim.sub', '', false)"); // inserts abaixo como servidor
+
+// atividade do instrutor que já aconteceu (ontem), com o morador 2 inscrito
+const sI = (await one(
+  `INSERT INTO public.sessions (professional_id, organization_id, category_id, title, date, start_time, location_name, max_participants, price_per_slot, status)
+   VALUES ($1, $2, $3, 'Funcional de ontem', current_date - 1, '07:00', 'Quadra do condomínio', 10, 0, 'active') RETURNING id`,
+  [pIA, orgA, category])).id;
+const bI = (await one(
+  `INSERT INTO public.bookings (session_id, student_id, professional_id, amount_total, professional_payout, payment_status, status)
+   VALUES ($1, $2, $3, 0, 0, 'free', 'confirmed') RETURNING id`, [sI, pM2, pIA])).id;
+
+r = await as('authenticated', GA, 'SELECT id FROM public.bookings WHERE session_id = $1', [sI]);
+ok(r.rows?.length === 1, 'gestor vê os inscritos da atividade do instrutor' + (r.err ? ` (${r.err})` : ''));
+r = await as('authenticated', IA, 'SELECT id FROM public.bookings WHERE session_id = $1', [sI]);
+ok(r.rows?.length === 1, 'instrutor vê os inscritos da própria atividade');
+r = await as('authenticated', MB, 'SELECT id FROM public.bookings WHERE session_id = $1', [sI]);
+ok(r.rows?.length === 0, 'morador de outra comunidade não vê inscritos');
+r = await as('authenticated', M3, 'SELECT id FROM public.bookings WHERE session_id = $1', [sI]);
+ok(r.rows?.length === 0, 'morador comum não vê a inscrição dos outros');
+
+// encerrar
+r = await as('authenticated', M2, 'SELECT public.close_community_session($1, $2::jsonb)', [sI, JSON.stringify([{ booking_id: bI, status: 'present' }])]);
+ok(r.err && /forbidden/.test(r.err), 'morador não encerra atividade');
+r = await as('authenticated', GA, 'SELECT public.close_community_session($1, $2::jsonb)', [sI, JSON.stringify([{ booking_id: bI, status: 'late' }])]);
+ok(!r.err, 'gestor encerra a atividade do instrutor' + (r.err ? ` (${r.err})` : ''));
+const closed = await one('SELECT b.status, b.attendance_status, b.checked_in, s.status AS session_status FROM public.bookings b JOIN public.sessions s ON s.id = b.session_id WHERE b.id = $1', [bI]);
+ok(closed.status === 'completed' && closed.attendance_status === 'late' && closed.checked_in && closed.session_status === 'completed',
+  'presença "atrasou" gravada e atividade encerrada');
+r = await as('authenticated', GA, 'SELECT public.close_community_session($1)', [sI]);
+ok(r.err && /already_closed/.test(r.err), 'não encerra duas vezes');
+r = await as('authenticated', ORG, 'SELECT public.close_community_session($1)', [sPast]);
+ok(r.err && /not_a_community_session/.test(r.err), 'atividade do Riff Pro não é encerrada por aqui');
+
+// gerenciar membros
+r = await as('authenticated', M2, 'SELECT public.manage_member($1, $2, $3)', [orgA, pIA, 'remove']);
+ok(r.err && /forbidden/.test(r.err), 'morador não gerencia membros');
+r = await as('authenticated', GA, 'SELECT public.manage_member($1, $2, $3) AS r', [orgA, pM2, 'make_instructor']);
+ok(r.rows?.[0]?.r?.role === 'instructor', 'gestor transforma morador em instrutor');
+r = await as('authenticated', GA, 'SELECT public.manage_member($1, $2, $3)', [orgA, pGA, 'make_member']);
+ok(r.err && /cannot_change_self/.test(r.err), 'gestor não altera o próprio papel');
+await ex("SELECT set_config('request.jwt.claim.sub', '', false)");
+r = await as('authenticated', GA, 'SELECT public.manage_member($1, $2, $3) AS r', [orgA, pM2, 'make_admin']);
+r = await as('authenticated', M2, 'SELECT public.manage_member($1, $2, $3)', [orgA, pGA, 'remove']);
+ok(r.err && /cannot_change_owner/.test(r.err), 'ninguém remove o dono da comunidade');
+const sNext = (await one(
+  `INSERT INTO public.sessions (professional_id, organization_id, category_id, title, date, start_time, location_name, max_participants, price_per_slot, status)
+   VALUES ($1, $2, $3, 'Vôlei da semana que vem', current_date + 7, '19:00', 'Quadra do condomínio', 10, 0, 'active') RETURNING id`,
+  [pIA, orgA, category])).id;
+r = await as('authenticated', M2, 'SELECT public.create_booking($1) AS r', [sNext]);
+const bNext = r.rows?.[0]?.r?.booking_id;
+r = await as('authenticated', GA, 'SELECT public.manage_member($1, $2, $3) AS r', [orgA, pM2, 'remove']);
+ok(r.rows?.[0]?.r?.status === 'removed', 'gestor remove membro');
+ok((await one('SELECT status FROM public.bookings WHERE id = $1', [bNext])).status === 'cancelled_by_pro', 'inscrições futuras de quem foi removido são canceladas');
+ok((await one('SELECT current_participants n FROM public.sessions WHERE id = $1', [sNext])).n === 0, 'vaga liberada');
+
 // ── Script de métricas do dono do produto ──────────────────────────────
 console.log('Métricas:');
 try {
