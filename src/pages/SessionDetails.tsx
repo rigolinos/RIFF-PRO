@@ -253,6 +253,7 @@ const SessionDetails = () => {
 
       {isCheckoutOpen && (
         <CheckoutModal 
+          screen="session"
           isOpen={isCheckoutOpen} 
           onClose={() => setIsCheckoutOpen(false)} 
           session={session}

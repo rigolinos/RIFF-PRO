@@ -180,6 +180,29 @@ ok((await one('SELECT current_participants n FROM public.sessions WHERE id = $1'
 rb = await as('authenticated', PART2, 'SELECT public.create_booking($1) AS r', [sRebook]);
 ok(rb.rows?.[0]?.r?.code === 'already_booked', 'reservar duas vezes é bloqueado');
 
+// ── Origem das reservas ─────────────────────────────────────────────────
+console.log('Origem das reservas:');
+const sAttr = await newSession(pOrg, 6, 'Quadra Sul');
+const sAttr2 = await newSession(pOrg, 7, 'Quadra Sul');
+const longRef = 'x'.repeat(500);
+rb = await as('authenticated', PART, 'SELECT public.create_booking($1, $2, $3::jsonb) AS r',
+  [sAttr, 'organizer_link', JSON.stringify({ utm_source: 'instagram', ref: longRef, senha: 'nao-guardar', landing_path: '/@org' })]);
+const attrBooking = rb.rows?.[0]?.r?.booking_id;
+const attr = await one('SELECT source, product, attribution FROM public.bookings WHERE id = $1', [attrBooking]);
+ok(attr?.source === 'organizer_link' && attr.product === 'pro', 'reserva grava a origem (organizer_link) e o produto (pro)');
+ok(attr?.attribution?.utm_source === 'instagram' && !('senha' in (attr?.attribution ?? {})) && attr?.attribution?.ref?.length === 200,
+  'atribuição guarda só chaves conhecidas, com no máximo 200 caracteres');
+rb = await as('authenticated', PART2, 'SELECT public.create_booking($1, $2) AS r', [sAttr, 'hackeado']);
+ok((await one('SELECT source FROM public.bookings WHERE id = $1', [rb.rows?.[0]?.r?.booking_id])).source === 'other', 'canal desconhecido vira other');
+rb = await as('authenticated', PART2, 'SELECT public.create_booking($1) AS r', [sAttr2]);
+ok(rb.rows?.[0]?.r?.success && (await one('SELECT source FROM public.bookings WHERE id = $1', [rb.rows[0].r.booking_id])).source === null,
+  'chamada antiga (só a atividade) continua funcionando');
+rb = await as('authenticated', ORG, 'SELECT public.get_professional_insights() AS r');
+const ins = rb.rows?.[0]?.r;
+ok(ins && ins.tracked_bookings === 2 && ins.via_link === 1, `organizador vê quantas reservas vieram do link dele (${ins?.via_link} de ${ins?.tracked_bookings})`);
+rb = await as('anon', '', 'SELECT public.get_professional_insights() AS r');
+ok(rb.err, 'visitante sem login não acessa os números');
+
 // ── Presença ────────────────────────────────────────────────────────────
 console.log('Presença:');
 let r = await as('authenticated', ORG, 'SELECT public.close_session($1, $2::jsonb)', [sClose, JSON.stringify([{ booking_id: bClose1, attended: true, paid: true }])]);
@@ -280,6 +303,15 @@ r = await as('authenticated', OTHER, 'UPDATE public.profiles SET deleted_at = no
 ok(r.err && /forbidden_profile_field/.test(r.err), 'usuário não preenche deleted_at sozinho');
 r = await as('authenticated', OTHER, 'SELECT public.ensure_solo_organization(public._profile_id())');
 ok(r.err && /permission denied/.test(r.err), 'usuário não chama funções internas (ensure_solo_organization)');
+
+// ── Script de métricas do dono do produto ──────────────────────────────
+console.log('Métricas:');
+try {
+  const rows = (await q(fs.readFileSync(path.resolve('scripts/metrics.sql'), 'utf8').replace(/;\s*$/, ''))).rows;
+  ok(rows.length === 3 && rows[0].product === 'pro', 'scripts/metrics.sql roda e traz pro, clubes e sports');
+} catch (e) {
+  ok(false, 'scripts/metrics.sql roda (' + e.message + ')');
+}
 
 // ── Higiene de segurança (verificador do Supabase) ─────────────────────
 console.log('Higiene de segurança:');

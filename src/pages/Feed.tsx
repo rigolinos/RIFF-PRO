@@ -244,6 +244,7 @@ export const Feed = () => {
 
       {selectedSession && (
         <CheckoutModal 
+          screen="feed"
           isOpen={isCheckoutOpen} 
           onClose={() => setIsCheckoutOpen(false)} 
           session={selectedSession}

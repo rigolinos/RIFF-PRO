@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { BRAND } from '@/brand';
 import { errorMessage } from '@/lib/utils';
 import { buildPixPayload } from '@/lib/pix';
+import { bookingAttribution, type BookingScreen } from '@/lib/attribution';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import {
@@ -51,9 +52,11 @@ interface CheckoutModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  /** Tela onde a reserva foi aberta (usada para registrar a origem). */
+  screen: BookingScreen;
 }
 
-export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutModalProps) => {
+export const CheckoutModal = ({ session, isOpen, onClose, onSuccess, screen }: CheckoutModalProps) => {
   const { user } = useAuth();
   const { profile: studentProfile } = useProfile();
 
@@ -89,8 +92,11 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess }: CheckoutM
 
     setIsBooking(true);
     try {
+      const { source, attribution } = bookingAttribution(screen, session);
       const { data, error } = await supabase.rpc('create_booking', {
         p_session_id: session.id,
+        p_source: source,
+        p_attribution: attribution,
       });
 
       if (error) throw error;

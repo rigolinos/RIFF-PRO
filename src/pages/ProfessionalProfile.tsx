@@ -213,6 +213,7 @@ export default function ProfessionalProfile() {
 
       {isCheckoutOpen && (
         <CheckoutModal 
+          screen="profile"
           isOpen={isCheckoutOpen} 
           onClose={() => setIsCheckoutOpen(false)} 
           session={selectedSession as unknown as SessionWithJoins}
