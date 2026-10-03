@@ -27,7 +27,8 @@ Ponte entre os dois: condomínios e clubes precisam de instrutores, e os organiz
 
 - **Um design system para os dois produtos.** Mesmos tokens, mesmos componentes. Depois haverá ajustes sutis (acento, fundo) para diferenciar um do outro, por isso toda cor e tipografia vem de tokens semânticos, nunca de valores fixos nos componentes.
 - **Um banco só** (um projeto Supabase) e **uma conta por pessoa**. O mesmo login entra nos dois produtos.
-- **Fronts diferentes por produto.** Nada de copiar código entre eles: tipos, cliente Supabase, tokens e componentes de domínio ficam num núcleo compartilhado que os dois importam.
+- **Fronts diferentes por produto.** Nada de copiar código entre eles: tipos, cliente Supabase, tokens e componentes de domínio ficam no núcleo compartilhado `packages/core` (`@riff/core/...`), que os dois importam. O Clubes será `apps/clubes` neste mesmo repositório, com um único `supabase/` (um só histórico de migrations).
+- **Dois apps na Google Play** (Riff Pro e Riff Clubes, downloads separados): cada um publicado na Vercel com domínio, nome, ícones e manifest próprios, empacotado como TWA (PWABuilder/Bubblewrap), com `/.well-known/assetlinks.json` próprio. Mesma conta nos dois.
 - **Mesmo banco não significa tudo visível para todos.** Os dados são separados por RLS e schemas. Um organizador do Pro não vê dados de condomínio, e um morador só vê o que o condomínio dele libera. O Clubes terá menores de idade e dados de condomínio, então o isolamento é requisito desde já.
 - **Registrar tudo, expor pouco.** Presença, resultado, local e nível de cada atividade são guardados desde já, mesmo sem ranking. Esses dados não podem ser recuperados depois.
 - **Preparar a porta dos Clubes sem construí-los:** `organizations` e `venues` como entidades de primeira classe, com cada atividade ligada a um local.
@@ -76,10 +77,8 @@ Ponte entre os dois: condomínios e clubes precisam de instrutores, e os organiz
 ## 7. Mapa rápido do código
 
 - `src/pages/`: telas (rotas em `src/App.tsx`). As telas do organizador têm sufixo `Pro` (`DashboardPro`, `MySessionsPro`, `OnboardingPro`).
-- `src/components/domain/`: componentes de domínio (Avatar, PriceTag, SpotsMeter, StatusPill, EmptyState…).
-- `src/components/ui/`: primitivas shadcn/Radix (fora do `check:ds`).
-- `src/hooks/`: acesso a dados com React Query + Supabase.
-- `src/integrations/supabase/`: cliente e `types.ts` gerado.
+- **`packages/core/`** (`@riff/core/...`): núcleo compartilhado entre Pro e Clubes. Contém design system (`styles/riff.css`), primitivas shadcn (`ui/`, fora do `check:ds`), componentes de domínio (`domain/`), cliente e tipos do Supabase (`supabase/`), sessão e conta (`hooks/useAuth`, `useProfile`, `useLegalAcceptance`), `lib/` (utils, copy, attribution), `legal/`, `layout/`, `routing/` e o logo. Veja `packages/core/README.md`.
+- `src/`: o app Riff Pro (telas, navegação, `brand.ts`, hooks de atividades e reservas do Pro).
 - `src/contexts/ViewModeContext.tsx`: alternância entre modo organizador e participante.
 - `supabase/migrations/`, `supabase/tests/`, `supabase/seeds/`.
 - **Organizações e locais (Lote 3):** todo organizador tem uma `organizations` de `kind = 'solo'` (sem nome próprio: a vitrine é o perfil). Toda atividade (`sessions`) tem `organization_id` e `venue_id`, preenchidos por trigger a partir de `location_*`; atividades no mesmo lugar compartilham o `venue`. `condo`/`club` e `visibility = 'members'` já existem para o Riff Clubes.
@@ -89,8 +88,9 @@ Ponte entre os dois: condomínios e clubes precisam de instrutores, e os organiz
 
 ## 8. Perguntas em aberto
 
-- Quem paga no Riff Clubes: condomínio, morador ou instrutor por comissão?
-- O Clubes inclui academias e arenas, ou só condomínios e clubes?
+- Quem paga no Riff Clubes: **ainda em aberto**, provavelmente contrato com o condomínio ou clube. A primeira versão do Clubes **não tem pagamento no app**.
+- Público do Clubes: **só condomínios e clubes** na primeira versão (academias e arenas depois).
+- Menores no Clubes: **sim**, como dependentes sem login cadastrados por um responsável que aceita termo específico (consentimento, LGPD art. 14). Atividades restritas à área do clube ou condomínio e só para membros. O Riff recomenda acompanhamento de maior de idade e deixa claro que a responsabilidade é do responsável e do condomínio ou clube (texto para revisão jurídica).
 - Quais recursos de campeonato e jogo aberto entram no Pro, e quais esperam a rede aberta?
 - Critério de "pronto" do Pro (proposta: 30 organizadores ativos, 300 reservas pagas por mês, 40% de recompra, mais de 60% das reservas vindas pelo link do organizador).
 - Plano de negócio (tráfego pago, influenciadores, listas de condomínios e clubes) ainda será trazido pelo dono do produto.

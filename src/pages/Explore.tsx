@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Star, Loader2, MapPin, AlertCircle } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { PageContainer } from '@/components/layout/PageContainer';
-import { Input } from '@/components/ui/input';
-import { useDebounce } from '@/hooks/useDebounce';
-import { EmptyState } from '@/components/domain';
-import type { Tables } from '@/integrations/supabase/types';
+import { supabase } from '@riff/core/supabase/client';
+import { PageContainer } from '@riff/core/layout/PageContainer';
+import { Input } from '@riff/core/ui/input';
+import { useDebounce } from '@riff/core/hooks/useDebounce';
+import { EmptyState } from '@riff/core/domain';
+import type { Tables } from '@riff/core/supabase/types';
 
 export default function Explore() {
   const [searchTerm, setSearchTerm] = useState('');

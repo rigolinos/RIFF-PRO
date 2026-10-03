@@ -13,6 +13,7 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
+      "@riff/core": fileURLToPath(new URL("./packages/core/src", import.meta.url)),
       "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },

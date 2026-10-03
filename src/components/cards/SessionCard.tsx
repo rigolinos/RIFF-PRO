@@ -2,10 +2,10 @@ import { MapPin, Clock } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
-import { Button } from '../ui/button';
-import { Badge } from '../ui/badge';
-import { CoverImage, PriceTag, RatingBadge, SpotsMeter, StatusPill } from '../domain';
-import { KINDS, ActivityKind } from '@/lib/copy';
+import { Button } from '@riff/core/ui/button';
+import { Badge } from '@riff/core/ui/badge';
+import { CoverImage, PriceTag, RatingBadge, SpotsMeter, StatusPill } from '@riff/core/domain';
+import { KINDS, ActivityKind } from '@riff/core/lib/copy';
 
 import { SessionWithJoins } from '@/types/session';
 

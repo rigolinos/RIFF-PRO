@@ -75,12 +75,12 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "oxlint src --deny-warnings",
+    "lint": "oxlint src packages/core/src --deny-warnings",
     "preview": "vite preview",
     "check:ds": "python scripts/check-ds.py",
     "test:db": "node scripts/test-db.mjs",
     "check:drift": "node scripts/check-drift.mjs",
     "metrics": "npx supabase db query --linked -f scripts/metrics.sql -o table",
-    "check:encoding": "python -c \"import sys, glob; errs = [f for f in glob.glob('src/**/*.tsx', recursive=True) + glob.glob('src/**/*.ts', recursive=True) if '\\ufffd' in open(f, 'r', encoding='utf-8', errors='replace').read() or 'Ã' in open(f, 'r', encoding='utf-8', errors='replace').read() or 'ð' in open(f, 'r', encoding='utf-8', errors='replace').read()]; sys.exit(0 if not errs else (print('Encoding errors in: ' + ', '.join(errs)), 1)[1])\""
+    "check:encoding": "python -c \"import sys, glob; errs = [f for f in glob.glob('src/**/*.tsx', recursive=True) + glob.glob('src/**/*.ts', recursive=True) + glob.glob('packages/*/src/**/*.ts*', recursive=True) if '\\ufffd' in open(f, 'r', encoding='utf-8', errors='replace').read() or 'Ã' in open(f, 'r', encoding='utf-8', errors='replace').read() or 'ð' in open(f, 'r', encoding='utf-8', errors='replace').read()]; sys.exit(0 if not errs else (print('Encoding errors in: ' + ', '.join(errs)), 1)[1])\""
   }
 }

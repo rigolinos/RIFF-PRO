@@ -1,8 +1,8 @@
 import { useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { PageContainer } from '@/components/layout/PageContainer';
+import { PageContainer } from '@riff/core/layout/PageContainer';
 import { BRAND } from '@/brand';
-import { LEGAL_VERSIONS, legalDocumentByPath } from '@/legal/documents';
+import { LEGAL_VERSIONS, legalDocumentByPath } from '@riff/core/legal/documents';
 import NotFound from './NotFound';
 
 // Página pública de um documento legal (/termos, /termos-organizador, /privacidade).

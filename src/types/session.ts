@@ -1,4 +1,4 @@
-import type { Tables } from '@/integrations/supabase/types';
+import type { Tables } from '@riff/core/supabase/types';
 
 export type SessionWithJoins = Tables<'sessions'> & {
   professional?: Tables<'profiles'>;

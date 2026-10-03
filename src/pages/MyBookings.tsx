@@ -6,16 +6,16 @@ import { MapPin, MessageCircle, XCircle, Loader2, CalendarDays } from 'lucide-re
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import QRCode from 'react-qr-code';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@riff/core/ui/badge';
 
-import { PageContainer } from '@/components/layout/PageContainer';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { PageContainer } from '@riff/core/layout/PageContainer';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@riff/core/ui/tabs';
 import { useBookings } from '@/hooks/useBookings';
 import { buildWhatsAppUrl } from '@/lib/whatsapp';
-import { useProfile } from '@/hooks/useProfile';
+import { useProfile } from '@riff/core/hooks/useProfile';
 import { ReviewModal } from '@/components/reviews/ReviewModal';
-import { ConfirmDialog } from '@/components/domain/ConfirmDialog';
-import { supabase } from '@/integrations/supabase/client';
+import { ConfirmDialog } from '@riff/core/domain/ConfirmDialog';
+import { supabase } from '@riff/core/supabase/client';
 
 type BookingType = NonNullable<ReturnType<typeof useBookings>['bookings']>[number];
 

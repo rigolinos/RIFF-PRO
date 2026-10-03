@@ -1,16 +1,16 @@
 import { lazy, Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Toaster as SonnerToaster } from '@/components/ui/sonner';
+import { Toaster as SonnerToaster } from '@riff/core/ui/sonner';
 import { MotionConfig } from 'framer-motion';
 
 // Config
-import { ProtectedRoute } from '@/components/ProtectedRoute';
-import { PublicRoute } from '@/components/PublicRoute';
+import { ProtectedRoute } from '@riff/core/routing/ProtectedRoute';
+import { PublicRoute } from '@riff/core/routing/PublicRoute';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { ModeBanner } from '@/components/layout/ModeBanner';
 import { ViewModeProvider } from '@/contexts/ViewModeContext';
-import { GlobalErrorBoundary } from '@/components/GlobalErrorBoundary';
+import { GlobalErrorBoundary } from '@riff/core/app/GlobalErrorBoundary';
 
 // Pages - Auth & Public
 const Landing = lazy(() => import('@/pages/Landing'));

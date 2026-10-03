@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Eye, EyeOff, ArrowLeft } from 'lucide-react';
-import { Logo } from '@/components/ui/logo';
+import { Logo } from '@riff/core/ui/logo';
 import { motion } from 'framer-motion';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@riff/core/hooks/useAuth';
 import { toast } from 'sonner';
 
 const Login = () => {

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useProfile } from './useProfile';
+import { supabase } from '@riff/core/supabase/client';
+import { useProfile } from '@riff/core/hooks/useProfile';
 
 // Locais que o organizador já usou (criados automaticamente a partir das atividades).
 export function useMyVenues() {

@@ -6,14 +6,14 @@ import { toast } from 'sonner';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Avatar, ConfirmDialog } from '@/components/domain';
+import { supabase } from '@riff/core/supabase/client';
+import { Button } from '@riff/core/ui/button';
+import { Input } from '@riff/core/ui/input';
+import { Textarea } from '@riff/core/ui/textarea';
+import { Avatar, ConfirmDialog } from '@riff/core/domain';
 import { useProSessions } from '@/hooks/useProSessions';
-import { useProfile } from '@/hooks/useProfile';
-import { errorMessage } from '@/lib/utils';
+import { useProfile } from '@riff/core/hooks/useProfile';
+import { errorMessage } from '@riff/core/lib/utils';
 
 type AttendanceStatus = 'present' | 'late' | 'absent' | 'excused';
 

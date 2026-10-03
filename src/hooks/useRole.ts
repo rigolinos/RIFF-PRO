@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useProfile } from './useProfile';
+import { useProfile } from '@riff/core/hooks/useProfile';
 
 export function useRole() {
   const { profile, isLoading } = useProfile();
