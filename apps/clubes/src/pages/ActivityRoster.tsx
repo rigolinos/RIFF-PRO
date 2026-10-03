@@ -143,6 +143,7 @@ export default function ActivityRoster() {
         onOpenChange={setConfirmNotHappened}
         title={started ? 'A atividade não aconteceu?' : 'Cancelar atividade?'}
         description="Ela sai da agenda e todas as inscrições são canceladas. Não dá para desfazer."
+        cancelLabel="Voltar"
         confirmLabel="Confirmar"
         isDestructive
         isLoading={close.isPending}

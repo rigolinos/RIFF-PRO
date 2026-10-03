@@ -18,6 +18,7 @@ import {
 import { useCommunity } from '@/hooks/useCommunity';
 import { useMembers, useInvites, useManageActions, type MemberAction } from '@/hooks/useManagement';
 import { InviteMembers } from '@/components/InviteMembers';
+import { formatInviteCode } from '@/lib/invite';
 
 const ROLE_LABEL: Record<string, string> = { owner: 'Responsável', admin: 'Gestor', instructor: 'Instrutor', member: 'Membro' };
 const ROLE_ACTIONS: { action: MemberAction; role: string; label: string }[] = [
@@ -40,6 +41,7 @@ export default function Manage() {
   const { data: invites } = useInvites(orgId);
   const { manageMember, revokeInvite } = useManageActions(orgId);
   const [toRemove, setToRemove] = useState<{ id: string; name: string } | null>(null);
+  const [revokedCodes, setRevokedCodes] = useState<string[]>([]);
 
   if (!isLoading && community === null) return <Navigate to="/inicio" replace />;
   if (!isLoading && community && !community.isAdmin) return <Navigate to={`/c/${orgId}`} replace />;
@@ -57,9 +59,10 @@ export default function Manage() {
     }
   };
 
-  const handleRevoke = async (inviteId: string) => {
+  const handleRevoke = async (inviteId: string, code: string) => {
     try {
       await revokeInvite.mutateAsync(inviteId);
+      setRevokedCodes((prev) => [...prev, code]);
       toast.success('Convite cancelado. O código não funciona mais.');
     } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : 'Não foi possível cancelar o convite.');
@@ -75,8 +78,8 @@ export default function Manage() {
           <h2 className="type-subtitle">Convidar</h2>
           {community && orgId && (
             <div className="grid grid-cols-1 gap-1">
-              <InviteMembers organizationId={orgId} organizationName={community.name ?? ''} />
-              <InviteMembers organizationId={orgId} organizationName={community.name ?? ''} role="instructor" />
+              <InviteMembers organizationId={orgId} organizationName={community.name ?? ''} revokedCodes={revokedCodes} />
+              <InviteMembers organizationId={orgId} organizationName={community.name ?? ''} role="instructor" revokedCodes={revokedCodes} />
             </div>
           )}
           {invites && invites.length > 0 && (
@@ -85,7 +88,7 @@ export default function Manage() {
                 <li key={invite.id} className="flex items-center gap-3 bg-surface border border-line rounded-xl px-4 py-3">
                   <Ticket className="w-4 h-4 text-ink-muted shrink-0" />
                   <div className="min-w-0 flex-1">
-                    <p className="type-number text-ink tracking-[0.15em]">{invite.code}</p>
+                    <p className="type-number text-ink tracking-[0.15em]">{formatInviteCode(invite.code)}</p>
                     <p className="text-xs text-ink-muted">
                       {invite.role === 'instructor' ? 'Instrutor' : 'Membro'} · usado {invite.uses}
                       {invite.max_uses ? ` de ${invite.max_uses}` : ''}
@@ -95,8 +98,8 @@ export default function Manage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    aria-label={`Cancelar convite ${invite.code}`}
-                    onClick={() => handleRevoke(invite.id)}
+                    aria-label={`Cancelar convite ${formatInviteCode(invite.code)}`}
+                    onClick={() => handleRevoke(invite.id, invite.code)}
                     disabled={revokeInvite.isPending}
                   >
                     <X className="w-4 h-4" />

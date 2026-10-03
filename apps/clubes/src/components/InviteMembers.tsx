@@ -6,17 +6,21 @@ import { supabase } from '@riff/core/supabase/client';
 import { Button } from '@riff/core/ui/button';
 import { errorMessage } from '@riff/core/lib/utils';
 import { BRAND } from '@/brand';
+import { formatInviteCode } from '@/lib/invite';
 
 interface InviteMembersProps {
   organizationId: string;
   organizationName: string;
   role?: 'member' | 'instructor';
+  /** Códigos cancelados na tela de gestão: o painel do código some. */
+  revokedCodes?: string[];
 }
 
 // Gestor gera um código de convite para moradores, sócios ou instrutores (create_invite, válido por 30 dias)
-export function InviteMembers({ organizationId, organizationName, role = 'member' }: InviteMembersProps) {
+export function InviteMembers({ organizationId, organizationName, role = 'member', revokedCodes }: InviteMembersProps) {
   const queryClient = useQueryClient();
-  const [code, setCode] = useState<string | null>(null);
+  const [created, setCreated] = useState<string | null>(null);
+  const code = created && !revokedCodes?.some((c) => formatInviteCode(c) === formatInviteCode(created)) ? formatInviteCode(created) : null;
   const [isCreating, setIsCreating] = useState(false);
 
   const message = code
@@ -29,7 +33,7 @@ export function InviteMembers({ organizationId, organizationName, role = 'member
     try {
       const { data, error } = await supabase.rpc('create_invite', { p_org: organizationId, p_role: role });
       if (error) throw error;
-      setCode((data as { code: string }).code);
+      setCreated((data as { code: string }).code);
       queryClient.invalidateQueries({ queryKey: ['community-invites', organizationId] });
     } catch (error: unknown) {
       toast.error(errorMessage(error, 'Não foi possível gerar o convite.'));

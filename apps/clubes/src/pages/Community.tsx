@@ -157,7 +157,9 @@ export default function Community() {
                       </Button>
                     )}
 
-                    {item.myBookingId ? (
+                    {item.professional_id === profile?.id ? (
+                      <p className="text-xs text-ink-muted text-center">Você conduz esta atividade.</p>
+                    ) : item.myBookingId ? (
                       <Button
                         variant="secondary"
                         className="w-full"
