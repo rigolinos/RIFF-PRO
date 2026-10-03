@@ -63,6 +63,7 @@ Ponte entre os dois: condomínios e clubes precisam de instrutores, e os organiz
   - Não apagar coluna de dados pessoais sem confirmação.
   - Nome no padrão `AAAAMMDDHHMMSS_descricao.sql`, com timestamp maior que o da última migration existente.
   - O banco de produção (`elrgdjbprmihbmpuggdt`) recebeu as migrations à mão pelo SQL editor até 01/10/2026; confira `npx supabase migration list` antes de qualquer `db push`.
+  - Nada de SQL à mão no banco: toda mudança de schema vira migration. `npm run check:drift` compara o banco ligado com as migrations (só leitura) e precisa sair "idênticos"; rode depois de aplicar migrations. Para SQL avulso de dados (seeds), use `npx supabase db query --linked -f arquivo`, com ensaio em `BEGIN … ROLLBACK` antes.
 - Cores e fontes só por tokens (o `check:ds` barra cores fixas). Sem `as any` em código novo.
 - Dados pessoais, documentos e menores seguem a LGPD.
 - **Dados de exemplo** (demonstração): `supabase/seeds/demo_seed.sql` cria 6 organizadores e 20 participantes fictícios, sem login, com atividades passadas e futuras. Todo id começa com `de000000-`. **Antes de abrir para usuários reais, rodar `demo_cleanup.sql`**: avaliações fictícias não podem parecer reais (CDC art. 37). Os dois scripts são testados no `test:db`.
