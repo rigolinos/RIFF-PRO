@@ -26,8 +26,8 @@ export function RatingBadge({ rating, count, className, showCount = true }: Rati
   return (
     <Badge variant="pill" className={cn("flex items-center gap-1", className)}>
       <Star className="w-3 h-3 fill-brand text-brand" />
-      <span className="font-semibold tabular-nums text-brand-ink">{formattedRating}</span>
-      {showCount && <span className="text-brand-ink/70 ml-0.5">({count})</span>}
+      <span className="font-semibold tabular-nums text-ink">{formattedRating}</span>
+      {showCount && <span className="text-ink-muted ml-0.5">({count})</span>}
     </Badge>
   );
 }
