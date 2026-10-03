@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { ImagePlus, Loader2 } from 'lucide-react';
@@ -478,6 +479,12 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
                     )}
                     {!hasParticipants && formData.price_per_slot == 0 && (
                        <p className="text-xs text-brand/90 italic mt-1">Atividade 100% gratuita configurada (ótimo para atrair leads).</p>
+                    )}
+                    {Number(formData.price_per_slot) > 0 && !profile?.pix_key && (
+                      <p className="text-xs text-accent bg-accent/10 border border-accent/30 rounded-lg px-3 py-2 mt-2">
+                        Você ainda não cadastrou sua chave Pix: quem reservar não verá como pagar.{' '}
+                        <Link to="/profile/edit#pix" className="underline underline-offset-2 font-semibold">Cadastrar agora</Link>
+                      </p>
                     )}
                     <p className="text-xs text-ink-muted leading-relaxed mt-2">
                       Você recebe o pagamento direto e é o responsável pela atividade, pela segurança dos participantes e por
