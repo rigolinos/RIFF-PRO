@@ -111,6 +111,7 @@ export type Database = {
           attendance_recorded_at: string | null
           attendance_recorded_by: string | null
           attendance_status: string | null
+          attribution: Json
           cancellation_reason: string | null
           cancelled_at: string | null
           checked_in: boolean | null
@@ -121,9 +122,11 @@ export type Database = {
           payment_method: string | null
           payment_status: string | null
           platform_fee: number | null
+          product: string
           professional_id: string
           professional_payout: number | null
           session_id: string
+          source: string | null
           status: string | null
           student_id: string
           updated_at: string | null
@@ -133,6 +136,7 @@ export type Database = {
           attendance_recorded_at?: string | null
           attendance_recorded_by?: string | null
           attendance_status?: string | null
+          attribution?: Json
           cancellation_reason?: string | null
           cancelled_at?: string | null
           checked_in?: boolean | null
@@ -143,9 +147,11 @@ export type Database = {
           payment_method?: string | null
           payment_status?: string | null
           platform_fee?: number | null
+          product?: string
           professional_id: string
           professional_payout?: number | null
           session_id: string
+          source?: string | null
           status?: string | null
           student_id: string
           updated_at?: string | null
@@ -155,6 +161,7 @@ export type Database = {
           attendance_recorded_at?: string | null
           attendance_recorded_by?: string | null
           attendance_status?: string | null
+          attribution?: Json
           cancellation_reason?: string | null
           cancelled_at?: string | null
           checked_in?: boolean | null
@@ -165,9 +172,11 @@ export type Database = {
           payment_method?: string | null
           payment_status?: string | null
           platform_fee?: number | null
+          product?: string
           professional_id?: string
           professional_payout?: number | null
           session_id?: string
+          source?: string | null
           status?: string | null
           student_id?: string
           updated_at?: string | null
@@ -670,6 +679,7 @@ export type Database = {
           organization_id: string | null
           parent_session_id: string | null
           price_per_slot: number
+          product: string
           professional_id: string
           recurrence_rule: string | null
           session_type: string
@@ -703,6 +713,7 @@ export type Database = {
           organization_id?: string | null
           parent_session_id?: string | null
           price_per_slot: number
+          product?: string
           professional_id: string
           recurrence_rule?: string | null
           session_type?: string
@@ -736,6 +747,7 @@ export type Database = {
           organization_id?: string | null
           parent_session_id?: string | null
           price_per_slot?: number
+          product?: string
           professional_id?: string
           recurrence_rule?: string | null
           session_type?: string
@@ -871,7 +883,10 @@ export type Database = {
         }
         Returns: undefined
       }
-      create_booking: { Args: { p_session_id: string }; Returns: Json }
+      create_booking: {
+        Args: { p_attribution?: Json; p_session_id: string; p_source?: string }
+        Returns: Json
+      }
       delete_user_account: { Args: never; Returns: undefined }
       ensure_solo_organization: { Args: { p_profile: string }; Returns: string }
       get_booking_payment_info: {
@@ -879,6 +894,7 @@ export type Database = {
         Returns: Json
       }
       get_professional_dashboard: { Args: never; Returns: Json }
+      get_professional_insights: { Args: never; Returns: Json }
       is_org_member: {
         Args: { p_org: string; p_roles?: string[] }
         Returns: boolean
@@ -897,6 +913,7 @@ export type Database = {
         }
         Returns: string
       }
+      sanitize_attribution: { Args: { p: Json }; Returns: Json }
     }
     Enums: {
       [_ in never]: never

@@ -10,6 +10,8 @@ import { useViewMode } from '@/contexts/ViewModeContext';
 import { Button } from '@/components/ui/button';
 import { EmptyState, StatusPill } from '@/components/domain';
 import { GettingStarted, PixMissingBanner } from '@/components/dashboard/GettingStarted';
+import { InsightsCard } from '@/components/dashboard/InsightsCard';
+import { useProfessionalInsights } from '@/hooks/useProfessionalInsights';
 
 const SHARED_KEY = 'riff-link-shared';
 const readShared = () => {
@@ -23,6 +25,7 @@ const readShared = () => {
 export default function DashboardPro() {
   const { profile } = useProfile();
   const { data, isLoading } = useDashboardMetrics();
+  const { data: insights } = useProfessionalInsights();
   const [copied, setCopied] = useState(false);
   const [hasSharedLink, setHasSharedLink] = useState(readShared);
   const navigate = useNavigate();
@@ -200,7 +203,7 @@ export default function DashboardPro() {
 
         {/* KPI Grid */}
         <section>
-          <h2 className="type-subtitle mb-4">Métricas (Todo o período)</h2>
+          <h2 className="type-subtitle mb-4">Métricas (todo o período)</h2>
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-surface border border-line rounded-2xl p-4 flex flex-col shadow-sm">
               <div className="flex items-center gap-2 text-ink-muted mb-2">
@@ -253,6 +256,7 @@ export default function DashboardPro() {
           </div>
         </section>
 
+        {insights && <InsightsCard insights={insights} />}
       </div>
     </PageContainer>
   );
