@@ -38,3 +38,6 @@ jobs:
       - name: Build and Typecheck
         run: npm run build
 
+      - name: Build and Typecheck (Riff Clubes)
+        run: npm run build:clubes
+
