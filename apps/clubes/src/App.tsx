@@ -15,6 +15,8 @@ const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
 const LegalPage = lazy(() => import('@/pages/LegalPage'));
 const AcceptTerms = lazy(() => import('@/pages/AcceptTerms'));
 const Communities = lazy(() => import('@/pages/Communities'));
+const Community = lazy(() => import('@/pages/Community'));
+const NewActivity = lazy(() => import('@/pages/NewActivity'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
 
 const queryClient = new QueryClient({
@@ -45,6 +47,8 @@ export default function App() {
                 <Route path="/privacidade" element={<LegalPage />} />
                 <Route path="/aceite" element={<ProtectedRoute skipLegal><AcceptTerms /></ProtectedRoute>} />
                 <Route path="/inicio" element={<ProtectedRoute><Communities /></ProtectedRoute>} />
+                <Route path="/c/:orgId" element={<ProtectedRoute><Community /></ProtectedRoute>} />
+                <Route path="/c/:orgId/nova" element={<ProtectedRoute><NewActivity /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
