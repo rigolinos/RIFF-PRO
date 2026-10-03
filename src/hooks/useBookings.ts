@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useProfile } from './useProfile';
+import { supabase } from '@riff/core/supabase/client';
+import { useProfile } from '@riff/core/hooks/useProfile';
 
 export function useBookings() {
   const queryClient = useQueryClient();

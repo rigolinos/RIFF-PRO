@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Shield, MapPin, DollarSign, Star, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Logo } from "@/components/ui/logo";
-import { Button } from '@/components/ui/button';
+import { Logo } from "@riff/core/ui/logo";
+import { Button } from '@riff/core/ui/button';
 
 const Landing = () => {
   const navigate = useNavigate();

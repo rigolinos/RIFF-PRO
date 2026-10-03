@@ -6,16 +6,16 @@ import { motion } from 'framer-motion';
 import { format, isToday, isTomorrow, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-import { PageContainer } from '@/components/layout/PageContainer';
+import { PageContainer } from '@riff/core/layout/PageContainer';
 import { ModeSwitcher } from '@/components/layout/ModeSwitcher';
 import { useSessions } from '@/hooks/useSessions';
 import { useCategories } from '@/hooks/useCategories';
 import { SessionCard } from '@/components/cards/SessionCard';
 import { SessionCardSkeleton } from '@/components/skeletons/SessionCardSkeleton';
 import { CheckoutModal } from '@/components/checkout/CheckoutModal';
-import { useProfile } from '@/hooks/useProfile';
-import { EmptyState } from '@/components/domain';
-import { KINDS, ActivityKind } from '@/lib/copy';
+import { useProfile } from '@riff/core/hooks/useProfile';
+import { EmptyState } from '@riff/core/domain';
+import { KINDS, ActivityKind } from '@riff/core/lib/copy';
 
 // Compara cidades sem acento, caixa ou espaços ("Porto alegre" = "Porto Alegre").
 const normalizeCity = (city?: string | null) =>

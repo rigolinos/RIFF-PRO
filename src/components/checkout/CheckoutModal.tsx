@@ -6,13 +6,13 @@ import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
 
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@riff/core/supabase/client';
 import { BRAND } from '@/brand';
-import { errorMessage } from '@/lib/utils';
+import { errorMessage } from '@riff/core/lib/utils';
 import { buildPixPayload } from '@/lib/pix';
-import { bookingAttribution, type BookingScreen } from '@/lib/attribution';
-import { useAuth } from '@/hooks/useAuth';
-import { useProfile } from '@/hooks/useProfile';
+import { bookingAttribution, type BookingScreen } from '@riff/core/lib/attribution';
+import { useAuth } from '@riff/core/hooks/useAuth';
+import { useProfile } from '@riff/core/hooks/useProfile';
 import {
   Drawer,
   DrawerContent,
@@ -20,8 +20,8 @@ import {
   DrawerTitle,
   DrawerDescription,
   DrawerFooter,
-} from '@/components/ui/drawer';
-import { Button } from '@/components/ui/button';
+} from '@riff/core/ui/drawer';
+import { Button } from '@riff/core/ui/button';
 
 // Map server error codes to pt-BR messages
 const ERROR_MESSAGES: Record<string, string> = {
@@ -42,7 +42,7 @@ interface PaymentInfo {
   pro_name: string | null;
 }
 
-import type { Tables } from '@/integrations/supabase/types';
+import type { Tables } from '@riff/core/supabase/types';
 
 interface CheckoutModalProps {
   session: Tables<'sessions'> & {

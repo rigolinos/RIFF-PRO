@@ -12,9 +12,9 @@
   "overrides": [
     {
       "files": [
-        "src/components/ui/**/*.tsx",
+        "packages/core/src/ui/**/*.tsx",
         "src/contexts/ViewModeContext.tsx",
-        "src/hooks/use-mobile.tsx"
+        "packages/core/src/hooks/use-mobile.tsx"
       ],
       "rules": {
         "react/only-export-components": "off"

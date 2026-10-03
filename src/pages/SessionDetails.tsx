@@ -6,12 +6,12 @@ import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
 
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@riff/core/supabase/client';
+import { useAuth } from '@riff/core/hooks/useAuth';
 import { CheckoutModal } from '@/components/checkout/CheckoutModal';
-import { Button } from '@/components/ui/button';
-import { ActivityKind } from '@/lib/copy';
-import { CoverImage, Avatar, SpotsMeter, PriceTag, StatusPill, RatingBadge } from '@/components/domain';
+import { Button } from '@riff/core/ui/button';
+import { ActivityKind } from '@riff/core/lib/copy';
+import { CoverImage, Avatar, SpotsMeter, PriceTag, StatusPill, RatingBadge } from '@riff/core/domain';
 
 const SessionDetails = () => {
   const { id } = useParams<{ id: string }>();

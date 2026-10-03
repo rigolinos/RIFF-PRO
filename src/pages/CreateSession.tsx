@@ -1,10 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { errorMessage } from '@/lib/utils';
+import { errorMessage } from '@riff/core/lib/utils';
 import { SessionForm } from '@/components/forms/SessionForm';
 import { useSessions } from '@/hooks/useSessions';
 
-import type { TablesInsert } from '@/integrations/supabase/types';
+import type { TablesInsert } from '@riff/core/supabase/types';
 
 const CreateSession = () => {
   const navigate = useNavigate();

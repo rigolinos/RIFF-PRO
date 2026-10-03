@@ -6,7 +6,7 @@ import { ThemeProvider } from 'next-themes';
 import '@fontsource-variable/chivo';
 import '@fontsource-variable/space-grotesk';
 import './index.css';
-import { captureLanding } from './lib/attribution';
+import { captureLanding } from '@riff/core/lib/attribution';
 
 captureLanding();
 

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
+import { supabase } from '@riff/core/supabase/client';
+import { useAuth } from '@riff/core/hooks/useAuth';
 
 // Timezone-safe "today" for São Paulo
 function todaySP(): string {

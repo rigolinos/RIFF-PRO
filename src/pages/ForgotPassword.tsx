@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Mail, Loader2 } from 'lucide-react';
-import { Logo } from '@/components/ui/logo';
+import { Logo } from '@riff/core/ui/logo';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import * as z from 'zod';
 
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@riff/core/supabase/client';
 
 const forgotPasswordSchema = z.object({
   email: z.string().email('Email inválido'),

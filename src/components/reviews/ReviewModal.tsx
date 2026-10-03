@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { Star, Loader2, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { supabase } from '@/integrations/supabase/client';
-import { useProfile } from '@/hooks/useProfile';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@riff/core/ui/dialog';
+import { Button } from '@riff/core/ui/button';
+import { Textarea } from '@riff/core/ui/textarea';
+import { supabase } from '@riff/core/supabase/client';
+import { useProfile } from '@riff/core/hooks/useProfile';
 
 interface ReviewModalProps {
   booking: {

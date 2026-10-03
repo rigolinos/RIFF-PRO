@@ -1,5 +1,5 @@
 ﻿import { createContext, useContext, useState, ReactNode } from 'react';
-import { useProfile } from '@/hooks/useProfile';
+import { useProfile } from '@riff/core/hooks/useProfile';
 
 type ViewMode = 'professional' | 'student';
 

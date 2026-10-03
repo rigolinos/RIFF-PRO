@@ -5,10 +5,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { toast } from 'sonner';
 
-import { useProfile } from '@/hooks/useProfile';
-import { PageContainer } from '@/components/layout/PageContainer';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { useProfile } from '@riff/core/hooks/useProfile';
+import { PageContainer } from '@riff/core/layout/PageContainer';
+import { Button } from '@riff/core/ui/button';
+import { Input } from '@riff/core/ui/input';
 
 const studentSchema = z.object({
   city: z.string().min(2, 'Informe sua cidade'),

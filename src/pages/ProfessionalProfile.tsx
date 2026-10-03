@@ -9,9 +9,9 @@ import { BRAND } from '@/brand';
 import { usePublicProfile } from '@/hooks/usePublicProfile';
 import { SessionCard } from '@/components/cards/SessionCard';
 import { CheckoutModal } from '@/components/checkout/CheckoutModal';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, CoverImage, RatingBadge, EmptyState } from '@/components/domain';
+import { Button } from '@riff/core/ui/button';
+import { Badge } from '@riff/core/ui/badge';
+import { Avatar, CoverImage, RatingBadge, EmptyState } from '@riff/core/domain';
 
 export default function ProfessionalProfile() {
   const { slug, handle } = useParams<{ slug?: string, handle?: string }>();

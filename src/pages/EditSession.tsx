@@ -1,12 +1,12 @@
 import { SessionWithJoins } from '@/types/session';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { errorMessage } from '@/lib/utils';
+import { errorMessage } from '@riff/core/lib/utils';
 import { Loader2 } from 'lucide-react';
 import { SessionForm } from '@/components/forms/SessionForm';
 import { useSessions, useSessionById } from '@/hooks/useSessions';
 
-import type { TablesInsert } from '@/integrations/supabase/types';
+import type { TablesInsert } from '@riff/core/supabase/types';
 
 const EditSession = () => {
   const { id } = useParams<{ id: string }>();

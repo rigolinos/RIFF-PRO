@@ -1,6 +1,6 @@
 ﻿import { Home, Search, Plus, ClipboardList, User, LayoutDashboard, BookOpen, DollarSign } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
-import { cn } from '@/lib/utils';
+import { cn } from '@riff/core/lib/utils';
 import { useViewMode } from '@/contexts/ViewModeContext';
 
 export const BottomNav = () => {

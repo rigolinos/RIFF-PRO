@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle2, Circle, Wallet, ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@riff/core/ui/button';
 
 interface GettingStartedProps {
   profile: {

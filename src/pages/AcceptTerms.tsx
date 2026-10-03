@@ -3,12 +3,12 @@ import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { Logo } from '@/components/ui/logo';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { useLegalAcceptance } from '@/hooks/useLegalAcceptance';
-import { LEGAL_DOCUMENTS } from '@/legal/documents';
-import { errorMessage } from '@/lib/utils';
+import { Logo } from '@riff/core/ui/logo';
+import { Button } from '@riff/core/ui/button';
+import { Checkbox } from '@riff/core/ui/checkbox';
+import { useLegalAcceptance } from '@riff/core/hooks/useLegalAcceptance';
+import { LEGAL_DOCUMENTS } from '@riff/core/legal/documents';
+import { errorMessage } from '@riff/core/lib/utils';
 
 // Tela "Eu li e aceito": aparece antes de qualquer tela logada enquanto faltar
 // aceitar a versão vigente de algum documento.

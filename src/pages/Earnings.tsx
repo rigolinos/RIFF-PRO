@@ -4,9 +4,9 @@ import { ptBR } from 'date-fns/locale';
 import { Wallet, ArrowDownLeft, ArrowUpRight, Loader2, DollarSign, Clock } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 
-import { PageContainer } from '@/components/layout/PageContainer';
-import { supabase } from '@/integrations/supabase/client';
-import { useProfile } from '@/hooks/useProfile';
+import { PageContainer } from '@riff/core/layout/PageContainer';
+import { supabase } from '@riff/core/supabase/client';
+import { useProfile } from '@riff/core/hooks/useProfile';
 
 export default function Earnings() {
   const { profile } = useProfile();

@@ -1,8 +1,8 @@
 ﻿import { useState } from "react";
 import { useViewMode } from "@/contexts/ViewModeContext";
-import { useProfile } from "@/hooks/useProfile";
+import { useProfile } from "@riff/core/hooks/useProfile";
 import { ChevronDown, UserPlus } from "lucide-react";
-import { Drawer, DrawerTrigger, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import { Drawer, DrawerTrigger, DrawerContent, DrawerHeader, DrawerTitle } from "@riff/core/ui/drawer";
 import { useNavigate } from "react-router-dom";
 
 export function ModeSwitcher() {

@@ -7,12 +7,12 @@ import { motion } from 'framer-motion';
 import { Info, } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { useProfile } from '@/hooks/useProfile';
-import { PageContainer } from '@/components/layout/PageContainer';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useProfile } from '@riff/core/hooks/useProfile';
+import { PageContainer } from '@riff/core/layout/PageContainer';
+import { Button } from '@riff/core/ui/button';
+import { Input } from '@riff/core/ui/input';
+import { Textarea } from '@riff/core/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@riff/core/ui/select';
 
 const proSchema = z.object({
   professionalType: z.string().min(1, 'Selecione o seu tipo de atuação'),

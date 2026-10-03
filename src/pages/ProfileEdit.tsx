@@ -1,18 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
-import { errorMessage } from '@/lib/utils';
+import { errorMessage } from '@riff/core/lib/utils';
 import { Loader2, AtSign, Phone, MapPin, Link as LinkIcon, Camera } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 
-import { PageContainer } from '@/components/layout/PageContainer';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useProfile } from '@/hooks/useProfile';
-import { supabase } from '@/integrations/supabase/client';
+import { PageContainer } from '@riff/core/layout/PageContainer';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@riff/core/ui/alert-dialog';
+import { Button } from '@riff/core/ui/button';
+import { Input } from '@riff/core/ui/input';
+import { Textarea } from '@riff/core/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@riff/core/ui/select';
+import { useProfile } from '@riff/core/hooks/useProfile';
+import { supabase } from '@riff/core/supabase/client';
 
 export default function ProfileEdit() {
   const { profile, updateProfile, isLoading, isUpdating } = useProfile();

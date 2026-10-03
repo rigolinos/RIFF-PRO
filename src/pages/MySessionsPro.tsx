@@ -8,13 +8,13 @@ import {
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { errorMessage } from '@/lib/utils';
+import { errorMessage } from '@riff/core/lib/utils';
 
-import { PageContainer } from '@/components/layout/PageContainer';
+import { PageContainer } from '@riff/core/layout/PageContainer';
 import { useProSessions } from '@/hooks/useProSessions';
 import { useSessions } from '@/hooks/useSessions';
-import { EmptyState } from '@/components/domain';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { EmptyState } from '@riff/core/domain';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@riff/core/ui/alert-dialog';
 
 const MySessionsPro = () => {
   const { sessions, isLoading, isError, error, cancelSession, updateSessionStatus } = useProSessions();

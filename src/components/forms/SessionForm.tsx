@@ -1,25 +1,25 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Link } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@riff/core/supabase/client';
 import { toast } from 'sonner';
 import { ImagePlus, Loader2 } from 'lucide-react';
 import { useForm, useWatch } from 'react-hook-form';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, ChevronLeft, Check, Sparkles, AlertTriangle, MessageCircle, MapPin, Calendar, Clock, DollarSign, Users, GraduationCap, Trophy, CalendarDays } from 'lucide-react';
 
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@riff/core/ui/input';
+import { Textarea } from '@riff/core/ui/textarea';
+import { Button } from '@riff/core/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@riff/core/ui/select';
 import { SessionCard } from '@/components/cards/SessionCard';
 import { useCategories } from '@/hooks/useCategories';
-import { useProfile } from '@/hooks/useProfile';
+import { useProfile } from '@riff/core/hooks/useProfile';
 import { useMyVenues } from '@/hooks/useMyVenues';
-import { KINDS, ActivityKind } from '@/lib/copy';
+import { KINDS, ActivityKind } from '@riff/core/lib/copy';
 
 import { SessionWithJoins } from '@/types/session';
-import type { TablesInsert } from '@/integrations/supabase/types';
+import type { TablesInsert } from '@riff/core/supabase/types';
 
 const TEMPLATES: Record<string, {title: string, description: string}[]> = {
   'futevolei': [

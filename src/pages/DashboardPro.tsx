@@ -3,12 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { Link2, Share2, Wallet, Users, Calendar, Loader2, CheckCircle2, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { PageContainer } from '@/components/layout/PageContainer';
-import { useProfile } from '@/hooks/useProfile';
+import { PageContainer } from '@riff/core/layout/PageContainer';
+import { useProfile } from '@riff/core/hooks/useProfile';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import { useViewMode } from '@/contexts/ViewModeContext';
-import { Button } from '@/components/ui/button';
-import { EmptyState, StatusPill } from '@/components/domain';
+import { Button } from '@riff/core/ui/button';
+import { EmptyState, StatusPill } from '@riff/core/domain';
 import { GettingStarted, PixMissingBanner } from '@/components/dashboard/GettingStarted';
 import { InsightsCard } from '@/components/dashboard/InsightsCard';
 import { useProfessionalInsights } from '@/hooks/useProfessionalInsights';

@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
-import { Logo } from '@/components/ui/logo';
+import { Logo } from '@riff/core/ui/logo';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@riff/core/supabase/client';
 
 const ResetPassword = () => {
   const navigate = useNavigate();
