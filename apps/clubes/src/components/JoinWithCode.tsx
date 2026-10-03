@@ -33,7 +33,7 @@ export function JoinWithCode() {
         toast.error(MESSAGES[result.code] ?? 'Não foi possível usar o código.');
         return;
       }
-      toast.success(result.code === 'already_member' ? `Você já faz parte de ${result.name}.` : `Bem-vindo a ${result.name}!`);
+      toast.success(result.code === 'already_member' ? `Você já faz parte de: ${result.name}.` : `Pronto! Agora você faz parte de: ${result.name}.`);
       setCode('');
       setOpen(false);
       queryClient.invalidateQueries({ queryKey: ['communities'] });
