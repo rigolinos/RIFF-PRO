@@ -110,7 +110,7 @@ export default function ProfessionalProfile() {
 
         <div className="flex flex-wrap justify-center gap-2 mb-6">
           {specialties.map((spec: string, i: number) => (
-            <Badge key={i} variant="secondary" className="capitalize border border-line bg-surface font-semibold text-ink-muted">
+            <Badge key={i} variant="secondary" className="first-letter:uppercase border border-line bg-surface font-semibold text-ink-muted">
               {spec}
             </Badge>
           ))}
