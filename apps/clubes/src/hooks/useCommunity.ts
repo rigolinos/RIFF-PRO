@@ -42,7 +42,7 @@ export function useCommunityAgenda(orgId: string | undefined) {
     queryFn: async () => {
       const { data: sessions, error } = await supabase
         .from('sessions')
-        .select('id, title, date, start_time, duration_minutes, location_name, max_participants, current_participants, kind, status, category:categories(name, emoji), professional:profiles!sessions_professional_id_fkey(full_name)')
+        .select('id, professional_id, title, date, start_time, duration_minutes, location_name, max_participants, current_participants, kind, status, category:categories(name, emoji), professional:profiles!sessions_professional_id_fkey(full_name)')
         .eq('organization_id', orgId!)
         .in('status', ['active', 'full'])
         .gte('date', todaySP())

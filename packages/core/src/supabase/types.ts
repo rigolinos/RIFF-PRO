@@ -932,6 +932,15 @@ export type Database = {
         Args: { p_reason?: string; p_session_id: string }
         Returns: undefined
       }
+      close_community_session: {
+        Args: {
+          p_attendance?: Json
+          p_happened?: boolean
+          p_notes?: string
+          p_session_id: string
+        }
+        Returns: undefined
+      }
       close_session: {
         Args: {
           p_attendance: Json
@@ -969,6 +978,10 @@ export type Database = {
       }
       job_auto_close_expired_sessions: { Args: never; Returns: undefined }
       join_organization: { Args: { p_code: string }; Returns: Json }
+      manage_member: {
+        Args: { p_action: string; p_org: string; p_profile: string }
+        Returns: Json
+      }
       resolve_venue: {
         Args: {
           p_address: string
@@ -984,6 +997,7 @@ export type Database = {
       }
       revoke_invite: { Args: { p_invite: string }; Returns: undefined }
       sanitize_attribution: { Args: { p: Json }; Returns: Json }
+      session_community: { Args: { p_session: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never
