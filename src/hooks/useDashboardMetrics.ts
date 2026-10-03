@@ -29,8 +29,8 @@ export function useDashboardMetrics() {
 
       if (!profileData) return { metrics, nextSession: null, todaySessions: [] };
 
-      // Fetch next session using timezone-safe date
-      await supabase
+      // Atividades de hoje (data no fuso de São Paulo)
+      const { data: todaySessions } = await supabase
         .from('sessions')
         .select('id, title, date, start_time, duration_minutes, location_name, current_participants, max_participants, status, category:categories(name, emoji)')
         .eq('professional_id', profileData.id)
@@ -51,7 +51,8 @@ export function useDashboardMetrics() {
 
       return {
         metrics,
-        nextSession
+        nextSession,
+        todaySessions: todaySessions ?? [],
       };
     },
     enabled: !!user?.id,

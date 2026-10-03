@@ -56,6 +56,13 @@ export default function ProfileEdit() {
     }
   }, [profile, reset]);
 
+  // Vindo do painel ("Cadastrar Pix"): rola até WhatsApp e Pix depois que o perfil carrega
+  useEffect(() => {
+    if (profile && window.location.hash === '#pix') {
+      document.getElementById('pix')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [profile]);
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     window.location.href = '/login';
@@ -263,7 +270,7 @@ export default function ProfileEdit() {
                   <Textarea {...register('bio')} placeholder="Como você trabalha? Qual seu diferencial?" className="bg-black/30 border-white/10 focus:border-brand/50 h-24 resize-none" />
                 </div>
 
-                <div className="space-y-2">
+                <div id="pix" className="space-y-2 scroll-mt-24">
                   <label className="text-sm font-medium">WhatsApp Organizador (Reservas)</label>
                   <Input {...register('whatsapp_number')} placeholder="(00) 00000-0000" type="tel" className="bg-black/30 border-white/10 focus:border-brand/50" />
                 </div>

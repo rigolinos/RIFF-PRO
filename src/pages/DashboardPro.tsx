@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { SessionWithJoins } from '@/types/session';
 import { useNavigate } from 'react-router-dom';
 import { Link2, Share2, Wallet, Users, Calendar, Loader2, CheckCircle2, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
@@ -10,11 +9,22 @@ import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import { useViewMode } from '@/contexts/ViewModeContext';
 import { Button } from '@/components/ui/button';
 import { EmptyState, StatusPill } from '@/components/domain';
+import { GettingStarted, PixMissingBanner } from '@/components/dashboard/GettingStarted';
+
+const SHARED_KEY = 'riff-link-shared';
+const readShared = () => {
+  try {
+    return localStorage.getItem(SHARED_KEY) === '1';
+  } catch {
+    return false;
+  }
+};
 
 export default function DashboardPro() {
   const { profile } = useProfile();
   const { data, isLoading } = useDashboardMetrics();
   const [copied, setCopied] = useState(false);
+  const [hasSharedLink, setHasSharedLink] = useState(readShared);
   const navigate = useNavigate();
   const { setViewMode } = useViewMode();
 
@@ -50,7 +60,17 @@ export default function DashboardPro() {
   const publicSlug = profile?.public_slug || profile?.id;
   const publicUrl = `${import.meta.env.VITE_PUBLIC_URL || window.location.origin}/@${publicSlug}`;
 
+  const markShared = () => {
+    setHasSharedLink(true);
+    try {
+      localStorage.setItem(SHARED_KEY, '1');
+    } catch {
+      // armazenamento indisponível: o passo só não fica marcado
+    }
+  };
+
   const handleCopyLink = () => {
+    markShared();
     navigator.clipboard.writeText(publicUrl);
     setCopied(true);
     toast.success('Link copiado para a área de transferência!');
@@ -58,6 +78,7 @@ export default function DashboardPro() {
   };
 
   const handleShare = () => {
+    markShared();
     if (navigator.share) {
       navigator.share({
         title: `Atividades com ${profile?.full_name}`,
@@ -82,7 +103,14 @@ export default function DashboardPro() {
               <RefreshCw className="w-3.5 h-3.5" /> Participante
             </Button>}>
       <div className="px-6 py-6 flex-1 flex flex-col space-y-8 pb-32">
-        
+        {profile && !profile.pix_key && <PixMissingBanner />}
+        <GettingStarted
+          profile={profile}
+          totalSessions={metrics.total_sessions}
+          hasSharedLink={hasSharedLink}
+          onShare={handleShare}
+        />
+
         {/* Hoje */}
         <section>
           <h2 className="type-subtitle mb-4">Hoje</h2>
@@ -94,7 +122,7 @@ export default function DashboardPro() {
             />
           ) : (
             <div className="space-y-3">
-              {todaySessions.map((session: SessionWithJoins) => (
+              {todaySessions.map((session) => (
                 <div key={session.id} className="bg-surface border border-line rounded-2xl p-4 flex flex-col gap-3 shadow-sm">
                   <div className="flex justify-between items-start">
                     <div>
