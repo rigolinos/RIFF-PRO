@@ -245,7 +245,7 @@ export default function DashboardPro() {
             <div className="bg-surface border border-line rounded-2xl p-4 flex flex-col shadow-sm">
               <div className="flex items-center gap-2 text-ink-muted mb-2">
                 <Calendar className="w-4 h-4 text-slate" />
-                <span className="type-label">Atividades Realizadas</span>
+                <span className="type-label">Atividades criadas</span>
               </div>
               <div className="mt-auto">
                 <span className="type-number text-2xl text-ink">
