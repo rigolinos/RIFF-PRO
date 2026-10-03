@@ -1,10 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
-import { Building2, KeyRound, LogOut, ChevronRight } from 'lucide-react';
+import { Building2, KeyRound, LogOut } from 'lucide-react';
 import { supabase } from '@riff/core/supabase/client';
 import { useProfile } from '@riff/core/hooks/useProfile';
 import { PageContainer } from '@riff/core/layout/PageContainer';
 import { EmptyState } from '@riff/core/domain';
-import { Button } from '@riff/core/ui/button';
+import { JoinWithCode } from '@/components/JoinWithCode';
+import { InviteMembers } from '@/components/InviteMembers';
 
 const ROLE_LABEL: Record<string, string> = {
   owner: 'Gestor',
@@ -64,32 +65,34 @@ export default function Communities() {
           <EmptyState
             icon={KeyRound}
             title="Você ainda não faz parte de nenhuma comunidade"
-            description="Peça o código de convite ao seu condomínio ou clube. Em breve você poderá usá-lo aqui."
+            description="Peça o código de convite ao seu condomínio ou clube e use o botão abaixo."
           />
         ) : (
           <ul className="space-y-3">
             {communities.map((m) => (
               <li key={m.organization!.id}>
-                <div className="bg-surface border border-line rounded-2xl p-4 flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-xl bg-elevated border border-line flex items-center justify-center shrink-0">
-                    <Building2 className="w-5 h-5 text-brand" />
+                <div className="bg-surface border border-line rounded-2xl p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-xl bg-elevated border border-line flex items-center justify-center shrink-0">
+                      <Building2 className="w-5 h-5 text-brand" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h2 className="type-subtitle truncate">{m.organization!.name}</h2>
+                      <p className="type-label mt-0.5">
+                        {m.organization!.kind === 'condo' ? 'Condomínio' : 'Clube'} · {ROLE_LABEL[m.role] ?? m.role}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <h2 className="type-subtitle truncate">{m.organization!.name}</h2>
-                    <p className="type-label mt-0.5">
-                      {m.organization!.kind === 'condo' ? 'Condomínio' : 'Clube'} · {ROLE_LABEL[m.role] ?? m.role}
-                    </p>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-ink-muted" />
+                  {(m.role === 'owner' || m.role === 'admin') && (
+                    <InviteMembers organizationId={m.organization!.id} organizationName={m.organization!.name ?? ''} />
+                  )}
                 </div>
               </li>
             ))}
           </ul>
         )}
 
-        <Button variant="secondary" className="w-full" disabled>
-          <KeyRound className="w-4 h-4 mr-2" /> Entrar com código de convite (em breve)
-        </Button>
+        <JoinWithCode />
       </div>
     </PageContainer>
   );

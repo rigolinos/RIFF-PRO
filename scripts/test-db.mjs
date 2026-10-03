@@ -304,6 +304,101 @@ ok(r.err && /forbidden_profile_field/.test(r.err), 'usuário não preenche delet
 r = await as('authenticated', OTHER, 'SELECT public.ensure_solo_organization(public._profile_id())');
 ok(r.err && /permission denied/.test(r.err), 'usuário não chama funções internas (ensure_solo_organization)');
 
+// ── Riff Clubes: comunidades fechadas e convites (C2) ───────────────────
+console.log('Riff Clubes (comunidades):');
+const GA = 'c1000000-0000-4000-8000-000000000001'; // gestor do condomínio A
+const MA = 'c1000000-0000-4000-8000-000000000002'; // morador do A
+const GB = 'c1000000-0000-4000-8000-000000000003'; // gestor do clube B
+const MB = 'c1000000-0000-4000-8000-000000000004'; // morador do B
+const IA = 'c1000000-0000-4000-8000-000000000005'; // instrutor convidado para o A
+const pGA = await newUser(GA, 'gestor.a@teste.dev', 'Gestor A', 'student');
+const pMA = await newUser(MA, 'morador.a@teste.dev', 'Morador A', 'student');
+await newUser(GB, 'gestor.b@teste.dev', 'Gestor B', 'student');
+const pMB = await newUser(MB, 'morador.b@teste.dev', 'Morador B', 'student');
+await newUser(IA, 'instrutor.a@teste.dev', 'Instrutor A', 'professional');
+
+const orgA = (await one("SELECT public.admin_create_community('Residencial Jardins', 'condo', 'Gestor.A@teste.dev') AS id")).id;
+const orgB = (await one("SELECT public.admin_create_community('Clube Náutico', 'club', 'gestor.b@teste.dev') AS id")).id;
+ok(orgA && orgB, 'equipe Riff cria comunidades pelo terminal (e-mail sem diferença de maiúsculas)');
+r = await as('authenticated', GA, "SELECT public.admin_create_community('Pirata', 'condo', 'gestor.a@teste.dev')");
+ok(r.err && /permission denied/.test(r.err), 'app não consegue criar comunidade');
+
+// convites
+r = await as('authenticated', GA, 'SELECT public.create_invite($1) AS r', [orgA]);
+const codeA = r.rows?.[0]?.r?.code;
+ok(/^[A-Z2-9]{4}-[A-Z2-9]{4}$/.test(codeA ?? ''), `gestor gera convite legível (${codeA})`);
+r = await as('authenticated', MB, 'SELECT public.create_invite($1) AS r', [orgA]);
+ok(r.err, 'quem não é gestor não gera convite');
+r = await as('authenticated', MA, 'SELECT public.join_organization($1) AS r', [codeA.toLowerCase().replace('-', ' ')]);
+ok(r.rows?.[0]?.r?.code === 'joined', 'morador entra com o código (minúsculas e espaço aceitos)');
+r = await as('authenticated', MA, 'SELECT public.join_organization($1) AS r', [codeA]);
+ok(r.rows?.[0]?.r?.code === 'already_member', 'entrar de novo não duplica');
+r = await as('authenticated', MB, "SELECT public.join_organization('ZZZZ-ZZZZ') AS r");
+ok(r.rows?.[0]?.r?.code === 'invalid_code', 'código inexistente é recusado');
+r = await as('authenticated', GB, 'SELECT public.create_invite($1, $2, $3) AS r', [orgB, 'member', 1]);
+const codeB = r.rows[0].r.code;
+r = await as('authenticated', MB, 'SELECT public.join_organization($1) AS r', [codeB]);
+ok(r.rows?.[0]?.r?.code === 'joined', 'morador do B entra no B');
+r = await as('authenticated', MA, 'SELECT public.join_organization($1) AS r', [codeB]);
+ok(r.rows?.[0]?.r?.code === 'exhausted', 'convite de uso único não serve para a segunda pessoa');
+r = await as('authenticated', GA, 'SELECT public.create_invite($1, $2, NULL, $3) AS r', [orgA, 'instructor', 0]);
+const expired = r.rows[0].r.code;
+await q("UPDATE public.organization_invites SET expires_at = now() - interval '1 minute' WHERE code = $1", [expired.replace('-', '')]);
+r = await as('authenticated', IA, 'SELECT public.join_organization($1) AS r', [expired]);
+ok(r.rows?.[0]?.r?.code === 'expired', 'convite vencido é recusado');
+r = await as('authenticated', GA, 'SELECT public.create_invite($1, $2) AS r', [orgA, 'instructor']);
+r = await as('authenticated', IA, 'SELECT public.join_organization($1) AS r', [r.rows[0].r.code]);
+ok(r.rows?.[0]?.r?.role === 'instructor', 'instrutor entra como instrutor pelo convite');
+r = await as('authenticated', MA, 'SELECT code FROM public.organization_invites');
+ok(r.rows?.length === 0, 'morador não lista os convites');
+
+// atividades da comunidade
+const clubSession = async (uid, org, title) => as('authenticated', uid,
+  `INSERT INTO public.sessions (professional_id, organization_id, category_id, title, date, start_time, location_name, max_participants, price_per_slot)
+   VALUES (public._profile_id(), $1, $2, $3, current_date + 3, '18:00', 'Quadra do condomínio', 10, 0) RETURNING id, product`, [org, category, title]);
+r = await clubSession(GA, orgA, 'Vôlei dos moradores');
+const sA = r.rows?.[0]?.id;
+ok(r.rows?.[0]?.product === 'clubes', 'atividade da comunidade vira product clubes sozinha' + (r.err ? ` (${r.err})` : ''));
+r = await clubSession(IA, orgA, 'Funcional com o instrutor');
+ok(!r.err, 'instrutor da comunidade cria atividade nela' + (r.err ? ` (${r.err})` : ''));
+r = await clubSession(MA, orgA, 'Atividade do morador');
+ok(r.err && /forbidden_community/.test(r.err), 'morador comum não cria atividade na comunidade');
+r = await clubSession(MB, orgA, 'Invasão');
+ok(r.err, 'quem é de outra comunidade não cria atividade nela');
+ok((await one('SELECT v.visibility FROM public.sessions s JOIN public.venues v ON v.id = s.venue_id WHERE s.id = $1', [sA])).visibility === 'members',
+  'local da comunidade nasce só para membros');
+
+// isolamento
+r = await as('authenticated', MA, 'SELECT id FROM public.sessions WHERE id = $1', [sA]);
+ok(r.rows?.length === 1, 'morador do A vê a atividade do A');
+r = await as('authenticated', MB, 'SELECT id FROM public.sessions WHERE id = $1', [sA]);
+ok(r.rows?.length === 0, 'morador do B NÃO vê a atividade do A');
+r = await as('anon', '', 'SELECT id FROM public.sessions WHERE id = $1', [sA]);
+ok(r.rows?.length === 0, 'visitante sem login não vê a atividade do A');
+r = await as('authenticated', MB, 'SELECT id FROM public.organizations WHERE id = $1', [orgA]);
+ok(r.rows?.length === 0, 'morador do B não vê a comunidade A');
+r = await as('authenticated', MB, 'SELECT v.id FROM public.venues v WHERE v.organization_id = $1', [orgA]);
+ok(r.rows?.length === 0, 'morador do B não vê os locais do A');
+r = await as('authenticated', MB, 'SELECT profile_id FROM public.organization_members WHERE organization_id = $1', [orgA]);
+ok(r.rows?.length === 0, 'morador do B não vê quem mora no A');
+r = await as('anon', '', 'SELECT count(*)::int n FROM public.sessions WHERE product = $1', ['pro']);
+ok(r.rows?.[0]?.n > 0, 'atividades do Riff Pro continuam públicas');
+
+// reservas
+r = await as('authenticated', MB, 'SELECT public.create_booking($1) AS r', [sA]);
+ok(r.rows?.[0]?.r?.code === 'not_member', 'morador do B não reserva atividade do A');
+r = await as('authenticated', MA, 'SELECT public.create_booking($1) AS r', [sA]);
+ok(r.rows?.[0]?.r?.success, 'morador do A reserva atividade do A');
+
+// removido não volta
+await q("UPDATE public.organization_members SET status = 'removed' WHERE organization_id = $1 AND profile_id = $2", [orgA, pMA]);
+r = await as('authenticated', MA, 'SELECT id FROM public.sessions WHERE id = $1', [sA]);
+ok(r.rows?.length === 0, 'morador removido deixa de ver a atividade');
+r = await as('authenticated', GA, 'SELECT public.create_invite($1) AS r', [orgA]);
+r = await as('authenticated', MA, 'SELECT public.join_organization($1) AS r', [r.rows[0].r.code]);
+ok(r.rows?.[0]?.r?.code === 'removed', 'morador removido não volta com um código novo');
+ok(pGA && pMB, 'perfis de teste do Clubes criados');
+
 // ── Script de métricas do dono do produto ──────────────────────────────
 console.log('Métricas:');
 try {

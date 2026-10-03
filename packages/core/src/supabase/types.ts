@@ -360,6 +360,60 @@ export type Database = {
         }
         Relationships: []
       }
+      organization_invites: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          max_uses: number | null
+          organization_id: string
+          revoked_at: string | null
+          role: string
+          uses: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          max_uses?: number | null
+          organization_id: string
+          revoked_at?: string | null
+          role?: string
+          uses?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          max_uses?: number | null
+          organization_id?: string
+          revoked_at?: string | null
+          role?: string
+          uses?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_invites_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_invites_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_members: {
         Row: {
           created_at: string
@@ -866,6 +920,10 @@ export type Database = {
     }
     Functions: {
       _profile_id: { Args: never; Returns: string }
+      admin_create_community: {
+        Args: { p_kind: string; p_name: string; p_owner_email: string }
+        Returns: string
+      }
       calculate_professional_rating: {
         Args: { pro_id: string }
         Returns: number
@@ -887,8 +945,18 @@ export type Database = {
         Args: { p_attribution?: Json; p_session_id: string; p_source?: string }
         Returns: Json
       }
+      create_invite: {
+        Args: {
+          p_days?: number
+          p_max_uses?: number
+          p_org: string
+          p_role?: string
+        }
+        Returns: Json
+      }
       delete_user_account: { Args: never; Returns: undefined }
       ensure_solo_organization: { Args: { p_profile: string }; Returns: string }
+      generate_invite_code: { Args: never; Returns: string }
       get_booking_payment_info: {
         Args: { p_booking_id: string }
         Returns: Json
@@ -900,6 +968,7 @@ export type Database = {
         Returns: boolean
       }
       job_auto_close_expired_sessions: { Args: never; Returns: undefined }
+      join_organization: { Args: { p_code: string }; Returns: Json }
       resolve_venue: {
         Args: {
           p_address: string
@@ -913,6 +982,7 @@ export type Database = {
         }
         Returns: string
       }
+      revoke_invite: { Args: { p_invite: string }; Returns: undefined }
       sanitize_attribution: { Args: { p: Json }; Returns: Json }
     }
     Enums: {
