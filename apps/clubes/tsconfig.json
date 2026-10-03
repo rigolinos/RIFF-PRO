@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.app.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "../../node_modules/.tmp/tsconfig.clubes.tsbuildinfo",
+    "paths": {
+      "@riff/core/*": ["../../packages/core/src/*"],
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src", "../../packages/core/src"]
+}

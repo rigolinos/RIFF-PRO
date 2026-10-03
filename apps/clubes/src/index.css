@@ -1,0 +1,7 @@
+/* Riff Clubes: o design system vem do núcleo compartilhado. Contraste com o Pro virá
+   de ajustes de tokens aqui (acento, fundo), nunca de cores fixas nos componentes. */
+@import "../../../packages/core/src/styles/riff.css";
+
+/* O app roda a partir de apps/clubes: o Tailwind precisa olhar também o núcleo. */
+@source "../../../packages/core/src";
+@source "./";

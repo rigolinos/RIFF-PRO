@@ -1,0 +1,16 @@
+{
+  "name": "Riff Clubes",
+  "short_name": "Riff Clubes",
+  "description": "O esporte do seu condomínio ou clube, organizado.",
+  "id": "/",
+  "start_url": "/inicio",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#0F1115",
+  "background_color": "#0F1115",
+  "lang": "pt-BR",
+  "icons": [
+    { "src": "/brand/app-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/brand/app-icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
