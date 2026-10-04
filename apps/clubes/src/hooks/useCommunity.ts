@@ -42,7 +42,7 @@ export function useCommunityAgenda(orgId: string | undefined) {
     queryFn: async () => {
       const { data: sessions, error } = await supabase
         .from('sessions')
-        .select('id, professional_id, title, date, start_time, duration_minutes, location_name, max_participants, current_participants, kind, status, category:categories(name, emoji), professional:profiles!sessions_professional_id_fkey(full_name)')
+        .select('id, professional_id, minors_allowed, min_age, title, date, start_time, duration_minutes, location_name, max_participants, current_participants, kind, status, category:categories(name, emoji), professional:profiles!sessions_professional_id_fkey(full_name)')
         .eq('organization_id', orgId!)
         .in('status', ['active', 'full'])
         .gte('date', todaySP())
@@ -54,15 +54,23 @@ export function useCommunityAgenda(orgId: string | undefined) {
       const { data: bookings, error: bookingsError } = ids.length
         ? await supabase
             .from('bookings')
-            .select('id, session_id, status')
+            .select('id, session_id, status, dependent_id')
             .eq('student_id', profile!.id)
             .in('session_id', ids)
             .in('status', ['pending', 'confirmed'])
         : { data: [], error: null };
       if (bookingsError) throw bookingsError;
 
-      const myBooking = new Map((bookings ?? []).map((b) => [b.session_id, b.id]));
-      return (sessions ?? []).map((s) => ({ ...s, myBookingId: myBooking.get(s.id) ?? null }));
+      // inscrição da própria pessoa e, à parte, as dos dependentes dela (dependent_id -> booking)
+      const own = (bookings ?? []).filter((b) => !b.dependent_id);
+      const myBooking = new Map(own.map((b) => [b.session_id, b.id]));
+      return (sessions ?? []).map((s) => ({
+        ...s,
+        myBookingId: myBooking.get(s.id) ?? null,
+        dependentBookings: Object.fromEntries(
+          (bookings ?? []).filter((b) => b.session_id === s.id && b.dependent_id).map((b) => [b.dependent_id!, b.id]),
+        ) as Record<string, string>,
+      }));
     },
     enabled: !!orgId && !!profile?.id,
   });
@@ -75,7 +83,11 @@ const BOOKING_ERRORS: Record<string, string> = {
   session_full: 'As vagas acabaram.',
   session_started: 'A atividade já começou.',
   session_unavailable: 'Esta atividade não está mais disponível.',
-  already_booked: 'Você já está inscrito.',
+  already_booked: 'Já existe inscrição.',
+  minors_not_allowed: 'Esta atividade não aceita menores.',
+  below_min_age: 'O dependente ainda não tem a idade mínima da atividade.',
+  dependent_adult: 'Com 18 anos ou mais, a pessoa precisa da própria conta.',
+  dependent_not_found: 'Dependente não encontrado.',
   self_booking: 'Você é quem conduz esta atividade.',
 };
 
@@ -110,5 +122,15 @@ export function useAgendaActions(orgId: string | undefined) {
     onSuccess: refresh,
   });
 
-  return { book, cancel };
+  const bookDependent = useMutation({
+    mutationFn: async ({ sessionId, dependentId }: { sessionId: string; dependentId: string }) => {
+      const { data, error } = await supabase.rpc('create_dependent_booking', { p_session_id: sessionId, p_dependent_id: dependentId });
+      if (error) throw error;
+      const result = data as { success: boolean; code: string };
+      if (!result.success) throw new Error(BOOKING_ERRORS[result.code] ?? 'Não foi possível fazer a inscrição.');
+    },
+    onSuccess: refresh,
+  });
+
+  return { book, cancel, bookDependent };
 }

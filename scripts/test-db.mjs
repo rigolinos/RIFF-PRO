@@ -465,6 +465,90 @@ ok(r.rows?.[0]?.r?.status === 'removed', 'gestor remove membro');
 ok((await one('SELECT status FROM public.bookings WHERE id = $1', [bNext])).status === 'cancelled_by_pro', 'inscrições futuras de quem foi removido são canceladas');
 ok((await one('SELECT current_participants n FROM public.sessions WHERE id = $1', [sNext])).n === 0, 'vaga liberada');
 
+// ── Riff Clubes: dependentes menores (C5) ───────────────────────────────
+console.log('Riff Clubes (dependentes):');
+const pM3 = (await one('SELECT id FROM public.profiles WHERE user_id = $1', [M3])).id;
+const yearsAgo = (y, extraDays = 0) => {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() - y);
+  d.setDate(d.getDate() - extraDays);
+  return d.toISOString().slice(0, 10);
+};
+const addDep = (uid, name, birth, consent = '2026-10-03') =>
+  as('authenticated', uid, 'SELECT public.add_dependent($1, $2::date, $3, $4) AS id', [name, birth, 'child', consent]);
+
+r = await addDep(M3, 'Filha Dez', yearsAgo(10), '');
+ok(r.err && /consent_required/.test(r.err), 'sem aceite do termo não cadastra dependente');
+r = await addDep(M3, 'Adulto', yearsAgo(18, 1));
+ok(r.err && /not_a_minor/.test(r.err), 'maior de 18 não é dependente');
+r = await addDep(M3, 'Futuro', '2999-01-01');
+ok(r.err && /invalid_birth_date/.test(r.err), 'data de nascimento no futuro é recusada');
+r = await addDep(M3, 'Filha Dez', yearsAgo(10));
+const dTen = r.rows?.[0]?.id;
+ok(!!dTen, 'responsável cadastra dependente' + (r.err ? ` (${r.err})` : ''));
+const dFive = (await addDep(M3, 'Filho Cinco', yearsAgo(5))).rows?.[0]?.id;
+ok((await one("SELECT count(*)::int n FROM public.legal_acceptances WHERE profile_id = $1 AND document = 'guardian_consent'", [pM3])).n === 1,
+  'aceite do termo do responsável fica registrado');
+r = await as('authenticated', M3, "INSERT INTO public.dependents (guardian_id, full_name, birth_date, relationship, consent_version) VALUES ($1, 'Burla', '2020-01-01', 'child', 'x')", [pM3]);
+ok(!!r.err, 'dependente não é criado direto na tabela (sem o termo)');
+
+r = await as('authenticated', M3, 'SELECT id FROM public.dependents');
+ok(r.rows?.length === 2, 'responsável vê os próprios dependentes');
+r = await as('authenticated', GA, 'SELECT id FROM public.dependents');
+ok(r.rows?.length === 0, 'gestor não vê dependentes sem inscrição na comunidade');
+r = await as('authenticated', MB, 'SELECT id FROM public.dependents');
+ok(r.rows?.length === 0, 'outra pessoa não vê dependentes');
+
+await ex("SELECT set_config('request.jwt.claim.sub', '', false)");
+const kidsSession = async (title, minorsAllowed, minAge) => (await one(
+  `INSERT INTO public.sessions (professional_id, organization_id, category_id, title, date, start_time, location_name, max_participants, price_per_slot, status, minors_allowed, min_age)
+   VALUES ($1, $2, $3, $4, current_date + 5, '10:00', 'Piscina', 10, 0, 'active', $5, $6) RETURNING id`,
+  [pIA, orgA, category, title, minorsAllowed, minAge])).id;
+const sKids = await kidsSession('Natação infantil', true, 8);
+const sAdults = await kidsSession('Funcional adulto', false, null);
+
+const depBook = (uid, s, d) => as('authenticated', uid, 'SELECT public.create_dependent_booking($1, $2) AS r', [s, d]);
+r = await depBook(M3, sAdults, dTen);
+ok(r.rows?.[0]?.r?.code === 'minors_not_allowed', 'atividade sem "aceita menores" recusa dependente');
+r = await depBook(M3, sKids, dFive);
+ok(r.rows?.[0]?.r?.code === 'below_min_age', 'idade mínima da atividade é respeitada');
+r = await depBook(GA, sKids, dTen);
+ok(r.rows?.[0]?.r?.code === 'dependent_not_found', 'ninguém inscreve o dependente de outra pessoa');
+r = await depBook(M3, sPast, dTen);
+ok(r.rows?.[0]?.r?.code === 'session_not_found', 'dependente não entra em atividade do Riff Pro');
+r = await depBook(M3, sKids, dTen);
+const bDep = r.rows?.[0]?.r?.booking_id;
+ok(r.rows?.[0]?.r?.success === true, 'responsável inscreve dependente' + (r.err ? ` (${r.err})` : ''));
+r = await depBook(M3, sKids, dTen);
+ok(r.rows?.[0]?.r?.code === 'already_booked', 'dependente não é inscrito duas vezes');
+r = await as('authenticated', M3, 'SELECT public.create_booking($1) AS r', [sKids]);
+ok(r.rows?.[0]?.r?.success === true, 'responsável ainda se inscreve (inscrição do dependente não conta como a dele)');
+ok((await one('SELECT current_participants n FROM public.sessions WHERE id = $1', [sKids])).n === 2, 'dependente ocupa vaga');
+
+r = await as('authenticated', IA, 'SELECT d.full_name FROM public.bookings b JOIN public.dependents d ON d.id = b.dependent_id WHERE b.session_id = $1', [sKids]);
+ok(r.rows?.[0]?.full_name === 'Filha Dez', 'quem conduz vê o nome do dependente inscrito');
+r = await as('authenticated', GA, 'SELECT full_name FROM public.dependents');
+ok(r.rows?.length === 1 && r.rows[0].full_name === 'Filha Dez', 'gestor vê só o dependente inscrito na comunidade');
+
+r = await as('authenticated', M3, "UPDATE public.bookings SET status = 'cancelled_by_student', cancelled_at = now() WHERE id = $1", [bDep]);
+ok(!r.err && (await one('SELECT current_participants n FROM public.sessions WHERE id = $1', [sKids])).n === 1,
+  'responsável cancela a inscrição do dependente e a vaga volta');
+r = await depBook(M3, sKids, dTen);
+ok(r.rows?.[0]?.r?.booking_id === bDep, 'reinscrição reaproveita a inscrição cancelada');
+
+r = await as('authenticated', GA, 'SELECT public.remove_dependent($1)', [dTen]);
+ok(r.err && /not_found/.test(r.err), 'só o responsável remove o dependente');
+r = await as('authenticated', M3, 'SELECT public.remove_dependent($1)', [dTen]);
+ok(!r.err, 'responsável remove dependente' + (r.err ? ` (${r.err})` : ''));
+const gone = await one('SELECT full_name, birth_date, removed_at FROM public.dependents WHERE id = $1', [dTen]);
+ok(gone.full_name === null && gone.birth_date === null && gone.removed_at, 'dependente removido fica sem nome e data de nascimento');
+ok((await one('SELECT status FROM public.bookings WHERE id = $1', [bDep])).status === 'cancelled_by_student', 'inscrições futuras do dependente removido são canceladas');
+r = await depBook(M3, sKids, dTen);
+ok(r.rows?.[0]?.r?.code === 'dependent_not_found', 'dependente removido não é mais inscrito');
+
+r = await as('authenticated', M3, "INSERT INTO public.legal_acceptances (profile_id, document, version) VALUES ($1, 'clubes_terms', '2026-10-03')", [pM3]);
+ok(!r.err, 'aceite dos termos do Clubes é registrado' + (r.err ? ` (${r.err})` : ''));
+
 // ── Script de métricas do dono do produto ──────────────────────────────
 console.log('Métricas:');
 try {

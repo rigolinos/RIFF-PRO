@@ -1,7 +1,7 @@
 import { Link, useParams, useNavigate, Navigate } from 'react-router-dom';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CalendarDays, ChevronRight, ClipboardCheck, Clock, MapPin, Plus, Settings } from 'lucide-react';
+import { Baby, CalendarDays, ChevronRight, ClipboardCheck, Clock, MapPin, Plus, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 import { PageContainer } from '@riff/core/layout/PageContainer';
 import { EmptyState, SpotsMeter, StatusPill } from '@riff/core/domain';
@@ -10,6 +10,7 @@ import { KINDS, type ActivityKind } from '@riff/core/lib/copy';
 import { useProfile } from '@riff/core/hooks/useProfile';
 import { useCommunity, useCommunityAgenda, useAgendaActions, type AgendaItem } from '@/hooks/useCommunity';
 import { usePendingClose } from '@/hooks/useManagement';
+import { useDependents, ageOn } from '@/hooks/useDependents';
 
 const ROLE_LABEL: Record<string, string> = { owner: 'Gestor', admin: 'Gestor', instructor: 'Instrutor', member: 'Membro' };
 
@@ -18,7 +19,8 @@ export default function Community() {
   const navigate = useNavigate();
   const { data: community, isLoading } = useCommunity(orgId);
   const { data: agenda, isLoading: isLoadingAgenda, isError } = useCommunityAgenda(orgId);
-  const { book, cancel } = useAgendaActions(orgId);
+  const { book, cancel, bookDependent } = useAgendaActions(orgId);
+  const { data: dependents } = useDependents();
   const { profile } = useProfile();
   const { data: pendingClose } = usePendingClose(community?.canManage ? orgId : undefined, !!community?.isAdmin);
   const canSeeRoster = (item: AgendaItem) => !!community?.isAdmin || item.professional_id === profile?.id;
@@ -34,10 +36,19 @@ export default function Community() {
     }
   };
 
-  const handleCancel = async (item: AgendaItem) => {
-    if (!item.myBookingId) return;
+  const handleBookDependent = async (item: AgendaItem, dependentId: string, name: string) => {
     try {
-      await cancel.mutateAsync(item.myBookingId);
+      await bookDependent.mutateAsync({ sessionId: item.id, dependentId });
+      toast.success(`Inscrição de ${name} feita em "${item.title}".`);
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Não foi possível fazer a inscrição.');
+    }
+  };
+
+  const handleCancel = async (bookingId: string | null) => {
+    if (!bookingId) return;
+    try {
+      await cancel.mutateAsync(bookingId);
       toast.success('Inscrição cancelada.');
     } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : 'Não foi possível cancelar.');
@@ -128,6 +139,11 @@ export default function Community() {
                           {kind?.chip ?? 'Atividade'}
                           {item.professional?.full_name ? ` · com ${item.professional.full_name.split(' ')[0]}` : ''}
                         </p>
+                        {item.minors_allowed && (
+                          <p className="text-xs text-accent mt-0.5">
+                            Aceita menores{item.min_age ? ` a partir de ${item.min_age} anos` : ''}
+                          </p>
+                        )}
                       </div>
                       {item.myBookingId ? (
                         <StatusPill text="Inscrito" variant="success" />
@@ -163,7 +179,7 @@ export default function Community() {
                       <Button
                         variant="secondary"
                         className="w-full"
-                        onClick={() => handleCancel(item)}
+                        onClick={() => handleCancel(item.myBookingId)}
                         disabled={cancel.isPending}
                       >
                         Cancelar inscrição
@@ -172,6 +188,41 @@ export default function Community() {
                       <Button className="w-full" onClick={() => handleBook(item)} disabled={full || book.isPending}>
                         {full ? 'Sem vagas' : 'Quero participar'}
                       </Button>
+                    )}
+
+                    {item.minors_allowed && dependents && dependents.length > 0 && (
+                      <div className="space-y-2 pt-1 border-t border-line">
+                        {dependents.map((d) => {
+                          const age = ageOn(d.birth_date, item.date);
+                          const bookingId = item.dependentBookings[d.id];
+                          const firstName = d.full_name.split(' ')[0];
+                          const tooYoung = item.min_age != null && age < item.min_age;
+                          return (
+                            <div key={d.id} className="flex items-center gap-2 pt-2">
+                              <Baby className="w-4 h-4 text-ink-muted shrink-0" />
+                              <span className="text-sm text-ink flex-1 truncate">
+                                {firstName} <span className="text-ink-muted">· {age} anos</span>
+                              </span>
+                              {bookingId ? (
+                                <Button variant="secondary" size="sm" onClick={() => handleCancel(bookingId)} disabled={cancel.isPending}>
+                                  Cancelar
+                                </Button>
+                              ) : tooYoung ? (
+                                <span className="text-xs text-ink-muted">Abaixo da idade</span>
+                              ) : (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleBookDependent(item, d.id, firstName)}
+                                  disabled={full || bookDependent.isPending}
+                                >
+                                  Inscrever
+                                </Button>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
                     )}
                   </li>
                 );

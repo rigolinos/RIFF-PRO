@@ -8,6 +8,7 @@ import { PageContainer } from '@riff/core/layout/PageContainer';
 import { Button } from '@riff/core/ui/button';
 import { Input } from '@riff/core/ui/input';
 import { Textarea } from '@riff/core/ui/textarea';
+import { Switch } from '@riff/core/ui/switch';
 import { KINDS, type ActivityKind } from '@riff/core/lib/copy';
 import { errorMessage } from '@riff/core/lib/utils';
 import { useCommunity, todaySP } from '@/hooks/useCommunity';
@@ -57,6 +58,8 @@ export default function NewActivity() {
   const [place, setPlace] = useState('');
   const [spots, setSpots] = useState('10');
   const [description, setDescription] = useState('');
+  const [minorsAllowed, setMinorsAllowed] = useState(false);
+  const [minAge, setMinAge] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
   if (!isLoading && community && !community.canManage) return <Navigate to={`/c/${orgId}`} replace />;
@@ -74,7 +77,9 @@ export default function NewActivity() {
             ? 'Informe o local.'
             : !(Number(spots) >= 1)
               ? 'Informe quantas vagas a atividade tem.'
-              : null;
+              : minorsAllowed && minAge !== '' && !(Number(minAge) >= 0 && Number(minAge) <= 17)
+                ? 'A idade mínima vai de 0 a 17 anos.'
+                : null;
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,6 +105,8 @@ export default function NewActivity() {
         max_participants: Number(spots),
         price_per_slot: 0,
         status: 'active',
+        minors_allowed: minorsAllowed,
+        min_age: minorsAllowed && minAge !== '' ? Number(minAge) : null,
       });
       if (error) throw error;
       toast.success('Atividade publicada para a comunidade!');
@@ -208,6 +215,22 @@ export default function NewActivity() {
             className="h-24 bg-surface border-line resize-none"
           />
         </label>
+
+        <div className="space-y-3 bg-surface border border-line rounded-xl p-4">
+          <label className="flex items-center justify-between gap-3 cursor-pointer">
+            <span className="text-sm font-medium text-ink">Aceita menores de idade</span>
+            <Switch checked={minorsAllowed} onCheckedChange={setMinorsAllowed} />
+          </label>
+          <p className="text-xs text-ink-muted">
+            Menores entram como dependentes, inscritos pelo responsável. Recomende o acompanhamento de um adulto.
+          </p>
+          {minorsAllowed && (
+            <label className="block space-y-2">
+              <span className="text-sm font-medium text-ink">Idade mínima (opcional)</span>
+              <Input type="number" min={0} max={17} value={minAge} onChange={(e) => setMinAge(e.target.value)} placeholder="Ex: 8" className={FIELD} />
+            </label>
+          )}
+        </div>
 
         <p className="text-xs text-ink-muted">
           Só os membros desta comunidade veem e se inscrevem. A inscrição é gratuita.

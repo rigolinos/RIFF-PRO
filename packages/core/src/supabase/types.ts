@@ -117,6 +117,7 @@ export type Database = {
           checked_in: boolean | null
           checked_in_at: string | null
           created_at: string | null
+          dependent_id: string | null
           id: string
           payment_confirmed_at: string | null
           payment_method: string | null
@@ -142,6 +143,7 @@ export type Database = {
           checked_in?: boolean | null
           checked_in_at?: string | null
           created_at?: string | null
+          dependent_id?: string | null
           id?: string
           payment_confirmed_at?: string | null
           payment_method?: string | null
@@ -167,6 +169,7 @@ export type Database = {
           checked_in?: boolean | null
           checked_in_at?: string | null
           created_at?: string | null
+          dependent_id?: string | null
           id?: string
           payment_confirmed_at?: string | null
           payment_method?: string | null
@@ -187,6 +190,13 @@ export type Database = {
             columns: ["attendance_recorded_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_dependent_id_fkey"
+            columns: ["dependent_id"]
+            isOneToOne: false
+            referencedRelation: "dependents"
             referencedColumns: ["id"]
           },
           {
@@ -252,6 +262,50 @@ export type Database = {
             columns: ["parent_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dependents: {
+        Row: {
+          birth_date: string | null
+          consent_version: string
+          consented_at: string
+          created_at: string
+          full_name: string | null
+          guardian_id: string
+          id: string
+          relationship: string
+          removed_at: string | null
+        }
+        Insert: {
+          birth_date?: string | null
+          consent_version: string
+          consented_at?: string
+          created_at?: string
+          full_name?: string | null
+          guardian_id: string
+          id?: string
+          relationship: string
+          removed_at?: string | null
+        }
+        Update: {
+          birth_date?: string | null
+          consent_version?: string
+          consented_at?: string
+          created_at?: string
+          full_name?: string | null
+          guardian_id?: string
+          id?: string
+          relationship?: string
+          removed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dependents_guardian_id_fkey"
+            columns: ["guardian_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -730,6 +784,8 @@ export type Database = {
           location_type: string | null
           longitude: number | null
           max_participants: number | null
+          min_age: number | null
+          minors_allowed: boolean
           organization_id: string | null
           parent_session_id: string | null
           price_per_slot: number
@@ -764,6 +820,8 @@ export type Database = {
           location_type?: string | null
           longitude?: number | null
           max_participants?: number | null
+          min_age?: number | null
+          minors_allowed?: boolean
           organization_id?: string | null
           parent_session_id?: string | null
           price_per_slot: number
@@ -798,6 +856,8 @@ export type Database = {
           location_type?: string | null
           longitude?: number | null
           max_participants?: number | null
+          min_age?: number | null
+          minors_allowed?: boolean
           organization_id?: string | null
           parent_session_id?: string | null
           price_per_slot?: number
@@ -920,6 +980,15 @@ export type Database = {
     }
     Functions: {
       _profile_id: { Args: never; Returns: string }
+      add_dependent: {
+        Args: {
+          p_birth_date: string
+          p_consent_version: string
+          p_full_name: string
+          p_relationship: string
+        }
+        Returns: string
+      }
       admin_create_community: {
         Args: { p_kind: string; p_name: string; p_owner_email: string }
         Returns: string
@@ -928,6 +997,7 @@ export type Database = {
         Args: { pro_id: string }
         Returns: number
       }
+      can_view_dependent: { Args: { p_dependent: string }; Returns: boolean }
       cancel_session: {
         Args: { p_reason?: string; p_session_id: string }
         Returns: undefined
@@ -952,6 +1022,10 @@ export type Database = {
       }
       create_booking: {
         Args: { p_attribution?: Json; p_session_id: string; p_source?: string }
+        Returns: Json
+      }
+      create_dependent_booking: {
+        Args: { p_dependent_id: string; p_session_id: string }
         Returns: Json
       }
       create_invite: {
@@ -982,6 +1056,7 @@ export type Database = {
         Args: { p_action: string; p_org: string; p_profile: string }
         Returns: Json
       }
+      remove_dependent: { Args: { p_dependent: string }; Returns: undefined }
       resolve_venue: {
         Args: {
           p_address: string
