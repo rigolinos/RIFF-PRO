@@ -41,15 +41,15 @@ Ponte entre os dois: condomínios e clubes precisam de instrutores, e os organiz
 - **Atividade:** palavra guarda-chuva (aula, evento, campeonato, jogo, outros).
 - Na criação, a primeira pergunta é "o que você vai organizar?", com explicação curta em tom de conversa.
 - Evitar "professor/aluno/aula" em textos gerais e na tagline.
-- **No banco, os nomes internos antigos continuam:** `sessions` = atividades, `role = 'professional'` = organizador, `role = 'student'` = participante. A diferenciação entre tipos é a coluna `sessions.kind` (`class`, `match`, `tournament`, `event`, `other`; rótulos em `src/lib/copy.ts`). Não renomear tabelas agora.
+- **No banco, os nomes internos antigos continuam:** `sessions` = atividades, `role = 'professional'` = organizador, `role = 'student'` = participante. A diferenciação entre tipos é a coluna `sessions.kind` (`class`, `match`, `tournament`, `event`, `other`; rótulos em `packages/core/src/lib/copy.ts`). Não renomear tabelas agora.
 
 ## 5. Identidade e design system
 
-- Tema escuro com dourado. Tokens: `--bg #0F1115`, `--surface #171A20`, `--elevated #1F242C`, `--line #2B313B`, `--ink #F3EFE4`, `--ink-muted #A3A9B5`, `--brand #F2CE56`, `--brand-ink #0F1115`, `--accent #FFAE1A`, `--success #5CCB8A`, `--danger #FF7A7A`. Definidos em `src/index.css`.
+- Tema escuro com dourado. Tokens: `--bg #0F1115`, `--surface #171A20`, `--elevated #1F242C`, `--line #2B313B`, `--ink #F3EFE4`, `--ink-muted #A3A9B5`, `--brand #F2CE56`, `--brand-ink #0F1115`, `--accent #FFAE1A`, `--success #5CCB8A`, `--danger #FF7A7A`. Definidos em `packages/core/src/styles/riff.css` (importado pelo `index.css` de cada app).
 - **Regras:** dourado = ação; âmbar = preço ou alerta; nunca texto branco sobre dourado; texto mínimo de 12px.
 - **Fontes:** Chivo (títulos e preços) e Space Grotesk (corpo e rótulos). Usar a escala tipográfica (`type-display`, `type-subtitle`, `type-label`…) e os componentes de domínio, não classes soltas.
 - **Motivos da marca:** linhas paralelas do "R", flecha (medidor de vagas, animação do ingresso), véu escuro sobre fotos, ícones com traço 1.75.
-- **Logo:** marca-mãe Riff Sports (arqueiro), via `<Logo />` (`src/components/ui/logo.tsx`). O app se chama **Riff Pro**. Nome, domínio, tagline e og-image ficam em `src/brand.ts`.
+- **Logo:** marca-mãe Riff Sports (arqueiro), via `<Logo />` (`packages/core/src/ui/logo.tsx`). Os apps se chamam **Riff Pro** e **Riff Clubes**. Nome, domínio, tagline e og-image de cada um ficam em `src/brand.ts` e `apps/clubes/src/brand.ts`.
 
 ## 6. Regras de trabalho
 
@@ -71,7 +71,7 @@ Ponte entre os dois: condomínios e clubes precisam de instrutores, e os organiz
   ```bash
   npx supabase db query --linked -f supabase/seeds/demo_cleanup.sql
   ```
-- **Documentos legais** ficam em `src/legal/documents.ts`. Mudou o texto? Suba a versão em `LEGAL_VERSIONS`: todo mundo terá de aceitar de novo (tela `/aceite`). Os aceites ficam em `legal_acceptances` e nunca são alterados ou apagados. O texto-base precisa de revisão jurídica antes do lançamento.
+- **Documentos legais** ficam em `packages/core/src/legal/`: `documents.ts` (Riff Pro: `terms`, `privacy`, `organizer_terms`, e o mapa `LEGAL_VERSIONS` de todos) e `clubes.ts` (Riff Clubes: `clubes_terms`, `clubes_privacy`, `guardian_consent`). Cada app exige os seus: o Clubes envolve o app em `LegalProductContext` com `'clubes'` (`legal/product.ts`); o Pro usa o padrão `'pro'`. Mudou o texto? Suba a versão em `LEGAL_VERSIONS`: todo mundo terá de aceitar de novo (tela `/aceite`). Os aceites ficam em `legal_acceptances` e nunca são alterados ou apagados. O texto-base precisa de revisão jurídica antes do lançamento.
 - **Edições por script:** não deixar scripts avulsos (`fix-*.js`, `script*.py`) na raiz. Se usar um script para editar arquivos, preserve o fim de linha original (o checkout no Windows usa CRLF) e confira `git diff --stat` antes de commitar. Uma edição desse tipo, feita sem script versionado, já multiplicou as linhas em branco de `Login.tsx` e `ProfileEdit.tsx` (1576 e 2852 linhas, a maioria vazias).
 
 ## 7. Mapa rápido do código
@@ -85,6 +85,10 @@ Ponte entre os dois: condomínios e clubes precisam de instrutores, e os organiz
 - **Organizações e locais (Lote 3):** todo organizador tem uma `organizations` de `kind = 'solo'` (sem nome próprio: a vitrine é o perfil). Toda atividade (`sessions`) tem `organization_id` e `venue_id`, preenchidos por trigger a partir de `location_*`; atividades no mesmo lugar compartilham o `venue`. `condo`/`club` e `visibility = 'members'` já existem para o Riff Clubes.
 - **Origem das reservas e produto:** `bookings.source` (`organizer_link`, `activity_link`, `feed`, `explore`, `direct`, `other`; NULL = antes do registro existir) e `bookings.attribution` (utm, ref, domínio de origem), gravados pelo `create_booking` a partir da primeira entrada da visita (`src/lib/attribution.ts`). `product` (`pro`, `clubes`, `sports`) em `sessions` e `bookings`: o mesmo banco serve os três produtos. Critérios de "pronto" por produto: `npm run metrics` (só leitura, ignora dados de exemplo).
 - **Comunidades do Riff Clubes (C2):** atividades com `product <> 'pro'` só são vistas e reservadas por membros ativos da comunidade (`organization_members`). Atividade ligada a `organizations` de `kind` `condo`/`club` vira `product = 'clubes'` por trigger, e só gestor ou instrutor cria. Entrada por convite: `create_invite` (gestor) e `join_organization` (código `XXXX-XXXX`). Criar comunidade é tarefa da equipe Riff, pelo terminal: `npx supabase db query --linked "SELECT public.admin_create_community('Nome', 'condo', 'email-do-gestor')"`.
+- **Separação Pro × Clubes nas telas:** toda listagem do Riff Pro filtra `product = 'pro'` (feed, cidades, minhas reservas, minhas atividades, painel, ganhos, perfil público); as do Clubes filtram pela comunidade (`organization_id`). Consulta nova de lista precisa de um desses filtros, senão um app mostra dados do outro.
+- **Agenda do Clubes (C3):** inscrição sem pagamento pelo mesmo `create_booking` (`price_per_slot = 0`, `p_source = 'other'`); cancelamento pelo fluxo de sempre (regra das 4 horas).
+- **Ferramentas do gestor (C4):** o gestor (`owner`/`admin`) lê as inscrições de todas as atividades da comunidade (política `community_admin_bookings`, via `session_community()` para não recursar entre `bookings` e `sessions`). `manage_member` muda o papel ou remove (remover cancela as inscrições futuras); o dono não muda, e ninguém altera o próprio papel. `close_community_session` registra presença (`present`, `late`, `absent`, `excused`) ou "não aconteceu", por quem conduz ou pelo gestor; atividades do Pro seguem no `close_session`.
+- **Dependentes menores (C5):** `dependents` (só nome, nascimento e parentesco; nada de saúde). Cadastro só por `add_dependent`, que grava junto o aceite de `guardian_consent`; `remove_dependent` anonimiza (nome e nascimento viram `NULL`) e cancela as inscrições futuras. Quem conduz e o gestor só veem dependentes inscritos nas atividades deles (`can_view_dependent`). Atividade aceita menores só com `sessions.minors_allowed = true` (padrão `false`), com `min_age` opcional; inscrição por `create_dependent_booking`, no nome do responsável (`student_id`) com `dependent_id`. `bookings` é única por pessoa (`dependent_id IS NULL`) e por dependente (índices parciais).
 - **Presença e resultados:** `bookings.attendance_status` (`present`, `absent`, `late`, `excused`) acompanha o check-in do `close_session`; `activity_results` guarda placar/posição. Só o organizador da atividade e o próprio participante leem.
 - Variáveis de ambiente em `.env.local` (fora do git): `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`.
 
