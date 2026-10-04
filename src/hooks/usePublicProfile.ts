@@ -41,6 +41,7 @@ export function usePublicProfile(slugOrId: string) {
           professional:profiles!sessions_professional_id_fkey(id, full_name, avatar_url, public_slug, rating_avg, total_reviews)
         `)
         .eq('professional_id', profile.id)
+        .eq('product', 'pro')
         .in('status', ['active', 'full'])
         .gte('date', todaySP())
         .order('date', { ascending: true })

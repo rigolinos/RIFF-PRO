@@ -34,6 +34,7 @@ export function useDashboardMetrics() {
         .from('sessions')
         .select('id, title, date, start_time, duration_minutes, location_name, current_participants, max_participants, status, category:categories(name, emoji)')
         .eq('professional_id', profileData.id)
+        .eq('product', 'pro')
         .in('status', ['active', 'full'])
         .eq('date', todaySP())
         .order('start_time', { ascending: true });
@@ -42,6 +43,7 @@ export function useDashboardMetrics() {
         .from('sessions')
         .select('id, title, date, start_time, duration_minutes, location_name, current_participants, max_participants, status, category:categories(name, emoji)')
         .eq('professional_id', profileData.id)
+        .eq('product', 'pro')
         .in('status', ['active', 'full'])
         .gte('date', todaySP())
         .order('date', { ascending: true })

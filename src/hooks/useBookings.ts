@@ -28,6 +28,7 @@ export function useBookings() {
           )
         `)
         .eq('student_id', profile.id)
+        .eq('product', 'pro')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
