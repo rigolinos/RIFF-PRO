@@ -25,6 +25,7 @@ export default function Earnings() {
           student:profiles!bookings_student_id_fkey(full_name)
         `)
         .eq('professional_id', profile.id)
+        .eq('product', 'pro')
         .order('created_at', { ascending: false });
 
       if (error) throw error;

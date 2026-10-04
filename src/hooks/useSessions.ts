@@ -15,6 +15,7 @@ export function useCities() {
       const { data, error } = await supabase
         .from('sessions')
         .select('city')
+        .eq('product', 'pro')
         .in('status', ['active', 'full'])
         .gte('date', new Date().toISOString().split('T')[0]);
       if (error) throw error;
@@ -41,6 +42,7 @@ export function useSessions(cityFilter?: string | null) {
           professional:profiles(id, full_name, avatar_url, rating_avg, total_reviews, public_slug),
           category:categories(name, icon, emoji)
         `)
+        .eq('product', 'pro')
         .in('status', ['active', 'full'])
         .gte('date', todaySP())
         .order('date', { ascending: true })

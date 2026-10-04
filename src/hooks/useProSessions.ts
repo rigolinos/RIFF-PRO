@@ -27,6 +27,7 @@ export function useProSessions() {
           )
         `)
         .eq('professional_id', profile.id)
+        .eq('product', 'pro')
         .order('date', { ascending: false })
         .order('start_time', { ascending: false });
 
