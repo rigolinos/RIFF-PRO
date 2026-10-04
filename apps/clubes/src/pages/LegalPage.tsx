@@ -2,13 +2,14 @@ import { useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { PageContainer } from '@riff/core/layout/PageContainer';
 import { BRAND } from '@/brand';
-import { LEGAL_VERSIONS, legalDocumentByPath } from '@riff/core/legal/documents';
+import { LEGAL_VERSIONS } from '@riff/core/legal/documents';
+import { clubesLegalDocumentByPath } from '@riff/core/legal/clubes';
 import NotFound from './NotFound';
 
-// Página pública de um documento legal (/termos, /termos-organizador, /privacidade).
+// Página pública de um documento legal do Clubes (/termos, /privacidade, /termo-responsavel).
 const LegalPage = () => {
   const { pathname } = useLocation();
-  const doc = legalDocumentByPath(pathname);
+  const doc = clubesLegalDocumentByPath(pathname);
   if (!doc) return <NotFound />;
 
   return (

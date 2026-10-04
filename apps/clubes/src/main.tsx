@@ -6,6 +6,7 @@ import '@fontsource-variable/chivo';
 import '@fontsource-variable/space-grotesk';
 import './index.css';
 import { captureLanding } from '@riff/core/lib/attribution';
+import { LegalProductContext } from '@riff/core/legal/product';
 import App from './App';
 
 captureLanding();
@@ -14,7 +15,9 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <HelmetProvider>
       <ThemeProvider defaultTheme="dark" enableSystem={false} attribute="data-theme">
-        <App />
+        <LegalProductContext.Provider value="clubes">
+          <App />
+        </LegalProductContext.Provider>
       </ThemeProvider>
     </HelmetProvider>
   </StrictMode>

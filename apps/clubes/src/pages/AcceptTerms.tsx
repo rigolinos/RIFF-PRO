@@ -7,7 +7,7 @@ import { Logo } from '@riff/core/ui/logo';
 import { Button } from '@riff/core/ui/button';
 import { Checkbox } from '@riff/core/ui/checkbox';
 import { useLegalAcceptance } from '@riff/core/hooks/useLegalAcceptance';
-import { LEGAL_DOCUMENTS } from '@riff/core/legal/documents';
+import { CLUBES_LEGAL_DOCUMENTS } from '@riff/core/legal/clubes';
 import { errorMessage } from '@riff/core/lib/utils';
 
 // Tela "Eu li e aceito": aparece antes de qualquer tela logada enquanto faltar
@@ -16,7 +16,7 @@ const AcceptTerms = () => {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const next = params.get('next') || '/inicio';
-  const { missing, isLoading, isOrganizer, accept, isAccepting } = useLegalAcceptance();
+  const { missing, isLoading, accept, isAccepting } = useLegalAcceptance();
   const [checked, setChecked] = useState<Record<string, boolean>>({});
 
   if (isLoading) {
@@ -30,41 +30,30 @@ const AcceptTerms = () => {
 
   const items = [
     {
-      key: 'terms',
+      key: 'clubes_terms',
       label: (
         <>
-          Li e aceito os <DocLink path={LEGAL_DOCUMENTS.terms.path}>Termos de Uso</DocLink>.
+          Li e aceito os <DocLink path={CLUBES_LEGAL_DOCUMENTS.clubes_terms.path}>Termos de Uso</DocLink>.
         </>
       ),
     },
     {
-      key: 'privacy',
+      key: 'clubes_privacy',
       label: (
         <>
-          Li e aceito a <DocLink path={LEGAL_DOCUMENTS.privacy.path}>Política de Privacidade</DocLink>.
+          Li e aceito a <DocLink path={CLUBES_LEGAL_DOCUMENTS.clubes_privacy.path}>Política de Privacidade</DocLink>.
         </>
       ),
     },
-    isOrganizer
-      ? {
-          key: 'organizer_terms',
-          label: (
-            <>
-              Li e aceito o <DocLink path={LEGAL_DOCUMENTS.organizer_terms.path}>Termo do Organizador</DocLink> e
-              declaro que sou o único responsável pelas atividades que publico, pela segurança dos participantes e por
-              pagamentos, cancelamentos e reembolsos.
-            </>
-          ),
-        }
-      : {
-          key: 'participant_ack',
-          label: (
-            <>
-              Entendo que as atividades acontecem nas áreas do meu condomínio ou clube, sob responsabilidade de quem
-              as organiza e do condomínio ou clube, e que o Riff recomenda o acompanhamento de um maior de idade para menores.
-            </>
-          ),
-        },
+    {
+      key: 'participant_ack',
+      label: (
+        <>
+          Entendo que as atividades acontecem nas áreas do meu condomínio ou clube, sob responsabilidade de quem
+          as organiza e do condomínio ou clube, e que o Riff recomenda o acompanhamento de um maior de idade para menores.
+        </>
+      ),
+    },
   ];
 
   const allChecked = items.every((item) => checked[item.key]);

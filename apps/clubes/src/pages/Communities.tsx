@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { Building2, KeyRound, LogOut, ChevronRight } from 'lucide-react';
+import { Baby, Building2, KeyRound, LogOut, ChevronRight } from 'lucide-react';
 import { supabase } from '@riff/core/supabase/client';
 import { useProfile } from '@riff/core/hooks/useProfile';
 import { PageContainer } from '@riff/core/layout/PageContainer';
@@ -95,6 +95,15 @@ export default function Communities() {
         )}
 
         <JoinWithCode />
+
+        <Link to="/dependentes" className="flex items-center gap-3 bg-surface border border-line rounded-2xl p-4">
+          <Baby className="w-5 h-5 text-brand shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-ink">Seus dependentes</p>
+            <p className="text-xs text-ink-muted">Cadastre filhos menores para inscrevê-los nas atividades</p>
+          </div>
+          <ChevronRight className="w-5 h-5 text-ink-muted shrink-0" />
+        </Link>
       </div>
     </PageContainer>
   );

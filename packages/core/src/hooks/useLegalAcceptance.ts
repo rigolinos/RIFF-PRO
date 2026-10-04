@@ -2,15 +2,18 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@riff/core/supabase/client';
 import { useProfile } from './useProfile';
 import { LEGAL_VERSIONS, type LegalDocumentId } from '@riff/core/legal/documents';
+import { useLegalProduct, type LegalProduct } from '@riff/core/legal/product';
 
-// Documentos que cada pessoa precisa ter aceitado na versão vigente.
-export function requiredDocuments(role: string | null | undefined): LegalDocumentId[] {
+// Documentos que cada pessoa precisa ter aceitado na versão vigente, por app.
+export function requiredDocuments(role: string | null | undefined, product: LegalProduct = 'pro'): LegalDocumentId[] {
+  if (product === 'clubes') return ['clubes_terms', 'clubes_privacy'];
   return role === 'professional' ? ['terms', 'privacy', 'organizer_terms'] : ['terms', 'privacy'];
 }
 
 export function useLegalAcceptance() {
   const { profile, isLoading: isLoadingProfile } = useProfile();
   const queryClient = useQueryClient();
+  const product = useLegalProduct();
 
   const acceptancesQuery = useQuery({
     queryKey: ['legal-acceptances', profile?.id],
@@ -25,7 +28,7 @@ export function useLegalAcceptance() {
     enabled: !!profile?.id,
   });
 
-  const required = requiredDocuments(profile?.role);
+  const required = requiredDocuments(profile?.role, product);
   const accepted = new Set((acceptancesQuery.data ?? []).map((a) => `${a.document}@${a.version}`));
   const missing = required.filter((doc) => !accepted.has(`${doc}@${LEGAL_VERSIONS[doc]}`));
 
