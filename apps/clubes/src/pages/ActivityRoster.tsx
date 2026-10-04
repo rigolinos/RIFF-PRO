@@ -10,6 +10,7 @@ import { Avatar, ConfirmDialog, EmptyState, SpotsMeter, StatusPill } from '@riff
 import { Button } from '@riff/core/ui/button';
 import { useCommunity } from '@/hooks/useCommunity';
 import { useRoster, useCloseActivity, type Attendance } from '@/hooks/useManagement';
+import { ageOn } from '@/hooks/useDependents';
 
 const OPTIONS: { value: Attendance; label: string }[] = [
   { value: 'present', label: 'Veio' },
@@ -77,13 +78,22 @@ export default function ActivityRoster() {
           ) : (
             <ul className="space-y-2">
               {roster.bookings.map((b) => {
-                const name = b.student?.full_name?.trim() || 'Sem nome';
+                const guardian = b.student?.full_name?.trim() || 'Sem nome';
+                const dep = b.dependent?.full_name && b.dependent.birth_date ? b.dependent : null;
+                const name = dep?.full_name ?? guardian;
                 const editable = open && started && ['pending', 'confirmed'].includes(b.status ?? '');
                 return (
                   <li key={b.id} className="bg-surface border border-line rounded-xl px-4 py-3 space-y-3">
                     <div className="flex items-center gap-3">
-                      <Avatar src={b.student?.avatar_url} name={name} className="w-10 h-10" />
-                      <p className="text-sm font-medium text-ink truncate flex-1">{name}</p>
+                      <Avatar src={dep ? null : b.student?.avatar_url} name={name} className="w-10 h-10" />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-ink truncate">{name}</p>
+                        {dep?.birth_date && session && (
+                          <p className="text-xs text-ink-muted truncate">
+                            {ageOn(dep.birth_date, session.date)} anos · responsável: {guardian}
+                          </p>
+                        )}
+                      </div>
                       {b.attendance_status ? (
                         <StatusPill
                           text={RESULT_LABEL[b.attendance_status] ?? b.attendance_status}

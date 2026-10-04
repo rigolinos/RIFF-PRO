@@ -9,12 +9,19 @@
  * de novo na próxima vez que abrir o app.
  */
 
-export type LegalDocumentId = 'terms' | 'privacy' | 'organizer_terms';
+import type { ClubesLegalDocumentId } from './clubes';
+
+export type ProLegalDocumentId = 'terms' | 'privacy' | 'organizer_terms';
+/** Documentos do Riff Pro e do Riff Clubes (textos do Clubes em clubes.ts). */
+export type LegalDocumentId = ProLegalDocumentId | ClubesLegalDocumentId;
 
 export const LEGAL_VERSIONS: Record<LegalDocumentId, string> = {
   terms: '2026-10-01',
   privacy: '2026-10-01',
   organizer_terms: '2026-10-01',
+  clubes_terms: '2026-10-03',
+  clubes_privacy: '2026-10-03',
+  guardian_consent: '2026-10-03',
 };
 
 export interface LegalDocument {
@@ -28,7 +35,7 @@ export interface LegalDocument {
 const COMPANY = '[Razão social], inscrita no CNPJ sob o nº [CNPJ]';
 const CONTACT = '[E-MAIL DE CONTATO]';
 
-export const LEGAL_DOCUMENTS: Record<LegalDocumentId, LegalDocument> = {
+export const LEGAL_DOCUMENTS: Record<ProLegalDocumentId, LegalDocument> = {
   terms: {
     id: 'terms',
     path: '/termos',

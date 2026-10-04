@@ -132,7 +132,7 @@ export function useRoster(sessionId: string | undefined) {
 
       const { data: bookings, error: bookingsError } = await supabase
         .from('bookings')
-        .select('id, status, attendance_status, created_at, student:profiles!bookings_student_id_fkey(id, full_name, avatar_url)')
+        .select('id, status, attendance_status, created_at, student:profiles!bookings_student_id_fkey(id, full_name, avatar_url), dependent:dependents!bookings_dependent_id_fkey(full_name, birth_date)')
         .eq('session_id', sessionId!)
         .in('status', ['pending', 'confirmed', 'completed', 'no_show'])
         .order('created_at', { ascending: true });
