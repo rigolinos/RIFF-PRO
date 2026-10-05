@@ -7,6 +7,7 @@ import { PageContainer } from '@riff/core/layout/PageContainer';
 import { EmptyState, StatusPill } from '@riff/core/domain';
 import { useMyAgenda } from '@/hooks/useActivities';
 import { SportIcon } from '@/components/SportIcon';
+import { ReviewPrompt } from '@/components/ReviewPrompt';
 
 function SportTitle({ slug, title }: { slug: string | null | undefined; title: string }) {
   return (
@@ -66,6 +67,8 @@ export default function MyAgenda() {
             </button>
           ))}
         </div>
+
+        {tab === 'past' && <ReviewPrompt max={5} />}
 
         {isLoading || !data ? (
           <div className="flex justify-center py-12">
