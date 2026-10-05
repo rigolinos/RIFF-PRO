@@ -32,17 +32,34 @@ type ActivityRow = {
   organization: { name: string | null; kind: string } | null;
 };
 
+/** Quem confirmou presença: só adultos pelo nome curto; menores só na contagem */
+export type Participants = {
+  people: { id: string; name: string; avatar_url: string | null }[];
+  count: number;
+  dependents: number;
+};
+
 export type Activity = ActivityRow & {
+  participants: Participants;
   /** Inscrição da própria pessoa (sem dependente) */
   myBookingId: string | null;
   /** dependent_id -> booking_id das inscrições dos dependentes da pessoa */
   dependentBookings: Record<string, string>;
 };
 
-/** Junta às atividades as inscrições da pessoa e dos dependentes dela. */
-async function withMyBookings(rows: ActivityRow[], profileId: string): Promise<Activity[]> {
+/**
+ * Junta às atividades as inscrições da pessoa e dos dependentes dela, e quem vai
+ * (`peopleLimit` fotos por evento; sem limite na página do evento).
+ */
+async function withMyBookings(rows: ActivityRow[], profileId: string, peopleLimit: number | null = 3): Promise<Activity[]> {
   const ids = rows.map((s) => s.id);
   if (!ids.length) return [];
+  const { data: who, error: whoError } = await supabase.rpc('activity_participants', {
+    p_sessions: ids,
+    ...(peopleLimit ? { p_limit: peopleLimit } : {}),
+  });
+  if (whoError) throw whoError;
+  const whoBySession = new Map((who ?? []).map((w) => [w.session_id, w]));
   const { data: bookings, error } = await supabase
     .from('bookings')
     .select('id, session_id, dependent_id')
@@ -52,8 +69,14 @@ async function withMyBookings(rows: ActivityRow[], profileId: string): Promise<A
   if (error) throw error;
   return rows.map((s) => {
     const mine = (bookings ?? []).filter((b) => b.session_id === s.id);
+    const w = whoBySession.get(s.id);
     return {
       ...s,
+      participants: {
+        people: (w?.people ?? []) as Participants['people'],
+        count: w?.people_count ?? 0,
+        dependents: w?.dependents ?? 0,
+      },
       myBookingId: mine.find((b) => !b.dependent_id)?.id ?? null,
       dependentBookings: Object.fromEntries(mine.filter((b) => b.dependent_id).map((b) => [b.dependent_id!, b.id])),
     };
@@ -118,7 +141,7 @@ export function useActivity(id: string | undefined) {
       const { data, error } = await supabase.from('sessions').select(ACTIVITY_FIELDS).eq('id', id!).maybeSingle();
       if (error) throw error;
       if (!data) return null;
-      const [item] = await withMyBookings([data as unknown as ActivityRow], profile!.id);
+      const [item] = await withMyBookings([data as unknown as ActivityRow], profile!.id, null);
       return item;
     },
     enabled: !!id && !!profile?.id,

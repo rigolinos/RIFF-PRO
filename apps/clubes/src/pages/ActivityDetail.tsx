@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -12,6 +13,8 @@ import { useActivity } from '@/hooks/useActivities';
 import { useAgendaActions, useCommunity } from '@/hooks/useCommunity';
 import { useDependents, ageOn } from '@/hooks/useDependents';
 import { SportIcon } from '@/components/SportIcon';
+import { WhoIsGoing } from '@/components/WhoIsGoing';
+import { kidsLabel } from '@/lib/people';
 
 export default function ActivityDetail() {
   const { id } = useParams<{ id: string }>();
@@ -22,6 +25,7 @@ export default function ActivityDetail() {
   const { data: community } = useCommunity(orgId);
   const { book, cancel, bookDependent } = useAgendaActions();
   const { data: dependents } = useDependents();
+  const [showAll, setShowAll] = useState(false);
 
   if (!isLoading && activity === null) return <Navigate to="/inicio" replace />;
 
@@ -170,6 +174,35 @@ export default function ActivityDetail() {
             />
           </div>
           <SpotsMeter current={current} max={max || 1} />
+        </section>
+
+        {/* Quem vai: só membros da comunidade veem; menores só na contagem */}
+        <section className="bg-surface border border-line rounded-2xl p-4 space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <p className="type-label">Quem vai</p>
+            {activity.participants.count > 6 && (
+              <button type="button" onClick={() => setShowAll((v) => !v)} className="text-xs text-brand font-semibold">
+                {showAll ? 'Mostrar menos' : `Ver todos (${activity.participants.count})`}
+              </button>
+            )}
+          </div>
+          {activity.participants.count === 0 && activity.participants.dependents === 0 ? (
+            <p className="text-sm text-ink-muted">{open ? 'Ninguém confirmou ainda. Seja o primeiro!' : 'Ninguém confirmou presença.'}</p>
+          ) : showAll || activity.participants.count <= 6 ? (
+            <ul className="grid grid-cols-2 gap-x-3 gap-y-2">
+              {activity.participants.people.map((p) => (
+                <li key={p.id} className="flex items-center gap-2 min-w-0">
+                  <Avatar src={p.avatar_url} name={p.name} className="w-8 h-8" fallbackClassName="text-xs" />
+                  <span className="text-sm text-ink truncate">{p.id === profile?.id ? 'Você' : p.name}</span>
+                </li>
+              ))}
+              {activity.participants.dependents > 0 && (
+                <li className="col-span-2 text-xs text-ink-muted">{kidsLabel(activity.participants.dependents)} inscritas pelos responsáveis</li>
+              )}
+            </ul>
+          ) : (
+            <WhoIsGoing participants={activity.participants} max={6} size="md" />
+          )}
         </section>
 
         {activity.professional?.full_name && (

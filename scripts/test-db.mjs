@@ -568,6 +568,38 @@ ok(depAfter.full_name === null && depAfter.birth_date === null && depAfter.remov
 ok((await one("SELECT count(*)::int n FROM public.organization_members WHERE profile_id = $1 AND status <> 'removed'", [pM3])).n === 0,
   'ao excluir a conta, a pessoa sai das comunidades');
 
+// ── Riff Clubes: "quem vai" (membros da mesma comunidade) ───────────────
+console.log('Riff Clubes (quem vai):');
+const M4 = 'c1000000-0000-4000-8000-000000000008'; // morador do A
+await newUser(M4, 'morador4.a@teste.dev', 'Marina Souza Lima', 'student');
+r = await as('authenticated', GA, 'SELECT public.create_invite($1) AS r', [orgA]);
+await as('authenticated', M4, 'SELECT public.join_organization($1) AS r', [r.rows[0].r.code]);
+const dM4 = (await as('authenticated', M4, 'SELECT public.add_dependent($1, $2::date, $3, $4) AS id', ['Pedro Lima', yearsAgo(9), 'child', '2026-10-03'])).rows?.[0]?.id;
+await ex("SELECT set_config('request.jwt.claim.sub', '', false)");
+const sWho = await kidsSession('Vôlei com as crianças', true, null);
+await as('authenticated', M4, 'SELECT public.create_booking($1)', [sWho]);
+await as('authenticated', GA, 'SELECT public.create_booking($1)', [sWho]);
+await as('authenticated', M4, 'SELECT public.create_dependent_booking($1, $2)', [sWho, dM4]);
+
+const who = (uid, ids, limit = null) =>
+  as('authenticated', uid, 'SELECT * FROM public.activity_participants($1::uuid[], $2)', [ids, limit]);
+r = await who(M4, [sWho]);
+const row = r.rows?.[0];
+ok(row?.people_count === 2 && row?.dependents === 1, 'membro vê quantos adultos vão e quantas crianças' + (r.err ? ` (${r.err})` : ''));
+ok(JSON.stringify(row?.people.map((p) => p.name)) === JSON.stringify(['Marina L.', 'Gestor A.']), 'nome curto: primeiro nome e inicial do sobrenome, na ordem de inscrição');
+ok(!JSON.stringify(row ?? {}).includes('Pedro'), 'nome de menor nunca aparece na lista');
+r = await who(M4, [sWho], 1);
+ok(r.rows?.[0]?.people.length === 1 && r.rows?.[0]?.people_count === 2, 'prévia limitada mantém a contagem total');
+r = await who(MB, [sWho]);
+ok(r.rows?.length === 0, 'quem é de outra comunidade não vê quem vai');
+r = await who(M4, [sPast]);
+ok(r.rows?.length === 0, 'eventos do Riff Pro não entram');
+r = await as('anon', '', 'SELECT * FROM public.activity_participants($1::uuid[])', [[sWho]]);
+ok(!!r.err, 'visitante sem login não chama a função');
+await as('authenticated', GA, "UPDATE public.bookings SET status = 'cancelled_by_student', cancelled_at = now() WHERE session_id = $1 AND student_id = public._profile_id()", [sWho]);
+r = await who(M4, [sWho]);
+ok(r.rows?.[0]?.people_count === 1, 'quem cancelou sai da lista');
+
 // ── Script de métricas do dono do produto ──────────────────────────────
 console.log('Métricas:');
 try {

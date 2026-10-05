@@ -107,8 +107,9 @@ export const CLUBES_LEGAL_DOCUMENTS: Record<ClubesLegalDocumentId, LegalDocument
       {
         heading: '4. Quem vê seus dados',
         paragraphs: [
-          'O gestor da comunidade vê quem é membro e quem se inscreveu nas atividades dela. Quem conduz uma atividade vê os inscritos daquela atividade. Os outros membros não veem as inscrições de ninguém.',
-          'O nome e a idade de um dependente só aparecem para quem conduz e para o gestor da atividade em que ele está inscrito.',
+          'O gestor da comunidade vê quem é membro e quem se inscreveu nas atividades dela. Quem conduz uma atividade vê os inscritos daquela atividade.',
+          'Os membros da mesma comunidade veem quem confirmou presença em cada evento dela: só a foto e o primeiro nome com a inicial do sobrenome (por exemplo, "Marina L."). Quem não é da comunidade não vê nada.',
+          'O nome e a idade de um dependente só aparecem para quem conduz e para o gestor da atividade em que ele está inscrito. Para os outros membros, os menores entram apenas na contagem (por exemplo, "+2 crianças"), nunca pelo nome.',
           'Prestadores de serviço que operam a infraestrutura do app (hospedagem e banco de dados) podem armazenar dados fora do Brasil, com as garantias exigidas pela LGPD (art. 33). Também compartilhamos com autoridades quando a lei exigir. Não vendemos dados.',
         ],
       },

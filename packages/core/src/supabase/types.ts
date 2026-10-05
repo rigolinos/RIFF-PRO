@@ -980,6 +980,15 @@ export type Database = {
     }
     Functions: {
       _profile_id: { Args: never; Returns: string }
+      activity_participants: {
+        Args: { p_limit?: number; p_sessions: string[] }
+        Returns: {
+          dependents: number
+          people: Json
+          people_count: number
+          session_id: string
+        }[]
+      }
       add_dependent: {
         Args: {
           p_birth_date: string

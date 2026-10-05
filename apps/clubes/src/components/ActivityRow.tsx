@@ -8,6 +8,7 @@ import { useProfile } from '@riff/core/hooks/useProfile';
 import { cn } from '@riff/core/lib/utils';
 import type { Activity } from '@/hooks/useActivities';
 import { SportIcon } from '@/components/SportIcon';
+import { WhoIsGoing } from '@/components/WhoIsGoing';
 
 interface ActivityRowProps {
   activity: Activity;
@@ -63,6 +64,9 @@ export function ActivityRow({ activity, showDay = false, showCommunity = false, 
           <span className="text-xs text-ink-muted shrink-0">
             {full ? 'Lotado' : `${current} de ${max} vagas`}
           </span>
+        </div>
+        <div className="pt-1 empty:hidden">
+          <WhoIsGoing participants={activity.participants} />
         </div>
         {(organizing || activity.myBookingId || dependentsIn > 0 || activity.minors_allowed) && (
           <div className="flex flex-wrap gap-1.5 pt-1">
