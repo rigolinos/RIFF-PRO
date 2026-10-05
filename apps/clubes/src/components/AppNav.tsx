@@ -1,15 +1,15 @@
 import { useLocation } from 'react-router-dom';
-import { CalendarCheck, Home, Plus, User, Users } from 'lucide-react';
+import { Building2, CalendarCheck, CalendarDays, Plus, User } from 'lucide-react';
 import { BottomNavBar, type BottomNavItem } from '@riff/core/layout/BottomNavBar';
 
 // Telas principais do Riff Clubes: o menu aparece só nelas (formulários e
 // detalhes abrem em tela cheia, com "voltar").
 const ITEMS: BottomNavItem[] = [
-  { path: '/inicio', icon: Home, label: 'Início' },
+  { path: '/inicio', icon: CalendarDays, label: 'Eventos' },
   {
     path: '/comunidades',
-    icon: Users,
-    label: 'Comunidades',
+    icon: Building2,
+    label: 'Clubes',
     isActive: (p) => p.startsWith('/comunidades') || /^\/c\/[^/]+$/.test(p),
   },
   { path: '/criar', icon: Plus, label: 'Criar', isFab: true },

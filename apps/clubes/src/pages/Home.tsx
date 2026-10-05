@@ -34,12 +34,16 @@ export default function Home() {
   const [filter, setFilter] = useState<string>('all');
 
   const firstName = profile?.full_name?.split(' ')[0];
+  const kinds = new Set(communities?.map((c) => c.kind));
+  const place = kinds.size === 1 ? (kinds.has('condo') ? 'condomínio' : 'clube') : 'condomínio ou clube';
+  const hasToday = (activities ?? []).some((a) => isToday(parseISO(a.date)));
   const visible = (activities ?? []).filter((a) => filter === 'all' || a.organization_id === filter);
   const mine = (activities ?? []).find(
     (a) => a.myBookingId || Object.keys(a.dependentBookings).length > 0 || a.professional_id === profile?.id,
   );
 
-  const groups = visible.reduce<{ label: string; items: Activity[] }[]>((acc, a) => {
+  // a atividade em destaque não se repete na lista
+  const groups = visible.filter((a) => a.id !== mine?.id).reduce<{ label: string; items: Activity[] }[]>((acc, a) => {
     const label = dayLabel(a.date);
     const last = acc[acc.length - 1];
     if (last?.label === label) last.items.push(a);
@@ -53,9 +57,11 @@ export default function Home() {
         <Logo variant="icon" size="sm" className="justify-start mb-4" />
         <h1 className="type-display">Olá{firstName ? `, ${firstName}` : ''}!</h1>
         <p className="text-ink-muted">
-          {communities && communities.length > 0
-            ? 'Veja o que vai rolar nas suas comunidades.'
-            : 'Vamos colocar você na sua comunidade.'}
+          {isLoadingCommunities
+            ? ''
+            : communities && communities.length > 0
+            ? `Veja o que vai rolar ${hasToday ? 'hoje' : 'nos próximos dias'} no seu ${place}.`
+            : 'Vamos colocar você no seu condomínio ou clube.'}
         </p>
       </div>
 
@@ -112,7 +118,7 @@ export default function Home() {
 
             {isLoading ? (
               <Spinner />
-            ) : groups.length === 0 ? (
+            ) : visible.length === 0 ? (
               <EmptyState
                 icon={Search}
                 title="Nenhuma atividade marcada"
@@ -133,7 +139,7 @@ export default function Home() {
             )}
 
             <Link to="/comunidades" className="block text-center text-sm text-brand underline underline-offset-4">
-              Ver suas comunidades
+              Ver seus clubes e condomínios
             </Link>
           </>
         )}

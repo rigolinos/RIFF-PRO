@@ -36,21 +36,21 @@ export function ActivityCard({ activity, showCommunity = true }: { activity: Act
             <Clock className="w-3.5 h-3.5 text-brand" /> {activity.start_time.substring(0, 5)}
           </span>
         </div>
-        <div className="absolute top-3 right-3 flex gap-2">
-          {organizing ? (
-            <StatusPill text="Você organiza" variant="info" />
-          ) : activity.myBookingId ? (
-            <StatusPill text="Inscrito" variant="success" />
-          ) : full ? (
-            <StatusPill text="Lotada" variant="danger" />
-          ) : null}
-        </div>
       </CoverImage>
 
       <div className="p-4 space-y-2">
-        <h3 className="type-subtitle text-ink leading-tight">
-          {activity.category?.emoji} {activity.title}
-        </h3>
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="type-subtitle text-ink leading-tight">
+            {activity.category?.emoji} {activity.title}
+          </h3>
+          {organizing ? (
+            <StatusPill text="Você organiza" variant="info" className="shrink-0" />
+          ) : activity.myBookingId ? (
+            <StatusPill text="Inscrito" variant="success" className="shrink-0" />
+          ) : full ? (
+            <StatusPill text="Lotada" variant="danger" className="shrink-0" />
+          ) : null}
+        </div>
         <p className="text-sm text-ink-muted truncate">
           {kind?.chip ?? 'Atividade'}
           {activity.professional?.full_name ? ` · com ${activity.professional.full_name.split(' ')[0]}` : ''}

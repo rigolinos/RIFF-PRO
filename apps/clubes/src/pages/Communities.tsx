@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Building2, ChevronRight, KeyRound, Settings } from 'lucide-react';
 import { PageContainer } from '@riff/core/layout/PageContainer';
-import { EmptyState, StatusPill } from '@riff/core/domain';
+import { EmptyState } from '@riff/core/domain';
 import { useMyCommunities } from '@/hooks/useActivities';
 import { JoinWithCode } from '@/components/JoinWithCode';
 import { ROLE_LABEL } from '@/lib/roles';
@@ -11,7 +11,7 @@ export default function Communities() {
   const { data: communities, isLoading, isError } = useMyCommunities();
 
   return (
-    <PageContainer title="Suas comunidades">
+    <PageContainer title="Clubes e condomínios">
       <div className="px-6 py-6 space-y-6">
         <p className="text-sm text-ink-muted">
           Cada condomínio ou clube tem a própria agenda. Só quem é da comunidade vê e participa.
@@ -39,9 +39,10 @@ export default function Communities() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <h2 className="type-subtitle truncate">{c.name}</h2>
-                    <p className="text-xs text-ink-muted mt-0.5">{c.kind === 'condo' ? 'Condomínio' : 'Clube'}</p>
+                    <p className="text-xs text-ink-muted mt-0.5">
+                      {c.kind === 'condo' ? 'Condomínio' : 'Clube'} · {ROLE_LABEL[c.role] ?? c.role}
+                    </p>
                   </div>
-                  <StatusPill text={ROLE_LABEL[c.role] ?? c.role} variant={c.isAdmin ? 'info' : 'neutral'} />
                   <ChevronRight className="w-5 h-5 text-ink-muted shrink-0" />
                 </Link>
                 {c.isAdmin && (
