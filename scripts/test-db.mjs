@@ -600,6 +600,114 @@ await as('authenticated', GA, "UPDATE public.bookings SET status = 'cancelled_by
 r = await who(M4, [sWho]);
 ok(r.rows?.[0]?.people_count === 1, 'quem cancelou sai da lista');
 
+// ── Riff Clubes: lado esportista (G1) ───────────────────────────────────
+console.log('Riff Clubes (esportista):');
+const M5 = 'c1000000-0000-4000-8000-000000000009'; // morador do A, vai usar o modo reservado
+const M6 = 'c1000000-0000-4000-8000-000000000010'; // morador do A, falta ao jogo
+const pM5 = await newUser(M5, 'morador5.a@teste.dev', 'Bruno Reis', 'student');
+const pM6 = await newUser(M6, 'morador6.a@teste.dev', 'Carla Dias', 'student');
+for (const uid of [M5, M6]) {
+  r = await as('authenticated', GA, 'SELECT public.create_invite($1) AS r', [orgA]);
+  await as('authenticated', uid, 'SELECT public.join_organization($1) AS r', [r.rows[0].r.code]);
+}
+const pM4 = (await one('SELECT id FROM public.profiles WHERE user_id = $1', [M4])).id;
+await ex("SELECT set_config('request.jwt.claim.sub', '', false)");
+// jogo de anteontem, conduzido pelo instrutor, na Quadra do condomínio
+const sGame = (await one(
+  `INSERT INTO public.sessions (professional_id, organization_id, category_id, title, date, start_time, duration_minutes, location_name, max_participants, price_per_slot, status)
+   VALUES ($1, $2, $3, 'Racha de anteontem', current_date - 2, '10:00', 60, 'Quadra do condomínio', 10, 0, 'active') RETURNING id`,
+  [pIA, orgA, category])).id;
+const sNextGame = await kidsSession('Racha da semana que vem', false, null);
+for (const pid of [pGA, pM4, pM5, pM6]) {
+  await q(`INSERT INTO public.bookings (session_id, student_id, professional_id, amount_total, professional_payout, payment_status, status, product)
+           VALUES ($1, $2, $3, 0, 0, 'free', 'confirmed', 'clubes')`, [sGame, pid, pIA]);
+}
+await q("UPDATE public.bookings SET attendance_status = 'absent', status = 'no_show' WHERE session_id = $1 AND student_id = $2", [sGame, pM6]);
+r = await as('authenticated', M5, 'UPDATE public.profiles SET sports_hidden = true WHERE id = public._profile_id()');
+ok(!r.err, 'a própria pessoa liga o modo reservado' + (r.err ? ` (${r.err})` : ''));
+
+// pendências de avaliação
+r = await as('authenticated', M4, 'SELECT * FROM public.pending_game_reviews()');
+const pend = r.rows?.find((x) => x.session_id === sGame);
+ok(!!pend, 'quem jogou vê o jogo para avaliar' + (r.err ? ` (${r.err})` : ''));
+const names = (pend?.players ?? []).map((p) => p.name).sort();
+ok(JSON.stringify(names) === JSON.stringify(['Gestor A.', 'Instrutor A.']),
+  'para elogiar: quem jogou e quem organizou; sem a própria pessoa, sem quem faltou, sem modo reservado');
+r = await as('authenticated', M6, 'SELECT * FROM public.pending_game_reviews()');
+ok(!r.rows?.some((x) => x.session_id === sGame), 'quem faltou não recebe o jogo para avaliar');
+
+// enviar avaliação
+const gameReview = (uid, s, vibe, kudos = []) =>
+  as('authenticated', uid, 'SELECT public.submit_game_review($1, $2::smallint, $3::jsonb) AS r', [s, vibe, JSON.stringify(kudos)]);
+r = await gameReview(M6, sGame, 3);
+ok(r.err && /not_a_player/.test(r.err), 'quem faltou não avalia');
+r = await gameReview(MB, sGame, 3);
+ok(r.err && /not_a_player/.test(r.err), 'quem é de outra comunidade não avalia');
+r = await gameReview(M4, sNextGame, 3);
+ok(r.err && /not_ended|not_a_player/.test(r.err), 'jogo que ainda não aconteceu não é avaliado');
+r = await gameReview(M4, sGame, 3, [{ receiver: pM4, tag: 'craque' }]);
+ok(r.err && /invalid_kudos/.test(r.err), 'ninguém elogia a si mesmo');
+r = await gameReview(M4, sGame, 3, [{ receiver: pM5, tag: 'craque' }]);
+ok(r.err && /invalid_kudos/.test(r.err), 'quem está no modo reservado não recebe elogio');
+r = await gameReview(M4, sGame, 3, [{ receiver: pM6, tag: 'craque' }]);
+ok(r.err && /invalid_kudos/.test(r.err), 'quem faltou não recebe elogio');
+r = await gameReview(M4, sGame, 3, [{ receiver: pGA, tag: 'mala' }]);
+ok(r.err && /invalid_kudos/.test(r.err), 'só elogios da lista (nada negativo)');
+ok((await one('SELECT count(*)::int n FROM public.game_reviews WHERE session_id = $1', [sGame])).n === 0, 'avaliação recusada não grava nada');
+r = await gameReview(M4, sGame, 3, [{ receiver: pGA, tag: 'craque' }, { receiver: pGA, tag: 'fair_play' }]);
+ok(r.rows?.[0]?.r?.status === 'ok', 'quem jogou avalia e elogia' + (r.err ? ` (${r.err})` : ''));
+r = await gameReview(M4, sGame, 2);
+ok(r.err && /already_reviewed/.test(r.err), 'cada pessoa avalia o jogo uma vez');
+r = await gameReview(GA, sGame, 3, ['craque', 'pontual', 'animou', 'fair_play'].map((tag) => ({ receiver: pIA, tag })));
+ok(r.rows?.[0]?.r?.status === 'ok', 'gestor que jogou também avalia');
+r = await as('authenticated', M4, 'SELECT * FROM public.pending_game_reviews()');
+ok(!r.rows?.some((x) => x.session_id === sGame), 'depois de avaliar, o jogo sai das pendências');
+
+// quem lê o quê
+r = await as('authenticated', GA, 'SELECT * FROM public.game_kudos');
+ok(r.rows?.length === 0, 'ninguém lê os elogios direto (quem deu fica em segredo)');
+r = await as('authenticated', IA, 'SELECT vibe FROM public.game_reviews WHERE session_id = $1', [sGame]);
+ok(r.rows?.length === 2, 'quem organizou vê o "como foi" do jogo');
+r = await as('authenticated', M5, 'SELECT vibe FROM public.game_reviews WHERE session_id = $1', [sGame]);
+ok(r.rows?.length === 0, 'outros membros não veem o "como foi" alheio');
+
+// ranking do mês (jogo de anteontem pode cair no mês anterior: pede o mês do jogo)
+const month = (await one("SELECT to_char(current_date - 2, 'YYYY-MM-01') AS m")).m;
+r = await as('authenticated', M4, 'SELECT * FROM public.community_ranking($1, $2::date)', [orgA, month]);
+const pts = Object.fromEntries((r.rows ?? []).map((x) => [x.short_name, x.points]));
+ok(pts['Instrutor A.'] === 24, 'organizou com 3+ presentes (15) + elogios com teto de 3 por jogo (9)' + (r.err ? ` (${r.err})` : ` [${JSON.stringify(pts)}]`));
+ok(pts['Gestor A.'] === 18, 'gestor: presença (10) + 2 elogios (6) + avaliou (2)');
+ok(pts['Marina L.'] === 12, 'morador: presença (10) + avaliou (2)');
+ok(!('Bruno R.' in pts) && !('Carla D.' in pts), 'modo reservado fica fora do ranking; quem faltou não pontua');
+ok(r.rows?.[0]?.short_name === 'Instrutor A.' && r.rows?.[0]?.rank === 1, 'ranking ordenado por pontos');
+r = await as('authenticated', MB, 'SELECT * FROM public.community_ranking($1, $2::date)', [orgA, month]);
+ok(r.rows?.length === 0, 'quem é de outra comunidade não vê o ranking');
+
+// perfil esportista
+r = await as('authenticated', M4, 'SELECT public.player_profile($1, $2) AS p', [pGA, orgA]);
+const pg = r.rows?.[0]?.p;
+ok(pg?.games === 1 && pg?.kudos?.craque === 1 && pg?.kudos?.fair_play === 1, 'perfil do vizinho: jogos e elogios recebidos' + (r.err ? ` (${r.err})` : ''));
+ok(pg?.name === 'Gestor A.', 'perfil do vizinho mostra só o nome curto');
+const dono = pg?.achievements?.find((a) => a.key === 'dono_da_quadra');
+ok(dono?.current === 1 && dono?.target === 5 && dono?.detail === 'Quadra do condomínio', 'conquista "Dono da quadra" com progresso e local');
+r = await as('authenticated', MB, 'SELECT public.player_profile($1, $2) AS p', [pGA, orgA]);
+ok(r.rows?.[0]?.p === null, 'quem é de outra comunidade não abre o perfil');
+r = await as('authenticated', M4, 'SELECT public.player_profile($1, $2) AS p', [pM5, orgA]);
+ok(r.rows?.[0]?.p === null, 'perfil no modo reservado não abre para os outros');
+r = await as('authenticated', M5, 'SELECT public.player_profile(public._profile_id()) AS p');
+ok(r.rows?.[0]?.p?.games === 1 && r.rows?.[0]?.p?.hidden === true, 'no modo reservado a pessoa ainda vê os próprios números');
+r = await as('authenticated', M4, 'SELECT public.player_profile($1) AS p', [pGA]);
+ok(r.rows?.[0]?.p === null, 'sem comunidade em comum informada, não abre perfil alheio');
+r = await as('authenticated', M6, 'SELECT public.player_profile(public._profile_id(), $1) AS p', [orgA]);
+ok(r.rows?.[0]?.p?.games === 0 && r.rows?.[0]?.p?.attendance === 0, 'falta conta na frequência');
+
+// "quem vai" com modo reservado
+r = await as('authenticated', M4, 'SELECT * FROM public.activity_participants($1::uuid[])', [[sGame]]);
+const hiddenEntry = r.rows?.[0]?.people?.find((p) => p.name === 'Membro');
+ok(hiddenEntry && hiddenEntry.id === null && hiddenEntry.avatar_url === null, 'modo reservado aparece como "Membro", sem id e sem foto');
+r = await as('authenticated', M5, 'SELECT * FROM public.activity_participants($1::uuid[])', [[sGame]]);
+ok(r.rows?.[0]?.people?.some((p) => p.name === 'Bruno R.'), 'a própria pessoa se vê pelo nome mesmo no modo reservado');
+
 // ── Script de métricas do dono do produto ──────────────────────────────
 console.log('Métricas:');
 try {
