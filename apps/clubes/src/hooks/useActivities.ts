@@ -135,7 +135,7 @@ export function useMyAgenda() {
         .from('bookings')
         .select(
           'id, status, attendance_status, dependent:dependents!bookings_dependent_id_fkey(full_name), ' +
-            'session:sessions(id, title, date, start_time, location_name, status, kind, organization:organizations(name), category:categories(emoji))',
+            'session:sessions(id, title, date, start_time, location_name, status, kind, organization:organizations(name), category:categories(slug))',
         )
         .eq('student_id', profile!.id)
         .eq('product', 'clubes')
@@ -145,7 +145,7 @@ export function useMyAgenda() {
 
       const { data: organizing, error: orgError } = await supabase
         .from('sessions')
-        .select('id, title, date, start_time, location_name, status, current_participants, max_participants, organization:organizations(name), category:categories(emoji)')
+        .select('id, title, date, start_time, location_name, status, current_participants, max_participants, organization:organizations(name), category:categories(slug)')
         .eq('professional_id', profile!.id)
         .eq('product', 'clubes')
         .in('status', ['active', 'full'])
@@ -167,7 +167,7 @@ export function useMyAgenda() {
           status: string | null;
           kind: string;
           organization: { name: string | null } | null;
-          category: { emoji: string | null } | null;
+          category: { slug: string | null } | null;
         } | null;
       };
       const rows = ((bookings ?? []) as unknown as BookingRow[]).filter((b) => b.session);

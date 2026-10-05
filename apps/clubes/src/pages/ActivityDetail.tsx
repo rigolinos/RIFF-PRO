@@ -11,6 +11,7 @@ import { KINDS, type ActivityKind } from '@riff/core/lib/copy';
 import { useActivity } from '@/hooks/useActivities';
 import { useAgendaActions, useCommunity } from '@/hooks/useCommunity';
 import { useDependents, ageOn } from '@/hooks/useDependents';
+import { SportIcon } from '@/components/SportIcon';
 
 export default function ActivityDetail() {
   const { id } = useParams<{ id: string }>();
@@ -68,9 +69,12 @@ export default function ActivityDetail() {
             {activity.myBookingId && <StatusPill text="Inscrito" variant="success" />}
             {!open && <StatusPill text={activity.status === 'cancelled' ? 'Cancelada' : 'Encerrada'} variant="danger" />}
           </div>
-          <h1 className="type-display leading-tight">
-            {activity.category?.emoji} {activity.title}
-          </h1>
+          <h1 className="type-display leading-tight">{activity.title}</h1>
+          {activity.category?.name && (
+            <p className="flex items-center gap-1.5 text-sm text-ink-muted">
+              <SportIcon slug={activity.category?.slug} className="w-4 h-4 text-brand" /> {activity.category.name}
+            </p>
+          )}
           {activity.organization?.name && orgId && (
             <Link to={`/c/${orgId}`} className="text-sm text-brand underline underline-offset-4">
               {activity.organization.name}

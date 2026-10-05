@@ -1,14 +1,23 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { format, isToday, isTomorrow, parseISO } from 'date-fns';
+import { addDays, format, isSameDay, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CalendarPlus, KeyRound, Search, Sparkles, Users } from 'lucide-react';
+import { Baby, Building2, CalendarPlus, ChevronDown, ClipboardCheck, KeyRound, Plus, UserPlus, Users } from 'lucide-react';
 import { useProfile } from '@riff/core/hooks/useProfile';
 import { PageContainer } from '@riff/core/layout/PageContainer';
-import { EmptyState } from '@riff/core/domain';
-import { Logo } from '@riff/core/ui/logo';
+import { Avatar } from '@riff/core/domain';
+import { Button } from '@riff/core/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@riff/core/ui/dropdown-menu';
+import { cn } from '@riff/core/lib/utils';
 import { useMyCommunities, useUpcomingActivities, type Activity } from '@/hooks/useActivities';
-import { ActivityCard } from '@/components/ActivityCard';
+import { usePendingClose } from '@/hooks/useManagement';
+import { todaySP } from '@/hooks/useCommunity';
+import { ActivityRow } from '@/components/ActivityRow';
 import { JoinWithCode } from '@/components/JoinWithCode';
 
 const Spinner = () => (
@@ -17,72 +26,169 @@ const Spinner = () => (
   </div>
 );
 
-const dayLabel = (date: string) => {
-  const d = parseISO(date);
-  if (isToday(d)) return 'Hoje';
-  if (isTomorrow(d)) return 'Amanhã';
-  return format(d, "EEEE, d 'de' MMMM", { locale: ptBR });
-};
+function Section({ title, count, children }: { title: string; count: number; children: React.ReactNode }) {
+  return (
+    <section className="space-y-2">
+      <div className="flex items-baseline justify-between px-6">
+        <h2 className="type-subtitle first-letter:uppercase">{title}</h2>
+        <span className="text-xs text-ink-muted">
+          {count} evento{count === 1 ? '' : 's'}
+        </span>
+      </div>
+      {children}
+    </section>
+  );
+}
 
-// Primeira tela depois de entrar: o que está acontecendo nas comunidades da pessoa
+function Shortcut({ to, icon: Icon, label }: { to: string; icon: typeof Plus; label: string }) {
+  return (
+    <Link
+      to={to}
+      className="flex items-center gap-1 h-8 px-2.5 rounded-full bg-surface border border-line text-xs font-medium text-ink"
+    >
+      <Icon className="w-3.5 h-3.5 text-brand" /> {label}
+    </Link>
+  );
+}
+
+function EmptyWeek({ title, onCreate }: { title: string; onCreate: () => void }) {
+  return (
+    <div className="mx-4 rounded-2xl border border-dashed border-line px-5 py-6 text-center space-y-3">
+      <p className="type-subtitle first-letter:uppercase">{title}</p>
+      <p className="text-sm text-ink-muted">Que tal um jogo no sábado? Crie e chame os vizinhos.</p>
+      <Button size="sm" onClick={onCreate}>
+        <Plus className="w-4 h-4 mr-1.5" /> Criar evento
+      </Button>
+    </div>
+  );
+}
+
+// Eventos: o que vai rolar nas comunidades da pessoa, organizado pela semana
 export default function Home() {
   const navigate = useNavigate();
   const { profile } = useProfile();
   const { data: communities, isLoading: isLoadingCommunities } = useMyCommunities();
-  const orgIds = useMemo(() => communities?.map((c) => c.id), [communities]);
+  const [communityId, setCommunityId] = useState<string>('all');
+  const [day, setDay] = useState<string | null>(null);
+
+  const selected = communities?.find((c) => c.id === communityId) ?? (communities?.length === 1 ? communities[0] : undefined);
+  const orgIds = useMemo(
+    () => (communityId === 'all' ? communities?.map((c) => c.id) : [communityId]),
+    [communities, communityId],
+  );
   const { data: activities, isLoading } = useUpcomingActivities(orgIds);
-  const [filter, setFilter] = useState<string>('all');
+  const { data: pendingClose } = usePendingClose(selected?.isAdmin ? selected.id : undefined, true);
+
+  const today = parseISO(todaySP());
+  const week = Array.from({ length: 7 }, (_, i) => addDays(today, i));
+  const weekEnd = format(week[6], 'yyyy-MM-dd');
+  const all = activities ?? [];
+  const onDay = (d: Date) => all.filter((a) => isSameDay(parseISO(a.date), d));
+  const todayItems = onDay(today);
+  const restOfWeek = all.filter((a) => !isSameDay(parseISO(a.date), today) && a.date <= weekEnd);
+  const later = all.filter((a) => a.date > weekEnd);
+  const multi = (communities?.length ?? 0) > 1 && communityId === 'all';
 
   const firstName = profile?.full_name?.split(' ')[0];
   const kinds = new Set(communities?.map((c) => c.kind));
-  const place = kinds.size === 1 ? (kinds.has('condo') ? 'condomínio' : 'clube') : 'condomínio ou clube';
-  const hasToday = (activities ?? []).some((a) => isToday(parseISO(a.date)));
-  const visible = (activities ?? []).filter((a) => filter === 'all' || a.organization_id === filter);
-  const mine = (activities ?? []).find(
-    (a) => a.myBookingId || Object.keys(a.dependentBookings).length > 0 || a.professional_id === profile?.id,
+  const place = selected
+    ? selected.kind === 'condo'
+      ? 'condomínio'
+      : 'clube'
+    : kinds.size === 1
+      ? kinds.has('condo')
+        ? 'condomínio'
+        : 'clube'
+      : 'condomínio ou clube';
+
+  const rows = (items: Activity[], opts: { showDay?: boolean; highlight?: boolean } = {}) => (
+    <div
+      className={cn(
+        opts.highlight ? 'px-4 space-y-2' : 'mx-4 bg-surface border border-line rounded-2xl divide-y divide-line overflow-hidden',
+      )}
+    >
+      {items.map((a) => (
+        <ActivityRow key={a.id} activity={a} showDay={opts.showDay} highlight={opts.highlight} showCommunity={multi} />
+      ))}
+    </div>
   );
 
-  // a atividade em destaque não se repete na lista
-  const groups = visible.filter((a) => a.id !== mine?.id).reduce<{ label: string; items: Activity[] }[]>((acc, a) => {
-    const label = dayLabel(a.date);
-    const last = acc[acc.length - 1];
-    if (last?.label === label) last.items.push(a);
-    else acc.push({ label, items: [a] });
-    return acc;
-  }, []);
+  const noCommunity = !isLoadingCommunities && (!communities || communities.length === 0);
+  const dayItems = day ? all.filter((a) => a.date === day) : [];
+  const dayLabel = day ? format(parseISO(day), "EEEE, d 'de' MMMM", { locale: ptBR }) : '';
 
   return (
     <PageContainer>
-      <div className="px-6 pt-8 pb-4 space-y-1">
-        <Logo variant="icon" size="sm" className="justify-start mb-4" />
-        <h1 className="type-display">Olá{firstName ? `, ${firstName}` : ''}!</h1>
-        <p className="text-ink-muted">
-          {isLoadingCommunities
-            ? ''
-            : communities && communities.length > 0
-            ? `Veja o que vai rolar ${hasToday ? 'hoje' : 'nos próximos dias'} no seu ${place}.`
-            : 'Vamos colocar você no seu condomínio ou clube.'}
-        </p>
-      </div>
+      {/* Topo: comunidade e perfil */}
+      <header className="sticky top-0 z-30 bg-bg/90 backdrop-blur-xl border-b border-line px-6 h-16 flex items-center justify-between gap-3">
+        {communities && communities.length > 1 ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger className="flex items-center gap-2 min-w-0 text-left">
+              <div className="w-9 h-9 rounded-xl bg-elevated border border-line flex items-center justify-center shrink-0">
+                <Building2 className="w-4 h-4 text-brand" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs text-ink-muted">Mostrando</p>
+                <p className="text-sm font-semibold text-ink truncate flex items-center gap-1">
+                  {selected?.name ?? 'Todas as comunidades'} <ChevronDown className="w-3.5 h-3.5 shrink-0" />
+                </p>
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="bg-elevated border-line">
+              <DropdownMenuItem onSelect={() => setCommunityId('all')}>Todas as comunidades</DropdownMenuItem>
+              {communities.map((c) => (
+                <DropdownMenuItem key={c.id} onSelect={() => setCommunityId(c.id)}>
+                  {c.name}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : selected ? (
+          <Link to={`/c/${selected.id}`} className="flex items-center gap-2 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-elevated border border-line flex items-center justify-center shrink-0">
+              <Building2 className="w-4 h-4 text-brand" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs text-ink-muted">{selected.kind === 'condo' ? 'Seu condomínio' : 'Seu clube'}</p>
+              <p className="text-sm font-semibold text-ink truncate">{selected.name}</p>
+            </div>
+          </Link>
+        ) : (
+          <span className="type-subtitle">Riff Clubes</span>
+        )}
+        <Link to="/perfil" aria-label="Seu perfil" className="shrink-0">
+          <Avatar src={profile?.avatar_url} name={profile?.full_name} className="w-9 h-9" />
+        </Link>
+      </header>
 
-      <div className="px-6 pb-6 space-y-6">
+      <div className="py-5 space-y-6">
+        <div className="px-6 space-y-1">
+          <h1 className="type-title">Olá{firstName ? `, ${firstName}` : ''}</h1>
+          <p className="text-sm text-ink-muted first-letter:uppercase">
+            {format(today, "EEEE, d 'de' MMMM", { locale: ptBR })}
+            {!noCommunity && !isLoading && communities
+              ? ` · veja o que vai rolar ${todayItems.length ? 'hoje' : 'esta semana'} no seu ${place}`
+              : ''}
+          </p>
+        </div>
+
         {isLoadingCommunities ? (
           <Spinner />
-        ) : !communities || communities.length === 0 ? (
+        ) : noCommunity ? (
           // Primeiro acesso: sem comunidade, a tela explica o caminho
-          <section className="space-y-4">
+          <section className="px-6 space-y-4">
             <div className="bg-surface border border-line rounded-2xl p-5 space-y-4">
               <h2 className="type-subtitle">Como funciona</h2>
               {[
                 { icon: KeyRound, text: 'Peça o código de convite ao síndico, ao gestor do clube ou a um vizinho que já usa.' },
-                { icon: Users, text: 'Entre com o código: você passa a ver a agenda da comunidade.' },
-                { icon: CalendarPlus, text: 'Participe das atividades ou crie jogos e eventos para os vizinhos.' },
+                { icon: Users, text: 'Entre com o código: você passa a ver os eventos da comunidade.' },
+                { icon: CalendarPlus, text: 'Participe ou crie jogos e eventos para os vizinhos.' },
               ].map((step, i) => (
                 <div key={step.text} className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-brand text-brand-ink flex items-center justify-center text-sm font-bold shrink-0">
+                  <div className="w-7 h-7 rounded-full bg-brand text-brand-ink flex items-center justify-center text-xs font-bold shrink-0">
                     {i + 1}
                   </div>
-                  <p className="text-sm text-ink pt-1.5">{step.text}</p>
+                  <p className="text-sm text-ink pt-1">{step.text}</p>
                 </div>
               ))}
             </div>
@@ -90,57 +196,89 @@ export default function Home() {
           </section>
         ) : (
           <>
-            {mine && (
-              <section className="space-y-3">
-                <h2 className="type-subtitle flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-brand" /> Sua próxima atividade
-                </h2>
-                <ActivityCard activity={mine} />
-              </section>
-            )}
-
-            {communities.length > 1 && (
-              <div className="flex overflow-x-auto hide-scrollbar gap-2 -mx-6 px-6">
-                {[{ id: 'all', name: 'Todas' }, ...communities].map((c) => (
+            {/* Faixa da semana: ponto dourado nos dias com evento; tocar filtra */}
+            <div className="grid grid-cols-7 gap-1 px-4" role="group" aria-label="Dias da semana">
+              {week.map((d) => {
+                const key = format(d, 'yyyy-MM-dd');
+                const has = onDay(d).length > 0;
+                const active = day === key;
+                const isTodayCell = isSameDay(d, today);
+                return (
                   <button
-                    key={c.id}
+                    key={key}
                     type="button"
-                    onClick={() => setFilter(c.id)}
-                    className={`shrink-0 px-4 h-10 rounded-full text-sm font-medium transition-colors ${
-                      filter === c.id ? 'bg-brand text-brand-ink font-semibold' : 'bg-surface border border-line text-ink-muted'
-                    }`}
+                    onClick={() => setDay(active ? null : key)}
+                    aria-pressed={active}
+                    aria-label={format(d, "EEEE, d 'de' MMMM", { locale: ptBR })}
+                    className={cn(
+                      'flex flex-col items-center gap-0.5 py-2 rounded-xl border transition-colors',
+                      active ? 'bg-brand border-brand' : isTodayCell ? 'border-brand/50' : 'border-transparent',
+                    )}
                   >
-                    {c.name}
+                    <span className={cn('text-xs', active ? 'text-brand-ink' : 'text-ink-muted')}>
+                      {format(d, 'EEEEEE', { locale: ptBR })}
+                    </span>
+                    <span className={cn('text-sm font-semibold', active ? 'text-brand-ink' : 'text-ink')}>{format(d, 'd')}</span>
+                    <span
+                      className={cn('w-1 h-1 rounded-full', has ? (active ? 'bg-brand-ink' : 'bg-brand') : 'bg-transparent')}
+                    />
                   </button>
-                ))}
-              </div>
+                );
+              })}
+            </div>
+
+            {pendingClose && pendingClose.length > 0 && selected && (
+              <Link
+                to={`/c/${selected.id}`}
+                className="mx-4 flex items-center gap-3 rounded-2xl border border-accent/40 bg-surface px-4 py-3"
+              >
+                <ClipboardCheck className="w-5 h-5 text-accent shrink-0" />
+                <span className="text-sm text-ink flex-1">
+                  Falta fechar a presença de {pendingClose.length} evento{pendingClose.length > 1 ? 's' : ''}
+                </span>
+              </Link>
             )}
 
             {isLoading ? (
               <Spinner />
-            ) : visible.length === 0 ? (
-              <EmptyState
-                icon={Search}
-                title="Nenhuma atividade marcada"
-                description="Que tal começar? Crie um jogo ou evento e chame os vizinhos."
-                action={{ label: 'Criar atividade', onClick: () => navigate('/criar') }}
-              />
+            ) : day ? (
+              dayItems.length ? (
+                <Section title={dayLabel} count={dayItems.length}>
+                  {rows(dayItems)}
+                </Section>
+              ) : (
+                <EmptyWeek title={`Nada marcado para ${dayLabel}`} onCreate={() => navigate('/criar')} />
+              )
+            ) : all.length === 0 ? (
+              <EmptyWeek title="Ninguém marcou nada ainda" onCreate={() => navigate('/criar')} />
             ) : (
-              <div className="space-y-8">
-                {groups.map((g) => (
-                  <section key={g.label} className="space-y-3">
-                    <h2 className="type-subtitle first-letter:uppercase">{g.label}</h2>
-                    {g.items.map((a) => (
-                      <ActivityCard key={a.id} activity={a} showCommunity={communities.length > 1} />
-                    ))}
-                  </section>
-                ))}
+              <div className="space-y-6">
+                {todayItems.length > 0 && (
+                  <Section title="Hoje" count={todayItems.length}>
+                    {rows(todayItems, { highlight: true })}
+                  </Section>
+                )}
+                {restOfWeek.length > 0 ? (
+                  <Section title="Esta semana" count={restOfWeek.length}>
+                    {rows(restOfWeek, { showDay: true })}
+                  </Section>
+                ) : (
+                  <EmptyWeek title="O resto da semana está livre" onCreate={() => navigate('/criar')} />
+                )}
+                {later.length > 0 && (
+                  <Section title="Mais adiante" count={later.length}>
+                    {rows(later, { showDay: true })}
+                  </Section>
+                )}
               </div>
             )}
 
-            <Link to="/comunidades" className="block text-center text-sm text-brand underline underline-offset-4">
-              Ver seus clubes e condomínios
-            </Link>
+            {/* Atalhos */}
+            <div className="flex flex-wrap justify-center gap-2 px-4">
+              <Shortcut to="/criar" icon={Plus} label="Criar jogo" />
+              {selected?.isAdmin && <Shortcut to={`/c/${selected.id}/gestao`} icon={UserPlus} label="Convidar vizinhos" />}
+              <Shortcut to="/dependentes" icon={Baby} label="Dependentes" />
+            </div>
           </>
         )}
       </div>

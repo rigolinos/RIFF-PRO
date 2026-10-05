@@ -100,7 +100,7 @@ export function usePendingClose(orgId: string | undefined, isAdmin: boolean) {
     queryFn: async () => {
       let query = supabase
         .from('sessions')
-        .select('id, title, date, start_time, current_participants, category:categories(emoji)')
+        .select('id, title, date, start_time, current_participants, category:categories(slug)')
         .eq('organization_id', orgId!)
         .in('status', ['active', 'full'])
         .lte('date', todaySP())
@@ -124,7 +124,7 @@ export function useRoster(sessionId: string | undefined) {
     queryFn: async () => {
       const { data: session, error } = await supabase
         .from('sessions')
-        .select('id, title, date, start_time, status, organization_id, professional_id, max_participants, current_participants, location_name, category:categories(emoji)')
+        .select('id, title, date, start_time, status, organization_id, professional_id, max_participants, current_participants, location_name, category:categories(slug)')
         .eq('id', sessionId!)
         .maybeSingle();
       if (error) throw error;

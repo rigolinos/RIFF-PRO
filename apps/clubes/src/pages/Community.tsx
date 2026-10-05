@@ -8,7 +8,7 @@ import { Button } from '@riff/core/ui/button';
 import { useCommunity } from '@/hooks/useCommunity';
 import { useUpcomingActivities } from '@/hooks/useActivities';
 import { usePendingClose } from '@/hooks/useManagement';
-import { ActivityCard } from '@/components/ActivityCard';
+import { ActivityRow } from '@/components/ActivityRow';
 import { ROLE_LABEL } from '@/lib/roles';
 
 // Página de uma comunidade: agenda dela e, para o gestor, o atalho da gestão
@@ -53,9 +53,7 @@ export default function Community() {
                   >
                     <ClipboardCheck className="w-5 h-5 text-accent shrink-0" />
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-ink truncate">
-                        {s.category?.emoji} {s.title}
-                      </p>
+                      <p className="text-sm font-medium text-ink truncate">{s.title}</p>
                       <p className="text-xs text-ink-muted">
                         {format(parseISO(s.date), 'dd/MM', { locale: ptBR })} · {s.start_time.substring(0, 5)} · {s.current_participants ?? 0} inscritos
                       </p>
@@ -83,7 +81,11 @@ export default function Community() {
               description="Crie a primeira atividade da comunidade: um jogo, uma aula ou um evento."
             />
           ) : (
-            agenda.map((a) => <ActivityCard key={a.id} activity={a} showCommunity={false} />)
+            <div className="-mx-2 bg-surface border border-line rounded-2xl divide-y divide-line overflow-hidden">
+              {agenda.map((a) => (
+                <ActivityRow key={a.id} activity={a} showDay />
+              ))}
+            </div>
           )}
         </section>
       </div>

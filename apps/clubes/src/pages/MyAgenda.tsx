@@ -6,6 +6,16 @@ import { Baby, CalendarCheck, ChevronRight } from 'lucide-react';
 import { PageContainer } from '@riff/core/layout/PageContainer';
 import { EmptyState, StatusPill } from '@riff/core/domain';
 import { useMyAgenda } from '@/hooks/useActivities';
+import { SportIcon } from '@/components/SportIcon';
+
+function SportTitle({ slug, title }: { slug: string | null | undefined; title: string }) {
+  return (
+    <p className="flex items-center gap-1.5 text-sm font-medium text-ink">
+      <SportIcon slug={slug} className="w-4 h-4 text-brand shrink-0" />
+      <span className="truncate">{title}</span>
+    </p>
+  );
+}
 
 type Tab = 'upcoming' | 'organizing' | 'past';
 
@@ -74,9 +84,7 @@ export default function MyAgenda() {
               <li key={s.id}>
                 <Link to={`/atividade/${s.id}`} className="flex items-center gap-3 bg-surface border border-line rounded-xl px-4 py-3">
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-ink truncate">
-                      {s.category?.emoji} {s.title}
-                    </p>
+                    <SportTitle slug={s.category?.slug} title={s.title} />
                     <p className="text-xs text-ink-muted truncate first-letter:uppercase">
                       {when(s.date, s.start_time)} · {s.organization?.name}
                     </p>
@@ -98,9 +106,7 @@ export default function MyAgenda() {
                 <li key={b.id}>
                   <Link to={`/atividade/${s.id}`} className="flex items-center gap-3 bg-surface border border-line rounded-xl px-4 py-3">
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-ink truncate">
-                        {s.category?.emoji} {s.title}
-                      </p>
+                      <SportTitle slug={s.category?.slug} title={s.title} />
                       <p className="text-xs text-ink-muted truncate first-letter:uppercase">
                         {when(s.date, s.start_time)} · {s.organization?.name}
                       </p>
