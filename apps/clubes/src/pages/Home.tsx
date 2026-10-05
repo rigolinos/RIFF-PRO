@@ -5,7 +5,7 @@ import { ptBR } from 'date-fns/locale';
 import { Baby, Building2, CalendarPlus, ChevronDown, ClipboardCheck, KeyRound, Plus, UserPlus, Users } from 'lucide-react';
 import { useProfile } from '@riff/core/hooks/useProfile';
 import { PageContainer } from '@riff/core/layout/PageContainer';
-import { Avatar } from '@riff/core/domain';
+import { Avatar, BrandLines } from '@riff/core/domain';
 import { Button } from '@riff/core/ui/button';
 import {
   DropdownMenu,
@@ -119,64 +119,79 @@ export default function Home() {
 
   return (
     <PageContainer>
-      {/* Topo: comunidade e perfil */}
-      <header className="sticky top-0 z-30 bg-bg/90 backdrop-blur-xl border-b border-line px-6 h-16 flex items-center justify-between gap-3">
-        {communities && communities.length > 1 ? (
-          <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center gap-2 min-w-0 text-left">
+      {/* Cabeçalho de destaque: arte da marca, comunidade, saudação e resumo */}
+      <section className="relative overflow-hidden bg-surface border-b border-line pb-12">
+        <BrandLines className="absolute inset-y-0 right-0 h-full w-3/4" />
+        <div className="absolute -top-24 -right-20 w-72 h-72 rounded-full bg-brand/10 blur-3xl" aria-hidden="true" />
+        <div className="relative px-6 pt-safe">
+          <div className="h-16 flex items-center justify-between gap-3">
+          {communities && communities.length > 1 ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center gap-2 min-w-0 text-left">
+                <div className="w-9 h-9 rounded-xl bg-elevated border border-line flex items-center justify-center shrink-0">
+                  <Building2 className="w-4 h-4 text-brand" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs text-ink-muted">Mostrando</p>
+                  <p className="text-sm font-semibold text-ink truncate flex items-center gap-1">
+                    {selected?.name ?? 'Todas as comunidades'} <ChevronDown className="w-3.5 h-3.5 shrink-0" />
+                  </p>
+                </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="bg-elevated border-line">
+                <DropdownMenuItem onSelect={() => setCommunityId('all')}>Todas as comunidades</DropdownMenuItem>
+                {communities.map((c) => (
+                  <DropdownMenuItem key={c.id} onSelect={() => setCommunityId(c.id)}>
+                    {c.name}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : selected ? (
+            <Link to={`/c/${selected.id}`} className="flex items-center gap-2 min-w-0">
               <div className="w-9 h-9 rounded-xl bg-elevated border border-line flex items-center justify-center shrink-0">
                 <Building2 className="w-4 h-4 text-brand" />
               </div>
               <div className="min-w-0">
-                <p className="text-xs text-ink-muted">Mostrando</p>
-                <p className="text-sm font-semibold text-ink truncate flex items-center gap-1">
-                  {selected?.name ?? 'Todas as comunidades'} <ChevronDown className="w-3.5 h-3.5 shrink-0" />
-                </p>
+                <p className="text-xs text-ink-muted">{selected.kind === 'condo' ? 'Seu condomínio' : 'Seu clube'}</p>
+                <p className="text-sm font-semibold text-ink truncate">{selected.name}</p>
               </div>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="bg-elevated border-line">
-              <DropdownMenuItem onSelect={() => setCommunityId('all')}>Todas as comunidades</DropdownMenuItem>
-              {communities.map((c) => (
-                <DropdownMenuItem key={c.id} onSelect={() => setCommunityId(c.id)}>
-                  {c.name}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        ) : selected ? (
-          <Link to={`/c/${selected.id}`} className="flex items-center gap-2 min-w-0">
-            <div className="w-9 h-9 rounded-xl bg-elevated border border-line flex items-center justify-center shrink-0">
-              <Building2 className="w-4 h-4 text-brand" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs text-ink-muted">{selected.kind === 'condo' ? 'Seu condomínio' : 'Seu clube'}</p>
-              <p className="text-sm font-semibold text-ink truncate">{selected.name}</p>
-            </div>
+            </Link>
+          ) : (
+            <span className="type-subtitle">Riff Clubes</span>
+          )}
+          <Link to="/perfil" aria-label="Seu perfil" className="shrink-0">
+            <Avatar src={profile?.avatar_url} name={profile?.full_name} className="w-9 h-9" />
           </Link>
-        ) : (
-          <span className="type-subtitle">Riff Clubes</span>
-        )}
-        <Link to="/perfil" aria-label="Seu perfil" className="shrink-0">
-          <Avatar src={profile?.avatar_url} name={profile?.full_name} className="w-9 h-9" />
-        </Link>
-      </header>
-
-      <div className="py-5 space-y-6">
-        <div className="px-6 space-y-1">
-          <h1 className="type-title">Olá{firstName ? `, ${firstName}` : ''}</h1>
-          <p className="text-sm text-ink-muted first-letter:uppercase">
-            {format(today, "EEEE, d 'de' MMMM", { locale: ptBR })}
-            {!noCommunity && !isLoading && communities
-              ? ` · veja o que vai rolar ${todayItems.length ? 'hoje' : 'esta semana'} no seu ${place}`
-              : ''}
+          </div>
+          <p className="type-label mt-2 first-letter:uppercase">{format(today, "EEEE, d 'de' MMMM", { locale: ptBR })}</p>
+          <h1 className="type-display mt-1">Olá{firstName ? `, ${firstName}` : ''}!</h1>
+          <p className="text-sm text-ink-muted mt-1 max-w-[18rem]">
+            {noCommunity
+              ? 'Vamos colocar você no seu condomínio ou clube.'
+              : communities && !isLoading
+                ? `Veja o que vai rolar ${todayItems.length ? 'hoje' : 'esta semana'} no seu ${place}.`
+                : ''}
           </p>
+          {!noCommunity && !isLoading && communities && (
+            <div className="flex gap-2 mt-4">
+              <span className="px-3 h-7 rounded-full bg-brand text-brand-ink text-xs font-bold flex items-center">
+                {todayItems.length} hoje
+              </span>
+              <span className="px-3 h-7 rounded-full bg-elevated border border-line text-ink text-xs font-semibold flex items-center">
+                {todayItems.length + restOfWeek.length} esta semana
+              </span>
+            </div>
+          )}
         </div>
+      </section>
 
+      <div className="pb-5 space-y-6">
         {isLoadingCommunities ? (
           <Spinner />
         ) : noCommunity ? (
           // Primeiro acesso: sem comunidade, a tela explica o caminho
-          <section className="px-6 space-y-4">
+          <section className="px-6 pt-6 space-y-4">
             <div className="bg-surface border border-line rounded-2xl p-5 space-y-4">
               <h2 className="type-subtitle">Como funciona</h2>
               {[
@@ -197,7 +212,7 @@ export default function Home() {
         ) : (
           <>
             {/* Faixa da semana: ponto dourado nos dias com evento; tocar filtra */}
-            <div className="grid grid-cols-7 gap-1 px-4" role="group" aria-label="Dias da semana">
+            <div className="relative z-10 -mt-8 mx-4 grid grid-cols-7 gap-1 p-2 bg-elevated border border-line rounded-2xl shadow-[var(--shadow-2)]" role="group" aria-label="Dias da semana">
               {week.map((d) => {
                 const key = format(d, 'yyyy-MM-dd');
                 const has = onDay(d).length > 0;
