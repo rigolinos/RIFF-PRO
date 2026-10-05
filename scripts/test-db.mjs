@@ -362,7 +362,17 @@ ok(r.rows?.[0]?.product === 'clubes', 'atividade da comunidade vira product club
 r = await clubSession(IA, orgA, 'Funcional com o instrutor');
 ok(!r.err, 'instrutor da comunidade cria atividade nela' + (r.err ? ` (${r.err})` : ''));
 r = await clubSession(MA, orgA, 'Atividade do morador');
-ok(r.err && /forbidden_community/.test(r.err), 'morador comum não cria atividade na comunidade');
+ok(r.rows?.[0]?.product === 'clubes', 'morador cria atividade na própria comunidade' + (r.err ? ` (${r.err})` : ''));
+const sMember = r.rows?.[0]?.id;
+r = await as('authenticated', MB, 'SELECT public.close_community_session($1, $2::jsonb, false)', [sMember, '[]']);
+ok(r.err && /forbidden/.test(r.err), 'quem é de outra comunidade não cancela a atividade do morador');
+r = await as('authenticated', GA, 'SELECT public.close_community_session($1, $2::jsonb, false)', [sMember, '[]']);
+ok(!r.err && (await one('SELECT status FROM public.sessions WHERE id = $1', [sMember])).status === 'cancelled',
+  'gestor cancela a atividade criada por um morador' + (r.err ? ` (${r.err})` : ''));
+r = await as('authenticated', MA,
+  `INSERT INTO public.sessions (professional_id, organization_id, category_id, title, date, start_time, location_name, max_participants, price_per_slot)
+   VALUES (public._profile_id(), $1, $2, 'Jogo cobrado', current_date + 3, '18:00', 'Quadra', 10, 50) RETURNING price_per_slot`, [orgA, category]);
+ok(Number(r.rows?.[0]?.price_per_slot) === 0, 'atividade de comunidade sai sempre com preço zero (sem pagamento no Clubes)');
 r = await clubSession(MB, orgA, 'Invasão');
 ok(r.err, 'quem é de outra comunidade não cria atividade nela');
 ok((await one('SELECT v.visibility FROM public.sessions s JOIN public.venues v ON v.id = s.venue_id WHERE s.id = $1', [sA])).visibility === 'members',
@@ -548,6 +558,15 @@ ok(r.rows?.[0]?.r?.code === 'dependent_not_found', 'dependente removido não é 
 
 r = await as('authenticated', M3, "INSERT INTO public.legal_acceptances (profile_id, document, version) VALUES ($1, 'clubes_terms', '2026-10-03')", [pM3]);
 ok(!r.err, 'aceite dos termos do Clubes é registrado' + (r.err ? ` (${r.err})` : ''));
+
+// excluir a conta do responsável apaga os dados dos dependentes e o tira das comunidades
+r = await depBook(M3, sKids, dFive);  // abaixo da idade: só garante que dFive segue ativo
+r = await as('authenticated', M3, 'SELECT public.delete_user_account()');
+ok(!r.err, 'responsável exclui a conta' + (r.err ? ` (${r.err})` : ''));
+const depAfter = await one('SELECT full_name, birth_date, removed_at FROM public.dependents WHERE id = $1', [dFive]);
+ok(depAfter.full_name === null && depAfter.birth_date === null && depAfter.removed_at, 'ao excluir a conta, os dependentes ficam sem nome e data de nascimento');
+ok((await one("SELECT count(*)::int n FROM public.organization_members WHERE profile_id = $1 AND status <> 'removed'", [pM3])).n === 0,
+  'ao excluir a conta, a pessoa sai das comunidades');
 
 // ── Script de métricas do dono do produto ──────────────────────────────
 console.log('Métricas:');

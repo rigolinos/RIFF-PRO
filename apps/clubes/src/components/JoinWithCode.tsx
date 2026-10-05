@@ -16,9 +16,9 @@ const MESSAGES: Record<string, string> = {
 };
 
 // Morador digita o código do convite e entra na comunidade (join_organization)
-export function JoinWithCode() {
+export function JoinWithCode({ defaultOpen = false }: { defaultOpen?: boolean }) {
   const queryClient = useQueryClient();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
   const [code, setCode] = useState('');
   const [isJoining, setIsJoining] = useState(false);
 
@@ -37,6 +37,7 @@ export function JoinWithCode() {
       setCode('');
       setOpen(false);
       queryClient.invalidateQueries({ queryKey: ['communities'] });
+      queryClient.invalidateQueries({ queryKey: ['community'] });
     } catch (error: unknown) {
       toast.error(errorMessage(error, 'Não foi possível usar o código.'));
     } finally {

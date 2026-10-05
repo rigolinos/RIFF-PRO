@@ -62,7 +62,6 @@ export default function NewActivity() {
   const [minAge, setMinAge] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
-  if (!isLoading && community && !community.canManage) return <Navigate to={`/c/${orgId}`} replace />;
   if (!isLoading && community === null) return <Navigate to="/inicio" replace />;
 
   const missing = !title.trim()
@@ -91,7 +90,7 @@ export default function NewActivity() {
     setIsSaving(true);
     try {
       // product = 'clubes' é definido pelo banco (atividade ligada a condomínio ou clube)
-      const { error } = await supabase.from('sessions').insert({
+      const { data: created, error } = await supabase.from('sessions').insert({
         professional_id: profile.id,
         organization_id: orgId,
         category_id: categoryId,
@@ -107,12 +106,12 @@ export default function NewActivity() {
         status: 'active',
         minors_allowed: minorsAllowed,
         min_age: minorsAllowed && minAge !== '' ? Number(minAge) : null,
-      });
+      }).select('id').single();
       if (error) throw error;
       toast.success('Atividade publicada para a comunidade!');
-      queryClient.invalidateQueries({ queryKey: ['community-agenda', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['community-agenda'] });
       queryClient.invalidateQueries({ queryKey: ['community-venues', orgId] });
-      navigate(`/c/${orgId}`);
+      navigate(`/atividade/${created.id}`, { replace: true });
     } catch (error: unknown) {
       toast.error(errorMessage(error, 'Não foi possível publicar a atividade.'));
     } finally {

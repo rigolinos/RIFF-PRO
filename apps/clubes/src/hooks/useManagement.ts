@@ -74,7 +74,7 @@ export function useManageActions(orgId: string | undefined) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['community-members', orgId] });
-      queryClient.invalidateQueries({ queryKey: ['community-agenda', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['community-agenda'] });
     },
   });
 
@@ -157,7 +157,7 @@ export function useCloseActivity(orgId: string | undefined, sessionId: string | 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['community-roster', sessionId] });
       queryClient.invalidateQueries({ queryKey: ['community-pending-close', orgId] });
-      queryClient.invalidateQueries({ queryKey: ['community-agenda', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['community-agenda'] });
     },
   });
 }

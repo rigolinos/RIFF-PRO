@@ -48,7 +48,7 @@ export default function Dependents() {
   };
 
   return (
-    <PageContainer title="Seus dependentes" showBack withBottomNav={false}>
+    <PageContainer title="Seus dependentes" showBack>
       <div className="px-6 py-6 space-y-6 pb-24">
         <p className="text-sm text-ink-muted">
           Menores de 18 anos não têm conta: você os cadastra aqui e os inscreve nas atividades abertas a menores das
