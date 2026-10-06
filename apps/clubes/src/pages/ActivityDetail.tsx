@@ -12,7 +12,7 @@ import { KINDS, type ActivityKind } from '@riff/core/lib/copy';
 import { useActivity } from '@/hooks/useActivities';
 import { useAgendaActions, useCommunity } from '@/hooks/useCommunity';
 import { useDependents, ageOn } from '@/hooks/useDependents';
-import { SportIcon } from '@/components/SportIcon';
+import { SportIcon } from '@riff/core/domain/SportIcon';
 import { WhoIsGoing } from '@/components/WhoIsGoing';
 import { kidsLabel } from '@/lib/people';
 

@@ -8,7 +8,8 @@ import { toast } from 'sonner';
 import { supabase } from '@riff/core/supabase/client';
 import { useProfile } from '@riff/core/hooks/useProfile';
 import { PageContainer } from '@riff/core/layout/PageContainer';
-import { BrandLines } from '@riff/core/domain';
+import { BrandLines, FormStep } from '@riff/core/domain';
+import { chipClass } from '@riff/core/lib/chips';
 import { Button } from '@riff/core/ui/button';
 import { Input } from '@riff/core/ui/input';
 import { Textarea } from '@riff/core/ui/textarea';
@@ -16,7 +17,7 @@ import { Switch } from '@riff/core/ui/switch';
 import { KINDS, type ActivityKind } from '@riff/core/lib/copy';
 import { cn, errorMessage } from '@riff/core/lib/utils';
 import { useCommunity, todaySP } from '@/hooks/useCommunity';
-import { SportIcon } from '@/components/SportIcon';
+import { SportIcon } from '@riff/core/domain/SportIcon';
 
 const FIELD = 'h-12 bg-surface border-line';
 const KIND_ICONS: Record<ActivityKind, typeof BookOpen> = {
@@ -29,27 +30,6 @@ const KIND_ICONS: Record<ActivityKind, typeof BookOpen> = {
 const TIMES = ['07:00', '08:00', '09:00', '18:00', '19:00', '20:00'];
 const DURATIONS = [30, 45, 60, 90, 120];
 const durationLabel = (m: number) => (m < 60 ? `${m} min` : m % 60 ? `${Math.floor(m / 60)}h${m % 60}` : `${m / 60}h`);
-
-const chip = (active: boolean) =>
-  cn(
-    'h-9 px-3 rounded-full text-sm font-medium border transition-colors',
-    active ? 'bg-brand text-brand-ink border-brand' : 'bg-surface border-line text-ink-muted',
-  );
-
-function Step({ n, title, hint, children }: { n: number; title: string; hint?: string; children: React.ReactNode }) {
-  return (
-    <section className="bg-surface border border-line rounded-2xl p-4 space-y-3">
-      <div className="flex items-start gap-3">
-        <span className="w-6 h-6 rounded-full bg-brand text-brand-ink text-xs font-bold flex items-center justify-center shrink-0">{n}</span>
-        <div>
-          <h2 className="text-sm font-semibold text-ink">{title}</h2>
-          {hint && <p className="text-xs text-ink-muted">{hint}</p>}
-        </div>
-      </div>
-      {children}
-    </section>
-  );
-}
 
 // Novo evento: perguntas em blocos, prévia ao vivo e publicação para os membros
 export default function NewActivity() {
@@ -230,7 +210,7 @@ export default function NewActivity() {
         </div>
 
         <div className="px-4 py-6 space-y-4 pb-36">
-          <Step n={1} title="O que você vai organizar?">
+          <FormStep n={1} title="O que você vai organizar?">
             <div className="grid grid-cols-3 gap-2">
               {(Object.keys(KINDS) as ActivityKind[]).map((k) => {
                 const Icon = KIND_ICONS[k];
@@ -263,9 +243,9 @@ export default function NewActivity() {
               aria-label="Nome do evento"
               className={FIELD}
             />
-          </Step>
+          </FormStep>
 
-          <Step n={2} title="Qual esporte?">
+          <FormStep n={2} title="Qual esporte?">
             <div className="relative">
               <Search className="w-4 h-4 text-ink-muted absolute left-3 top-1/2 -translate-y-1/2" />
               <Input
@@ -283,7 +263,7 @@ export default function NewActivity() {
                   type="button"
                   aria-pressed={categoryId === c.id}
                   onClick={() => setCategoryId(c.id)}
-                  className={cn(chip(categoryId === c.id), 'flex items-center gap-1.5')}
+                  className={cn(chipClass(categoryId === c.id), 'flex items-center gap-1.5')}
                 >
                   <SportIcon slug={c.slug} className="w-4 h-4" /> {c.name}
                 </button>
@@ -295,12 +275,12 @@ export default function NewActivity() {
               )}
               {sportSearch && filteredSports.length === 0 && <p className="text-xs text-ink-muted">Nenhum esporte com esse nome. Tente "Outros".</p>}
             </div>
-          </Step>
+          </FormStep>
 
-          <Step n={3} title="Quando?">
+          <FormStep n={3} title="Quando?">
             <div className="flex flex-wrap gap-2">
               {quickDates.map((d) => (
-                <button key={d.value} type="button" aria-pressed={date === d.value} onClick={() => setDate(d.value)} className={chip(date === d.value)}>
+                <button key={d.value} type="button" aria-pressed={date === d.value} onClick={() => setDate(d.value)} className={chipClass(date === d.value)}>
                   {d.label}
                 </button>
               ))}
@@ -316,7 +296,7 @@ export default function NewActivity() {
             <p className="text-xs text-ink-muted pt-1">Horário</p>
             <div className="flex flex-wrap gap-2">
               {TIMES.map((t) => (
-                <button key={t} type="button" aria-pressed={time === t} onClick={() => setTime(t)} className={chip(time === t)}>
+                <button key={t} type="button" aria-pressed={time === t} onClick={() => setTime(t)} className={chipClass(time === t)}>
                   {t}
                 </button>
               ))}
@@ -331,14 +311,14 @@ export default function NewActivity() {
             <p className="text-xs text-ink-muted pt-1">Duração</p>
             <div className="flex flex-wrap gap-2">
               {DURATIONS.map((m) => (
-                <button key={m} type="button" aria-pressed={duration === m} onClick={() => setDurationChoice(m)} className={chip(duration === m)}>
+                <button key={m} type="button" aria-pressed={duration === m} onClick={() => setDurationChoice(m)} className={chipClass(duration === m)}>
                   {durationLabel(m)}
                 </button>
               ))}
             </div>
-          </Step>
+          </FormStep>
 
-          <Step n={4} title="Onde?" hint="Um lugar dentro do condomínio ou clube">
+          <FormStep n={4} title="Onde?" hint="Um lugar dentro do condomínio ou clube">
             <div className="relative">
               <MapPin className="w-4 h-4 text-ink-muted absolute left-3 top-1/2 -translate-y-1/2" />
               <Input
@@ -352,15 +332,15 @@ export default function NewActivity() {
             {venues && venues.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {venues.map((v) => (
-                  <button key={v.id} type="button" aria-pressed={place === v.name} onClick={() => setPlace(v.name)} className={chip(place === v.name)}>
+                  <button key={v.id} type="button" aria-pressed={place === v.name} onClick={() => setPlace(v.name)} className={chipClass(place === v.name)}>
                     {v.name}
                   </button>
                 ))}
               </div>
             )}
-          </Step>
+          </FormStep>
 
-          <Step n={5} title={KINDS[kind].capacityLabel}>
+          <FormStep n={5} title={KINDS[kind].capacityLabel}>
             <div className="flex items-center justify-center gap-6">
               <button
                 type="button"
@@ -388,9 +368,9 @@ export default function NewActivity() {
                 <Plus className="w-5 h-5" />
               </button>
             </div>
-          </Step>
+          </FormStep>
 
-          <Step n={6} title="Detalhes" hint="Opcional">
+          <FormStep n={6} title="Detalhes" hint="Opcional">
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -411,7 +391,7 @@ export default function NewActivity() {
                 <Input type="number" min={0} max={17} value={minAge} onChange={(e) => setMinAge(e.target.value)} placeholder="Ex: 8" className={FIELD} />
               </label>
             )}
-          </Step>
+          </FormStep>
 
           <p className="text-xs text-ink-muted text-center">Só os membros da comunidade veem e se inscrevem. A inscrição é gratuita.</p>
         </div>

@@ -1,5 +1,5 @@
 import { createElement } from 'react';
-import { sportIcon } from '@/lib/sportIcons';
+import { sportIcon } from '@riff/core/lib/sportIcons';
 
 /** Ícone de traço da modalidade (categories.slug). */
 export function SportIcon({ slug, className }: { slug: string | null | undefined; className?: string }) {

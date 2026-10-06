@@ -5,7 +5,7 @@ import { ptBR } from 'date-fns/locale';
 import { Baby, Building2, CalendarPlus, ChevronDown, ClipboardCheck, KeyRound, Plus, Trophy, UserPlus, Users } from 'lucide-react';
 import { useProfile } from '@riff/core/hooks/useProfile';
 import { PageContainer } from '@riff/core/layout/PageContainer';
-import { Avatar, BrandLines } from '@riff/core/domain';
+import { Avatar, BrandLines, WeekStrip } from '@riff/core/domain';
 import { Button } from '@riff/core/ui/button';
 import {
   DropdownMenu,
@@ -224,35 +224,7 @@ export default function Home() {
         ) : (
           <>
             {/* Faixa da semana: ponto dourado nos dias com evento; tocar filtra */}
-            <div className="relative z-10 -mt-8 mx-4 grid grid-cols-7 gap-1 p-2 bg-elevated border border-line rounded-2xl shadow-[var(--shadow-2)]" role="group" aria-label="Dias da semana">
-              {week.map((d) => {
-                const key = format(d, 'yyyy-MM-dd');
-                const has = onDay(d).length > 0;
-                const active = day === key;
-                const isTodayCell = isSameDay(d, today);
-                return (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => setDay(active ? null : key)}
-                    aria-pressed={active}
-                    aria-label={format(d, "EEEE, d 'de' MMMM", { locale: ptBR })}
-                    className={cn(
-                      'flex flex-col items-center gap-0.5 py-2 rounded-xl border transition-colors',
-                      active ? 'bg-brand border-brand' : isTodayCell ? 'border-brand/50' : 'border-transparent',
-                    )}
-                  >
-                    <span className={cn('text-xs', active ? 'text-brand-ink' : 'text-ink-muted')}>
-                      {format(d, 'EEEEEE', { locale: ptBR })}
-                    </span>
-                    <span className={cn('text-sm font-semibold', active ? 'text-brand-ink' : 'text-ink')}>{format(d, 'd')}</span>
-                    <span
-                      className={cn('w-1 h-1 rounded-full', has ? (active ? 'bg-brand-ink' : 'bg-brand') : 'bg-transparent')}
-                    />
-                  </button>
-                );
-              })}
-            </div>
+            <WeekStrip start={today} hasEvents={(d) => onDay(d).length > 0} selected={day} onSelect={setDay} overlap />
 
             <ReviewPrompt className="mx-4" />
 

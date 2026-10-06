@@ -7,3 +7,7 @@ export * from './CoverImage';
 export * from './EmptyState';
 export * from './ConfirmDialog';
 export * from './BrandLines';
+export * from './SportIcon';
+export * from './TicketGrid';
+export * from './FormStep';
+export * from './WeekStrip';
