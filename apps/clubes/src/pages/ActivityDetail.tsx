@@ -190,12 +190,25 @@ export default function ActivityDetail() {
             <p className="text-sm text-ink-muted">{open ? 'Ninguém confirmou ainda. Seja o primeiro!' : 'Ninguém confirmou presença.'}</p>
           ) : showAll || activity.participants.count <= 6 ? (
             <ul className="grid grid-cols-2 gap-x-3 gap-y-2">
-              {activity.participants.people.map((p) => (
-                <li key={p.id} className="flex items-center gap-2 min-w-0">
-                  <Avatar src={p.avatar_url} name={p.name} className="w-8 h-8" fallbackClassName="text-xs" />
-                  <span className="text-sm text-ink truncate">{p.id === profile?.id ? 'Você' : p.name}</span>
-                </li>
-              ))}
+              {activity.participants.people.map((p, i) => {
+                const content = (
+                  <>
+                    <Avatar src={p.avatar_url} name={p.name} className="w-8 h-8" fallbackClassName="text-xs" />
+                    <span className="text-sm text-ink truncate">{p.id === profile?.id ? 'Você' : p.name}</span>
+                  </>
+                );
+                return (
+                  <li key={p.id ?? `reservado-${i}`} className="min-w-0">
+                    {p.id && orgId ? (
+                      <Link to={`/c/${orgId}/jogador/${p.id}`} className="flex items-center gap-2 min-w-0 active:opacity-70">
+                        {content}
+                      </Link>
+                    ) : (
+                      <span className="flex items-center gap-2 min-w-0">{content}</span>
+                    )}
+                  </li>
+                );
+              })}
               {activity.participants.dependents > 0 && (
                 <li className="col-span-2 text-xs text-ink-muted">{kidsLabel(activity.participants.dependents)} inscritas pelos responsáveis</li>
               )}

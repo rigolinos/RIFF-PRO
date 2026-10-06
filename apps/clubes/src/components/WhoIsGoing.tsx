@@ -15,9 +15,9 @@ export function WhoIsGoing({ participants, max = 3, size = 'sm' }: { participant
     <div className="flex items-center gap-2 min-w-0">
       {shown.length > 0 && (
         <div className="flex -space-x-2 shrink-0">
-          {shown.map((p) => (
+          {shown.map((p, i) => (
             <Avatar
-              key={p.id}
+              key={p.id ?? `reservado-${i}`}
               src={p.avatar_url}
               name={p.name}
               className={cn(box, 'ring-2 ring-surface')}
