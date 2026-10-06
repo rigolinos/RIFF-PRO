@@ -21,6 +21,7 @@ const Create = lazy(() => import('@/pages/Create'));
 const MyAgenda = lazy(() => import('@/pages/MyAgenda'));
 const Profile = lazy(() => import('@/pages/Profile'));
 const ActivityDetail = lazy(() => import('@/pages/ActivityDetail'));
+const GameReview = lazy(() => import('@/pages/GameReview'));
 const Community = lazy(() => import('@/pages/Community'));
 const NewActivity = lazy(() => import('@/pages/NewActivity'));
 const Manage = lazy(() => import('@/pages/Manage'));
@@ -62,6 +63,7 @@ export default function App() {
                 <Route path="/agenda" element={<ProtectedRoute><MyAgenda /></ProtectedRoute>} />
                 <Route path="/perfil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                 <Route path="/atividade/:id" element={<ProtectedRoute><ActivityDetail /></ProtectedRoute>} />
+                <Route path="/avaliar/:sessionId" element={<ProtectedRoute><GameReview /></ProtectedRoute>} />
                 <Route path="/dependentes" element={<ProtectedRoute><Dependents /></ProtectedRoute>} />
                 <Route path="/c/:orgId" element={<ProtectedRoute><Community /></ProtectedRoute>} />
                 <Route path="/c/:orgId/nova" element={<ProtectedRoute><NewActivity /></ProtectedRoute>} />

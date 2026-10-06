@@ -19,6 +19,7 @@ import { usePendingClose } from '@/hooks/useManagement';
 import { todaySP } from '@/hooks/useCommunity';
 import { ActivityRow } from '@/components/ActivityRow';
 import { JoinWithCode } from '@/components/JoinWithCode';
+import { ReviewPrompt } from '@/components/ReviewPrompt';
 
 const Spinner = () => (
   <div className="flex justify-center py-12">
@@ -241,6 +242,8 @@ export default function Home() {
                 );
               })}
             </div>
+
+            <ReviewPrompt className="mx-4" />
 
             {pendingClose && pendingClose.length > 0 && selected && (
               <Link
