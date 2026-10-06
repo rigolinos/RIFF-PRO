@@ -40,7 +40,7 @@ export function useSessions(cityFilter?: string | null) {
           location_name, location_address, max_participants, current_participants,
           price_per_slot, status, session_type, skill_level, category_id, kind, city,
           professional:profiles(id, full_name, avatar_url, rating_avg, total_reviews, public_slug),
-          category:categories(name, icon, emoji)
+          category:categories(name, icon, emoji, slug)
         `)
         .eq('product', 'pro')
         .in('status', ['active', 'full'])

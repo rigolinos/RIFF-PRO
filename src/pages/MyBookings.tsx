@@ -1,20 +1,19 @@
 import { useState, useMemo } from 'react';
-import { differenceInHours, parseISO } from 'date-fns';
+import { Link, useNavigate } from 'react-router-dom';
+import { differenceInHours, format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { format } from 'date-fns';
-import { MapPin, MessageCircle, XCircle, Loader2, CalendarDays } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { MapPin, MessageCircle, XCircle, Loader2, CalendarDays, Star } from 'lucide-react';
 import { toast } from 'sonner';
 import QRCode from 'react-qr-code';
-import { Badge } from '@riff/core/ui/badge';
-
 import { PageContainer } from '@riff/core/layout/PageContainer';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@riff/core/ui/tabs';
+import { HeroHeader } from '@riff/core/layout/HeroHeader';
+import { EmptyState, SportIcon, StatusPill, TicketGrid } from '@riff/core/domain';
+import { ConfirmDialog } from '@riff/core/domain/ConfirmDialog';
+import { formatBRL } from '@riff/core/lib/money';
 import { useBookings } from '@/hooks/useBookings';
 import { buildWhatsAppUrl } from '@/lib/whatsapp';
 import { useProfile } from '@riff/core/hooks/useProfile';
 import { ReviewModal } from '@/components/reviews/ReviewModal';
-import { ConfirmDialog } from '@riff/core/domain/ConfirmDialog';
 import { supabase } from '@riff/core/supabase/client';
 
 type BookingType = NonNullable<ReturnType<typeof useBookings>['bookings']>[number];
@@ -26,6 +25,8 @@ const MyBookings = () => {
   const [cancelingId, setCancelingId] = useState<string | null>(null);
   const [bookingToCancel, setBookingToCancel] = useState<BookingType | null>(null);
   const [reviewBooking, setReviewBooking] = useState<BookingType | null>(null);
+  const [tab, setTab] = useState<'upcoming' | 'history'>('upcoming');
+  const navigate = useNavigate();
 
   // Split bookings between upcoming and history
   const { upcoming, history } = useMemo(() => {
@@ -119,100 +120,102 @@ const MyBookings = () => {
     }
   };
 
+  // Situação da reserva para o selo
+  const statusOf = (booking: BookingType) => {
+    const isPast = parseISO(`${booking.session.date}T${booking.session.start_time}`) < new Date();
+    const status = booking.status || '';
+    const effective = isPast && !status.startsWith('cancelled') ? 'completed' : status;
+    if (effective === 'cancelled_by_student') return { text: 'Cancelada por você', variant: 'danger' as const, effective };
+    if (effective === 'cancelled_by_pro') return { text: 'Atividade cancelada', variant: 'danger' as const, effective };
+    if (effective === 'completed') return { text: 'Concluída', variant: 'neutral' as const, effective };
+    if (booking.payment_status === 'pending') return { text: 'Aguardando pagamento', variant: 'alert' as const, effective };
+    if (booking.payment_status === 'paid' || booking.payment_status === 'free') return { text: 'Confirmada', variant: 'success' as const, effective };
+    return { text: effective, variant: 'neutral' as const, effective };
+  };
+
   const renderBookingCard = (booking: BookingType, isHistory: boolean = false) => {
     const sessionDate = parseISO(booking.session.date);
-    const timeStr = booking.session.start_time.substring(0, 5);
-    const dateStr = format(sessionDate, "EEE, d 'de' MMM", { locale: ptBR });
-    
-    // Status text definition
-    let statusText = '';
-    let statusColor = '';
-    
-    // Infer completed status if past date and not cancelled
-    const isPast = parseISO(`${booking.session.date}T${booking.session.start_time}`) < new Date();
-    const effectiveStatus = (isPast && !(booking.status || '').startsWith('cancelled')) ? 'completed' : booking.status;
-
-    if (effectiveStatus === 'cancelled_by_student') { statusText = 'Cancelada por você'; statusColor = 'text-danger bg-danger/15 border-danger'; }
-    else if (effectiveStatus === 'cancelled_by_pro') { statusText = 'Atividade cancelada'; statusColor = 'text-danger bg-danger/15 border-danger'; }
-    else if (effectiveStatus === 'completed') { statusText = 'Concluída'; statusColor = 'text-ink-muted bg-white/5 border-line'; }
-    else if (booking.payment_status === 'pending') { statusText = 'Aguardando Pagamento'; statusColor = 'text-accent bg-accent/15 border-accent/20'; }
-    else if (booking.payment_status === 'paid') { statusText = 'Confirmada'; statusColor = 'text-brand bg-brand/10 border-brand/20'; }
-    else { statusText = effectiveStatus || ''; statusColor = 'text-ink-muted bg-white/5 border-line'; }
-
+    const st = statusOf(booking);
+    const cancelled = st.effective === 'cancelled_by_student' || st.effective === 'cancelled_by_pro';
+    const category = booking.session.category as { name?: string; slug?: string | null } | null;
 
     return (
-      <div key={booking.id} className="bg-surface shadow-1 rounded-[24px] overflow-hidden flex flex-col mb-4 border border-line relative">
-        {/* Ticket Header */}
-        <div className="p-5 border-b border-dashed border-line relative">
-          {/* Ticket notches */}
-          <div className="absolute -bottom-3 -left-3 w-6 h-6 rounded-full bg-bg border-r border-t border-line transform rotate-45 z-10" />
-          <div className="absolute -bottom-3 -right-3 w-6 h-6 rounded-full bg-bg border-l border-t border-line transform -rotate-45 z-10" />
-
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <Badge variant="pill" className="mb-2 shadow-none border-line">{booking.session.category?.emoji} {booking.session.category?.name}</Badge>
-              <h3 className="type-subtitle text-ink leading-tight">
-                {booking.session.title}
-              </h3>
-              <p className="text-sm text-ink-muted mt-1 font-medium">
-                com {booking.professional?.full_name}
-              </p>
-            </div>
-            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${statusColor} border-0 shadow-sm`}>
-              {statusText}
-            </span>
+      <div key={booking.id} className="bg-surface rounded-2xl overflow-hidden border border-line">
+        <Link to={`/session/${booking.session.id}`} className="block p-4 space-y-1 active:bg-elevated">
+          <div className="flex items-start justify-between gap-2">
+            <p className="flex items-center gap-1.5 text-sm font-semibold text-ink min-w-0">
+              <SportIcon slug={category?.slug} className="w-4 h-4 text-brand shrink-0" />
+              <span className="truncate">{booking.session.title}</span>
+            </p>
+            <StatusPill text={st.text} variant={st.variant} className="shrink-0" />
           </div>
+          <p className="text-xs text-ink-muted">com {booking.professional?.full_name ?? 'organizador'}</p>
+        </Link>
 
-          <div className="flex gap-4 items-center mt-2">
-            <div className="flex-1 space-y-2">
-              <div className="flex items-center gap-2 text-ink-muted">
-                <CalendarDays className="w-4 h-4" />
-                <p className="text-sm font-semibold text-ink">{dateStr} • {timeStr}</p>
-              </div>
-              <div className="flex items-center gap-2 text-ink-muted">
-                <MapPin className="w-4 h-4 shrink-0" />
-                <p className="text-sm font-semibold truncate text-ink cursor-pointer hover:text-brand transition-colors" onClick={() => handleOpenMap(booking)}>
-                  {booking.session.location_name}
-                </p>
+        {/* Ingresso: dia, horário e QR de check-in */}
+        <div className="grid grid-cols-[1fr_1fr_auto] items-center divide-x divide-line border-t border-dashed border-line">
+          <div className="p-3 text-center">
+            <p className="type-label">{format(sessionDate, 'EEEEEE', { locale: ptBR })}</p>
+            <p className="type-title leading-tight">{format(sessionDate, 'd')}</p>
+            <p className="text-xs text-ink-muted">{format(sessionDate, 'MMM', { locale: ptBR })}</p>
+          </div>
+          <div className="p-3 text-center">
+            <p className="type-label">Horário</p>
+            <p className="type-title leading-tight">{booking.session.start_time.substring(0, 5)}</p>
+            <p className="text-xs text-ink-muted">{booking.session.duration_minutes ? `${booking.session.duration_minutes} min` : ''}</p>
+          </div>
+          {!isHistory && !cancelled ? (
+            <div className="p-3">
+              <div className="p-1.5 bg-white rounded-xl" aria-label="QR code de check-in">
+                <QRCode value={`checkin:${booking.id}`} size={56} level="L" />
               </div>
             </div>
-            
-            {/* QR Code Mini for Ticket vibe */}
-            {!isHistory && effectiveStatus !== 'cancelled_by_student' && effectiveStatus !== 'cancelled_by_pro' && (
-              <div className="shrink-0 p-1.5 bg-white rounded-xl shadow-sm border border-line/50">
-                <QRCode value={`checkin:${booking.id}`} size={64} level="L" />
-              </div>
-            )}
-          </div>
+          ) : (
+            <div className="p-3 text-center min-w-[80px]">
+              <p className="type-label">Valor</p>
+              <p className="text-sm font-bold text-ink">{Number(booking.amount_total ?? 0) > 0 ? formatBRL(booking.amount_total) : 'Grátis'}</p>
+            </div>
+          )}
         </div>
 
+        <button
+          type="button"
+          onClick={() => handleOpenMap(booking)}
+          className="w-full flex items-center gap-2 border-t border-line px-4 py-2.5 text-left text-xs text-ink-muted active:bg-elevated"
+        >
+          <MapPin className="w-4 h-4 shrink-0 text-brand" />
+          <span className="truncate flex-1">{booking.session.location_name}</span>
+          <span className="text-brand font-semibold">Mapa</span>
+        </button>
+
         {!isHistory ? (
-          <div className="border-t border-line bg-line/20 p-3 flex gap-2">
+          <div className="border-t border-line p-3 flex gap-2">
             <button
+              type="button"
               onClick={() => handleWhatsApp(booking)}
-              className="flex-1 h-10 rounded-lg bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 font-medium text-sm transition-colors flex items-center justify-center gap-2"
+              className="flex-1 h-10 rounded-xl bg-success/15 text-success font-medium text-sm flex items-center justify-center gap-2 active:scale-[.98]"
             >
-              <MessageCircle className="w-4 h-4" />
-              Falar com o organizador
+              <MessageCircle className="w-4 h-4" /> Falar com o organizador
             </button>
-            
             <button
+              type="button"
               onClick={() => handleCancel(booking)}
               disabled={cancelingId === booking.id}
-              className="flex-1 h-10 rounded-lg bg-danger/15 text-danger hover:bg-danger/15 font-medium text-sm transition-colors flex items-center justify-center gap-2"
+              className="h-10 px-4 rounded-xl bg-danger/15 text-danger font-medium text-sm flex items-center justify-center gap-2 active:scale-[.98]"
             >
               {cancelingId === booking.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
               Cancelar
             </button>
           </div>
         ) : (
-          effectiveStatus === 'completed' && (
-            <div className="border-t border-line bg-line/20 p-3 flex">
+          st.effective === 'completed' && (
+            <div className="border-t border-line p-3">
               <button
+                type="button"
                 onClick={() => setReviewBooking(booking)}
-                className="flex-1 h-10 rounded-lg bg-brand/10 text-brand hover:bg-brand/20 font-medium text-sm transition-colors flex items-center justify-center gap-2"
+                className="w-full h-10 rounded-xl bg-brand/10 text-brand font-semibold text-sm flex items-center justify-center gap-2 active:scale-[.98]"
               >
-                Avaliar Atividade
+                <Star className="w-4 h-4" /> Avaliar o organizador
               </button>
             </div>
           )
@@ -221,52 +224,49 @@ const MyBookings = () => {
     );
   };
 
+  const list = tab === 'upcoming' ? upcoming : history;
+
   return (
-    <PageContainer title="Minhas Reservas" withBottomNav>
-      <div className="px-6 py-6 flex-1 flex flex-col">
+    <PageContainer withBottomNav>
+      <HeroHeader overlap label="Reservas" title="Sua agenda" subtitle="Suas vagas confirmadas, o check-in e o histórico." />
+
+      <TicketGrid
+        items={[
+          { label: 'Próximas', value: upcoming.length },
+          { label: 'Concluídas', value: history.filter((b) => statusOf(b).effective === 'completed').length },
+          { label: 'Canceladas', value: history.filter((b) => (b.status || '').startsWith('cancelled')).length },
+        ]}
+      />
+
+      <div className="px-4 py-6 space-y-4">
+        <div className="grid grid-cols-2 gap-1 bg-surface border border-line rounded-full p-1" role="tablist">
+          {(['upcoming', 'history'] as const).map((t) => (
+            <button
+              key={t}
+              type="button"
+              role="tab"
+              aria-selected={tab === t}
+              onClick={() => setTab(t)}
+              className={`h-9 rounded-full text-sm font-medium transition-colors ${tab === t ? 'bg-brand text-brand-ink font-semibold' : 'text-ink-muted'}`}
+            >
+              {t === 'upcoming' ? 'Próximas' : 'Histórico'}
+            </button>
+          ))}
+        </div>
+
         {isLoading ? (
-          <div className="flex-1 flex items-center justify-center">
+          <div className="flex justify-center py-12">
             <Loader2 className="w-8 h-8 text-brand animate-spin" />
           </div>
+        ) : list.length === 0 ? (
+          <EmptyState
+            icon={CalendarDays}
+            title={tab === 'upcoming' ? 'Nenhuma reserva por enquanto' : 'Sem histórico ainda'}
+            description={tab === 'upcoming' ? 'Veja o que vai rolar na sua cidade e garanta sua vaga.' : 'As atividades de que você participou aparecem aqui.'}
+            action={{ label: 'Ver atividades', onClick: () => navigate('/feed') }}
+          />
         ) : (
-          <Tabs defaultValue="upcoming" className="w-full">
-            <TabsList className="w-full bg-white/[0.05] border border-line h-12 rounded-xl mb-6 p-1">
-              <TabsTrigger value="upcoming" className="flex-1 rounded-lg data-[state=active]:bg-brand data-[state=active]:text-brand-ink text-ink-muted font-medium transition-all">
-                Próximas Atividades
-              </TabsTrigger>
-              <TabsTrigger value="history" className="flex-1 rounded-lg data-[state=active]:bg-line data-[state=active]:text-ink text-ink-muted font-medium transition-all">
-                Histórico
-              </TabsTrigger>
-            </TabsList>
-
-            <AnimatePresence mode="wait">
-              <TabsContent value="upcoming" className="mt-0">
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                  {upcoming.length === 0 ? (
-                    <div className="text-center py-12">
-                      <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-3xl mx-auto mb-4">📅</div>
-                      <h3 className="type-subtitle mb-1">Nenhuma atividade agendada</h3>
-                      <p className="text-ink-muted text-sm">Que tal explorar novas atividades e participar?</p>
-                    </div>
-                  ) : (
-                    upcoming.map(b => renderBookingCard(b, false))
-                  )}
-                </motion.div>
-              </TabsContent>
-
-              <TabsContent value="history" className="mt-0">
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                  {history.length === 0 ? (
-                    <div className="text-center py-12 text-ink-muted">
-                      Seu histórico de atividades aparecerá aqui.
-                    </div>
-                  ) : (
-                    history.map(b => renderBookingCard(b, true))
-                  )}
-                </motion.div>
-              </TabsContent>
-            </AnimatePresence>
-          </Tabs>
+          <div className="space-y-3">{list.map((b) => renderBookingCard(b, tab === 'history'))}</div>
         )}
       </div>
 
@@ -281,15 +281,9 @@ const MyBookings = () => {
         isLoading={!!cancelingId}
         onConfirm={confirmCancel}
       />
-      <ReviewModal 
-        booking={reviewBooking}
-        isOpen={!!reviewBooking}
-        onClose={() => setReviewBooking(null)}
-        onSuccess={() => setReviewBooking(null)}
-      />
+      <ReviewModal booking={reviewBooking} isOpen={!!reviewBooking} onClose={() => setReviewBooking(null)} onSuccess={() => setReviewBooking(null)} />
     </PageContainer>
   );
 };
 
 export default MyBookings;
-
