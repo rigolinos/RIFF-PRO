@@ -17,9 +17,10 @@ export function useBookings() {
         .select(`
           id, session_id, professional_id, student_id,
           status, payment_status, amount_total, cancelled_at,
-          checked_in, created_at, updated_at,
+          checked_in, attendance_status, created_at, updated_at,
+          review:reviews(id),
           session:sessions(
-            id, title, date, start_time, location_name, location_address,
+            id, title, date, start_time, status, location_name, location_address,
             price_per_slot, category_id, duration_minutes,
             category:categories(name, emoji, slug)
           ),

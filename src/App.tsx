@@ -37,6 +37,7 @@ const ProfessionalProfile = lazy(() => import('@/pages/ProfessionalProfile'));
 const ProfileEdit = lazy(() => import('@/pages/ProfileEdit'));
 import Explore from '@/pages/Explore';
 const Earnings = lazy(() => import('@/pages/Earnings'));
+const ReviewActivity = lazy(() => import('@/pages/ReviewActivity'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -85,6 +86,7 @@ function App() {
               <Route path="/feed" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
               <Route path="/explore" element={<ProtectedRoute><Explore /></ProtectedRoute>} />
               <Route path="/my-bookings" element={<ProtectedRoute><MyBookings /></ProtectedRoute>} />
+              <Route path="/avaliar/:bookingId" element={<ProtectedRoute><ReviewActivity /></ProtectedRoute>} />
               
               <Route path="/dashboard" element={<ProtectedRoute><DashboardPro /></ProtectedRoute>} />
               <Route path="/earnings" element={<ProtectedRoute><Earnings /></ProtectedRoute>} />

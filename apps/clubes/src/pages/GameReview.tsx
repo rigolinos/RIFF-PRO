@@ -9,7 +9,8 @@ import { Avatar, BrandLines, EmptyState } from '@riff/core/domain';
 import { Button } from '@riff/core/ui/button';
 import { cn } from '@riff/core/lib/utils';
 import { usePendingReviews, usePlayerProfile, useSubmitReview, type PendingReview } from '@/hooks/useSports';
-import { ACHIEVEMENTS, KUDOS, POINTS, type KudosTag } from '@/lib/sports';
+import { KUDOS, POINTS, type KudosTag } from '@/lib/sports';
+import { ACHIEVEMENTS } from '@riff/core/lib/achievements';
 import { whenLabel } from '@/lib/dates';
 
 const VIBES = [

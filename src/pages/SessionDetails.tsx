@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CheckCircle2, ChevronRight, ClipboardCheck, MapPin, Pencil, Share2, Ticket } from 'lucide-react';
+import { CheckCircle2, ChevronRight, ClipboardCheck, Lock, MapPin, Pencil, Share2, Ticket } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { supabase } from '@riff/core/supabase/client';
@@ -15,6 +15,7 @@ import { Avatar, PriceTag, RatingBadge, SportIcon, SpotsMeter, StatusPill, Ticke
 import { Button } from '@riff/core/ui/button';
 import { KINDS, type ActivityKind } from '@riff/core/lib/copy';
 import { CheckoutModal } from '@/components/checkout/CheckoutModal';
+import { useProParticipants } from '@/hooks/useSportsProfile';
 
 const SessionDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -22,6 +23,7 @@ const SessionDetails = () => {
   const { user } = useAuth();
   const { profile } = useProfile();
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: session, isLoading, error } = useQuery({
     queryKey: ['session', id],
@@ -59,6 +61,9 @@ const SessionDetails = () => {
     },
     enabled: !!id && !!profile?.id,
   });
+
+  // Quem vai: fotos e nomes só para quem reservou e quem organiza
+  const { data: going } = useProParticipants(id);
 
   if (isLoading) {
     return (
@@ -168,6 +173,26 @@ const SessionDetails = () => {
             />
           </div>
           <SpotsMeter current={current} max={max || 1} />
+          {going && going.count > 0 && (
+            <div className="border-t border-line pt-3 space-y-2">
+              <p className="type-label">Quem vai</p>
+              {going.people ? (
+                <div className="flex gap-3 overflow-x-auto hide-scrollbar -mx-1 px-1">
+                  {going.people.map((p, i) => (
+                    <div key={p.id ?? `reservado-${i}`} className="flex flex-col items-center gap-1 w-14 shrink-0">
+                      <Avatar src={p.avatar_url} name={p.name} className="w-11 h-11" fallbackClassName="text-xs" />
+                      <span className="text-xs text-ink-muted truncate max-w-full">{p.id === profile?.id ? 'Você' : p.name}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="flex items-center gap-2 text-xs text-ink-muted">
+                  <Lock className="w-3.5 h-3.5 shrink-0" />
+                  {going.count} {going.count === 1 ? 'pessoa já reservou' : 'pessoas já reservaram'}. Reserve para ver quem vai.
+                </p>
+              )}
+            </div>
+          )}
         </section>
 
         {/* Quem organiza */}
@@ -253,7 +278,16 @@ const SessionDetails = () => {
       </StickyActions>
 
       {isCheckoutOpen && (
-        <CheckoutModal screen="session" isOpen={isCheckoutOpen} onClose={() => setIsCheckoutOpen(false)} session={session} onSuccess={() => {}} />
+        <CheckoutModal
+          screen="session"
+          isOpen={isCheckoutOpen}
+          onClose={() => setIsCheckoutOpen(false)}
+          session={session}
+          onSuccess={() => {
+            void queryClient.invalidateQueries({ queryKey: ['session', id] });
+            void queryClient.invalidateQueries({ queryKey: ['pro-participants', id] });
+          }}
+        />
       )}
     </div>
   );

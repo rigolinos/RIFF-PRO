@@ -17,7 +17,7 @@ export type LegalDocumentId = ProLegalDocumentId | ClubesLegalDocumentId;
 
 export const LEGAL_VERSIONS: Record<LegalDocumentId, string> = {
   terms: '2026-10-01',
-  privacy: '2026-10-01',
+  privacy: '2026-10-06',
   organizer_terms: '2026-10-01',
   clubes_terms: '2026-10-06',
   clubes_privacy: '2026-10-06',
@@ -155,6 +155,7 @@ export const LEGAL_DOCUMENTS: Record<ProLegalDocumentId, LegalDocument> = {
         paragraphs: [
           'Cadastro: nome, e-mail, telefone, cidade, foto e bio. Organizadores: também chave Pix, WhatsApp e registro profissional, quando informados.',
           'Uso do app: reservas, presença, avaliações, resultados de atividades e locais. Dados técnicos: registros de acesso e informações do dispositivo e navegador.',
+          'Perfil esportista: a partir das suas presenças calculamos jogos, frequência, esportes, locais, organizadores e conquistas. Só você vê esses números.',
         ],
       },
       {
@@ -168,6 +169,7 @@ export const LEGAL_DOCUMENTS: Record<ProLegalDocumentId, LegalDocument> = {
         heading: '4. Com quem compartilhamos',
         paragraphs: [
           'Com o organizador da atividade que você reserva, na medida necessária (por exemplo, seu nome). Com o participante que reserva sua atividade, os dados necessários para o pagamento (por exemplo, sua chave Pix e WhatsApp).',
+          'Com quem também reservou a mesma atividade: sua foto e seu primeiro nome com a inicial do sobrenome (por exemplo, "Marina L."), na lista de quem vai. Quem não reservou vê só a quantidade de confirmados. Com o modo reservado, no seu perfil, você aparece só como "Participante".',
           'Com prestadores de serviço que operam a infraestrutura do app (hospedagem e banco de dados), que podem armazenar dados fora do Brasil com as garantias exigidas pela LGPD (art. 33). Com autoridades, quando a lei exigir.',
           'Não vendemos seus dados.',
         ],
