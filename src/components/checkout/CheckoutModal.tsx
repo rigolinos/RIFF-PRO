@@ -22,6 +22,7 @@ import {
   DrawerFooter,
 } from '@riff/core/ui/drawer';
 import { Button } from '@riff/core/ui/button';
+import { SportIcon } from '@riff/core/domain/SportIcon';
 
 // Map server error codes to pt-BR messages
 const ERROR_MESSAGES: Record<string, string> = {
@@ -66,6 +67,7 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess, screen }: C
   const [copied, setCopied] = useState(false);
   const [paymentInfo, setPaymentInfo] = useState<PaymentInfo | null>(null);
   const [showArrowAnimation, setShowArrowAnimation] = useState(false);
+  const [bookingId, setBookingId] = useState<string | null>(null);
 
 
 
@@ -102,6 +104,7 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess, screen }: C
       if (error) throw error;
 
       const response = data as { success: boolean; code: string; booking_id?: string };
+      if (response.booking_id) setBookingId(response.booking_id);
 
       if (!response.success) {
         const message = ERROR_MESSAGES[response.code] || 'Erro ao processar reserva.';
@@ -206,8 +209,8 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess, screen }: C
 
                 <div className="p-5 space-y-4">
                   <div className="bg-surface border border-line rounded-2xl p-4 flex gap-4 items-center shadow-sm">
-                    <div className="w-12 h-12 rounded-xl bg-elevated border border-line flex items-center justify-center text-2xl shrink-0">
-                      {session.category?.emoji || '🎯'}
+                    <div className="w-12 h-12 rounded-xl bg-brand/15 text-brand flex items-center justify-center shrink-0">
+                      <SportIcon slug={session.category?.slug} className="w-6 h-6" />
                     </div>
                     <div>
                       <h3 className="type-title">{session.title}</h3>
@@ -260,7 +263,7 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess, screen }: C
                 </DrawerHeader>
 
                 <div className="p-6 space-y-6">
-                  <div className="bg-surface border border-brand/30 rounded-2xl p-6 text-center shadow-[0_0_15px_rgba(242,206,86,0.1)]">
+                  <div className="bg-surface border border-brand/30 rounded-2xl p-6 text-center">
                     <p className="text-sm text-ink-muted font-medium mb-1">Faça o Pix de</p>
                     <p className="font-display font-bold text-3xl text-ink mb-6">
                       R$ {session.price_per_slot.toFixed(2).replace('.', ',')}
@@ -301,7 +304,7 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess, screen }: C
                     </p>
                     <Button
                       onClick={handleWhatsApp}
-                      className="w-full h-14 bg-[#25D366] hover:bg-[#20bd5a] text-bg font-semibold text-lg rounded-xl shadow-[0_8px_24px_rgba(37,211,102,0.25)] gap-2 border-0"
+                      className="w-full h-14 bg-success hover:brightness-105 text-bg font-semibold text-lg rounded-xl gap-2 border-0"
                     >
                       <MessageCircle className="w-6 h-6" />
                       Enviar Comprovante
@@ -339,7 +342,7 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess, screen }: C
                   {paymentInfo?.whatsapp_number && (
                     <Button
                       onClick={handleWhatsApp}
-                      className="w-full h-14 bg-[#25D366] hover:bg-[#20bd5a] text-bg font-semibold text-lg rounded-xl gap-2 border-0"
+                      className="w-full h-14 bg-success hover:brightness-105 text-bg font-semibold text-lg rounded-xl gap-2 border-0"
                     >
                       <MessageCircle className="w-6 h-6" />
                       Falar com o organizador
@@ -388,16 +391,9 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess, screen }: C
                     {dateStr} · {timeStr} · {session.location_name || 'A confirmar'}
                   </p>
 
-                  <div className="w-24 h-24 mx-auto my-6 border-4 border-ink rounded-xl p-1 bg-ink relative overflow-hidden">
-                    {/* Dummy QR Code (Checkerboard) */}
-                    <div 
-                      className="w-full h-full" 
-                      style={{
-                        background: 'conic-gradient(var(--bg) 25%, var(--ink) 0 50%, var(--bg) 0 75%, var(--ink) 0) 0 0/16px 16px'
-                      }}
-                      role="img" 
-                      aria-label="QR de check-in"
-                    />
+                  {/* QR de check-in (o mesmo de Minhas reservas) */}
+                  <div className="w-fit mx-auto my-6 p-2 bg-white rounded-xl" role="img" aria-label="QR de check-in">
+                    <QRCode value={`checkin:${bookingId ?? session.id}`} size={104} level="L" />
                   </div>
 
                   <p className="text-ink-muted text-xs font-medium">

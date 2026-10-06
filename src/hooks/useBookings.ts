@@ -21,7 +21,7 @@ export function useBookings() {
           session:sessions(
             id, title, date, start_time, location_name, location_address,
             price_per_slot, category_id, duration_minutes,
-            category:categories(name, emoji)
+            category:categories(name, emoji, slug)
           ),
           professional:profiles!bookings_professional_id_fkey(
             id, full_name, avatar_url

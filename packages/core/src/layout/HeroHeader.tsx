@@ -60,7 +60,8 @@ export function HeroHeader({
           <div className="absolute -top-24 -right-20 w-72 h-72 rounded-full bg-brand/10 blur-3xl" aria-hidden="true" />
         </>
       )}
-      <div className={cn('relative px-6 pt-safe', !hasTop && 'pt-8', contentClassName)}>
+      <div className={cn('relative px-6 pt-safe', contentClassName)}>
+        {!hasTop && <div className="h-8" aria-hidden="true" />}
         {hasTop && (
           <div className="h-16 flex items-center justify-between gap-3">
             {topLeft ??
