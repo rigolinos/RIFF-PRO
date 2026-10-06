@@ -37,7 +37,7 @@ export function usePublicProfile(slugOrId: string) {
           id, title, description, date, start_time, duration_minutes,
           location_name, location_address, max_participants, current_participants,
           price_per_slot, status, session_type, skill_level, kind,
-          category:categories(name, emoji),
+          category:categories(name, emoji, slug),
           professional:profiles!sessions_professional_id_fkey(id, full_name, avatar_url, public_slug, rating_avg, total_reviews)
         `)
         .eq('professional_id', profile.id)
