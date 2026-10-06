@@ -7,7 +7,7 @@ import { KINDS, type ActivityKind } from '@riff/core/lib/copy';
 import { useProfile } from '@riff/core/hooks/useProfile';
 import { cn } from '@riff/core/lib/utils';
 import type { Activity } from '@/hooks/useActivities';
-import { SportIcon } from '@/components/SportIcon';
+import { SportIcon } from '@riff/core/domain/SportIcon';
 import { WhoIsGoing } from '@/components/WhoIsGoing';
 
 interface ActivityRowProps {

@@ -2,7 +2,7 @@ import { Check, MapPin } from 'lucide-react';
 import { cn } from '@riff/core/lib/utils';
 import type { PlayerProfile } from '@/hooks/useSports';
 import { ACHIEVEMENTS, KUDOS } from '@/lib/sports';
-import { SportIcon } from '@/components/SportIcon';
+import { SportIcon } from '@riff/core/domain/SportIcon';
 
 /** Números em formato de ingresso: jogos, frequência e eventos organizados. */
 export function StatsTicket({ p }: { p: PlayerProfile }) {
