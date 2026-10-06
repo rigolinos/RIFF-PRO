@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Star, Loader2, MapPin, AlertCircle } from 'lucide-react';
+import { Search, Star, Loader2, AlertCircle, ChevronRight } from 'lucide-react';
 import { supabase } from '@riff/core/supabase/client';
 import { PageContainer } from '@riff/core/layout/PageContainer';
 import { Input } from '@riff/core/ui/input';
 import { useDebounce } from '@riff/core/hooks/useDebounce';
-import { EmptyState } from '@riff/core/domain';
+import { Avatar, EmptyState, StatusPill } from '@riff/core/domain';
+import { HeroHeader } from '@riff/core/layout/HeroHeader';
 import type { Tables } from '@riff/core/supabase/types';
 
 export default function Explore() {
@@ -54,20 +55,22 @@ export default function Explore() {
   }, [debouncedSearch]);
 
   return (
-    <PageContainer title="Explorar" withBottomNav>
-      <div className="px-6 py-4 sticky top-0 bg-bg/95 backdrop-blur-md z-10 border-b bg-line">
-        <div className="relative">
+    <PageContainer withBottomNav>
+      <HeroHeader label="Explorar" title="Encontre quem organiza" subtitle="Professores, organizadores de jogos e eventos perto de você.">
+        <div className="relative mt-4">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted" />
-          <Input 
+          <Input
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Buscar por nome ou modalidade..." 
-            className="pl-9 h-12 bg-white/[0.05] border-line rounded-xl"
+            placeholder="Buscar pelo nome"
+            aria-label="Buscar organizador pelo nome"
+            className="pl-9 h-12 bg-bg/70 border-line rounded-xl"
           />
         </div>
-      </div>
+      </HeroHeader>
 
-      <div className="px-6 py-4">
+      <div className="px-4 py-6 space-y-2">
+        <h2 className="type-label px-2">{debouncedSearch ? 'Resultados' : 'Mais bem avaliados'}</h2>
         {isLoading ? (
           <div className="flex justify-center py-12">
             <Loader2 className="w-8 h-8 text-brand animate-spin" />
@@ -76,63 +79,39 @@ export default function Explore() {
           <EmptyState
             icon={AlertCircle}
             title="Erro ao carregar organizadores"
-            description="Ocorreu um erro ao buscar os organizadores. O banco de dados pode estar indisponível."
+            description="Não foi possível buscar agora. Tente de novo em instantes."
             action={{ label: 'Tentar novamente', onClick: () => window.location.reload() }}
           />
         ) : professionals.length === 0 ? (
-          <div className="text-center py-12 text-ink-muted">
-            Nenhum organizador encontrado.
-          </div>
+          <EmptyState icon={Search} title="Ninguém com esse nome" description="Confira a grafia ou veja as atividades da sua cidade no Início." />
         ) : (
-          <div className="space-y-4">
-            {professionals.map(pro => (
-              <Link 
-                key={pro.id} 
-                to={pro.public_slug ? `/@${pro.public_slug}` : `/pro/${pro.id}`}
-                className="block glass-card p-4 hover:bg-white/[0.05] transition-colors"
-              >
-                <div className="flex gap-4">
-                  <div className="w-16 h-16 rounded-full bg-white/5 shrink-0 overflow-hidden">
-                    {pro.avatar_url ? (
-                      <img src={pro.avatar_url} alt={pro.full_name} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-xl font-bold bg-brand/20 text-brand">
-                        {pro.full_name.charAt(0)}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="type-subtitle truncate">{pro.full_name}</h3>
-                    
-                    {pro.city && (
-                      <div className="flex items-center gap-1 text-xs text-ink-muted mt-0.5">
-                        <MapPin className="w-3 h-3" />
-                        <span className="truncate">{pro.city}</span>
-                      </div>
-                    )}
-
-                    <div className="flex items-center gap-3 mt-2">
-                      {(pro.total_reviews ?? 0) > 0 ? (
-                        <div className="flex items-center gap-1">
-                          <Star className="w-3.5 h-3.5 text-brand fill-brand" />
-                          <span className="text-sm font-semibold text-brand">
-                            {(pro.rating_avg ?? 0).toFixed(1)}
-                          </span>
-                          <span className="text-xs text-ink-muted ml-0.5">
-                            ({(pro.total_reviews ?? 0)})
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="type-label text-brand bg-brand/10 px-2 py-0.5 rounded-sm">
-                          Novo
-                        </span>
-                      )}
+          <ul className="bg-surface border border-line rounded-2xl divide-y divide-line overflow-hidden">
+            {professionals.map((pro) => {
+              const specialties = Array.isArray(pro.specialties) ? (pro.specialties as string[]) : [];
+              return (
+                <li key={pro.id}>
+                  <Link to={pro.public_slug ? `/@${pro.public_slug}` : `/pro/${pro.id}`} className="flex items-center gap-3 px-4 py-3 active:bg-elevated">
+                    <Avatar src={pro.avatar_url} name={pro.full_name} className="w-12 h-12" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-ink truncate">{pro.full_name}</p>
+                      <p className="text-xs text-ink-muted truncate">
+                        {[pro.city, specialties.slice(0, 2).join(', ')].filter(Boolean).join(' · ') || 'Organizador'}
+                      </p>
                     </div>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+                    {(pro.total_reviews ?? 0) > 0 ? (
+                      <span className="flex items-center gap-1 text-sm font-semibold text-ink shrink-0">
+                        <Star className="w-3.5 h-3.5 text-accent fill-accent" /> {(pro.rating_avg ?? 0).toFixed(1)}
+                        <span className="text-xs text-ink-muted font-normal">({pro.total_reviews})</span>
+                      </span>
+                    ) : (
+                      <StatusPill text="Novo" variant="info" className="shrink-0" />
+                    )}
+                    <ChevronRight className="w-4 h-4 text-ink-muted shrink-0" />
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
         )}
       </div>
     </PageContainer>

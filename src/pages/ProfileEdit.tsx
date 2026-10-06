@@ -1,18 +1,52 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
 import { errorMessage } from '@riff/core/lib/utils';
-import { Loader2, AtSign, Phone, MapPin, Link as LinkIcon, Camera } from 'lucide-react';
+import {
+  Loader2,
+  AtSign,
+  Phone,
+  MapPin,
+  Link as LinkIcon,
+  Camera,
+  ChevronRight,
+  FileText,
+  LogOut,
+  MessageCircle,
+  ShieldCheck,
+  Trash2,
+  Wallet,
+} from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
-
 import { PageContainer } from '@riff/core/layout/PageContainer';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@riff/core/ui/alert-dialog';
+import { HeroHeader } from '@riff/core/layout/HeroHeader';
+import { Avatar, TicketGrid } from '@riff/core/domain';
+import { chipClass } from '@riff/core/lib/chips';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@riff/core/ui/alert-dialog';
 import { Button } from '@riff/core/ui/button';
 import { Input } from '@riff/core/ui/input';
 import { Textarea } from '@riff/core/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@riff/core/ui/select';
 import { useProfile } from '@riff/core/hooks/useProfile';
 import { supabase } from '@riff/core/supabase/client';
+import { ModeSwitcher } from '@/components/layout/ModeSwitcher';
+
+const PIX_TYPES = [
+  { value: 'cpf', label: 'CPF ou CNPJ' },
+  { value: 'phone', label: 'Telefone' },
+  { value: 'email', label: 'E-mail' },
+  { value: 'random', label: 'Aleatória' },
+];
 
 export default function ProfileEdit() {
   const { profile, updateProfile, isLoading, isUpdating } = useProfile();
@@ -149,225 +183,222 @@ export default function ProfileEdit() {
 
   if (isLoading) {
     return (
-      <PageContainer title="Editar Perfil" withBottomNav>
-        <div className="flex-1 flex items-center justify-center">
+      <PageContainer withBottomNav>
+        <div className="flex-1 flex items-center justify-center py-24">
           <Loader2 className="w-8 h-8 text-brand animate-spin" />
         </div>
       </PageContainer>
     );
   }
 
+  const slug = profile?.public_slug || profile?.id;
+  const FIELD = 'h-12 bg-elevated border-line';
+  const LABEL = 'text-sm font-medium text-ink flex items-center gap-1.5';
+  const ROW = 'flex items-center gap-3 px-4 py-3.5 text-sm text-ink';
+
   return (
-    <PageContainer title="Meu Perfil" showBack withBottomNav>
-      <div className="px-6 py-6 flex-1 flex flex-col">
-
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 flex-1 pb-8">
-
-          {/* FOTO E NOME - COMUM A AMBOS */}
-          <div className="space-y-4">
-            <h3 className="type-subtitle">Identificação</h3>
-
-            <div className="flex flex-col items-center mb-6 mt-4">
-               <div className="relative">
-                 <div className="w-24 h-24 rounded-full bg-white/5 overflow-hidden border-2 border-brand/20 flex items-center justify-center shadow-xl">
-                    {avatar_url ? (
-                      <img src={avatar_url} alt="Avatar" className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-brand font-bold text-3xl">{full_name?.charAt(0) || '?'}</span>
-                    )}
-                    {isUploading && (
-                      <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
-                        <Loader2 className="w-6 h-6 text-brand animate-spin" />
-                      </div>
-                    )}
-                 </div>
-
-                 <button 
-                   type="button"
-                   onClick={() => fileInputRef.current?.click()}
-                   disabled={isUploading}
-                   className="absolute bottom-0 right-0 bg-brand text-brand-ink p-2 rounded-full shadow-[0_4px_12px_var(--shadow-cta)] hover:brightness-105 transition-all active:scale-95"
-                 >
-                   <Camera className="w-4 h-4" />
-                 </button>
-                 <input 
-                   type="file" 
-                   accept="image/*" 
-                   className="hidden" 
-                   ref={fileInputRef} 
-                   onChange={handleFileChange} 
-                 />
-               </div>
-            </div>
-
-            <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Nome Completo</label>
-                <Input {...register('full_name')} placeholder="Seu nome" className="bg-black/30 border-white/10 focus:border-brand/50" />
-              </div>
-            </div>
-          </div>
-
-          {/* CONTATO & LOCALIZAÇAO - COMUM A AMBOS */}
-          <div className="space-y-4 pt-4 border-t border-white/10">
-            <h3 className="type-subtitle">Contato e Localização</h3>
-
-            <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium flex items-center gap-1.5"><Phone className="w-3.5 h-3.5"/> Celular</label>
-                  <Input {...register('phone')} placeholder="(00) 00000-0000" className="bg-black/30 border-white/10 focus:border-brand/50" />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium flex items-center gap-1.5"><AtSign className="w-3.5 h-3.5"/> Instagram</label>
-                  <Input {...register('instagram_handle')} placeholder="@seu_usuario" className="bg-black/30 border-white/10 focus:border-brand/50" />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-4">
-                <div className="col-span-2 space-y-2">
-                  <label className="text-sm font-medium flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5"/> Cidade</label>
-                  <Input {...register('city')} placeholder="Ex: São Paulo" className="bg-black/30 border-white/10 focus:border-brand/50" />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Estado</label>
-                  <Input {...register('state')} placeholder="SP" maxLength={2} className="bg-black/30 border-white/10 focus:border-brand/50 uppercase" />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* PARTICIPANTE: BIO / OBJETIVOS */}
-          {!isPro && (
-            <div className="space-y-4 pt-4 border-t border-white/10">
-              <h3 className="type-subtitle">Sobre você (Opcional)</h3>
-              <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Quais são seus objetivos?</label>
-                  <Textarea {...register('bio')} placeholder="Ex: Gosto de esportes ao ar livre e busco melhorar meu condicionamento..." className="bg-black/30 border-white/10 focus:border-brand/50 h-24 resize-none" />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ORGANIZADOR: DETALHES DE NEGÓCIO */}
-          {isPro && (
-            <div className="space-y-4 pt-4 border-t border-white/10">
-              <h3 className="type-subtitle">Vitrine do Organizador</h3>
-
-              <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium flex items-center gap-1.5"><LinkIcon className="w-3.5 h-3.5" /> URL Personalizada (Link da Bio)</label>
-                  <div className="flex items-center">
-                    <span className="bg-white/5 border border-r-0 border-white/10 px-3 py-2.5 rounded-l-md text-sm text-muted-foreground">riff.pro/@</span>
-                    <Input {...register('public_slug')} placeholder="seunome" className="bg-black/30 border-white/10 focus:border-brand/50 rounded-l-none lowercase" />
-                  </div>
-                  <p className="text-xs text-muted-foreground">Use isso para compartilhar suas atividades no Instagram.</p>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Bio Pública / Metodologia</label>
-                  <Textarea {...register('bio')} placeholder="Como você trabalha? Qual seu diferencial?" className="bg-black/30 border-white/10 focus:border-brand/50 h-24 resize-none" />
-                </div>
-
-                <div id="pix" className="space-y-2 scroll-mt-24">
-                  <label className="text-sm font-medium">WhatsApp Organizador (Reservas)</label>
-                  <Input {...register('whatsapp_number')} placeholder="(00) 00000-0000" type="tel" className="bg-black/30 border-white/10 focus:border-brand/50" />
-                </div>
-              </div>
-
-              <h3 className="type-subtitle pt-4">Dados Bancários (Recebimento)</h3>
-              <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Tipo de Chave Pix</label>
-                    <Select onValueChange={(v) => setValue('pix_key_type', v)} value={pix_key_type}>
-                      <SelectTrigger className="bg-black/30 border-white/10 focus:border-brand/50">
-                        <SelectValue placeholder="Selecione..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="cpf">CPF / CNPJ</SelectItem>
-                        <SelectItem value="phone">Telefone</SelectItem>
-                        <SelectItem value="email">E-mail</SelectItem>
-                        <SelectItem value="random">Aleatória</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Chave Pix</label>
-                    <Input {...register('pix_key')} placeholder="Sua chave..." className="bg-black/30 border-white/10 focus:border-brand/50" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className="pt-6">
-            <Button 
-              type="submit" 
-              disabled={isUpdating}
-              className="w-full h-12 bg-brand hover:brightness-105 text-brand-ink font-bold rounded-xl shadow-[0_8px_24px_var(--shadow-cta)] active:scale-95 transition-all"
+    <PageContainer withBottomNav>
+      {/* Cabeçalho: foto, nome e papel */}
+      <HeroHeader overlap={isPro} topLeft={<ModeSwitcher />} topRight={<span />} contentClassName="text-center">
+        <div className="flex flex-col items-center gap-2">
+          <div className="relative">
+            <Avatar src={avatar_url} name={full_name} className="w-24 h-24 ring-4 ring-bg" fallbackClassName="text-3xl" />
+            {isUploading && (
+              <span className="absolute inset-0 rounded-full bg-bg/60 flex items-center justify-center">
+                <Loader2 className="w-6 h-6 text-brand animate-spin" />
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploading}
+              aria-label="Trocar foto"
+              className="absolute -bottom-1 -right-1 w-9 h-9 rounded-full bg-brand text-brand-ink flex items-center justify-center ring-4 ring-surface active:scale-95"
             >
-              {isUpdating ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Salvar Alterações'}
-            </Button>
+              <Camera className="w-4 h-4" />
+            </button>
+            <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleFileChange} />
           </div>
+          <h1 className="type-title mt-1">{full_name || 'Seu nome'}</h1>
+          <p className="text-xs text-ink-muted">
+            {isPro ? 'Organizador' : 'Participante'}
+            {profile?.city ? ` · ${profile.city}` : ''}
+          </p>
+          {isPro && slug && (
+            <Link to={`/@${slug}`} className="text-xs font-semibold text-brand underline underline-offset-4">
+              Ver minha vitrine (riff.pro/@{slug})
+            </Link>
+          )}
+        </div>
+      </HeroHeader>
+
+      {isPro && (
+        <TicketGrid
+          items={[
+            { label: 'Nota', value: profile?.total_reviews ? Number(profile.rating_avg ?? 0).toFixed(1) : '—', sub: `${profile?.total_reviews ?? 0} avaliações` },
+            { label: 'Atividades', value: profile?.total_sessions_given ?? 0, sub: 'realizadas' },
+            { label: 'Participantes', value: profile?.total_students_served ?? 0, sub: 'atendidos' },
+          ]}
+        />
+      )}
+
+      <div className="px-4 py-6 space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <section className="bg-surface border border-line rounded-2xl p-4 space-y-4">
+            <h2 className="type-label">Seus dados</h2>
+            <label className="block space-y-2">
+              <span className={LABEL}>Nome completo</span>
+              <Input {...register('full_name')} placeholder="Seu nome" className={FIELD} />
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <label className="block space-y-2">
+                <span className={LABEL}>
+                  <Phone className="w-3.5 h-3.5" /> Celular
+                </span>
+                <Input {...register('phone')} placeholder="(00) 00000-0000" className={FIELD} />
+              </label>
+              <label className="block space-y-2">
+                <span className={LABEL}>
+                  <AtSign className="w-3.5 h-3.5" /> Instagram
+                </span>
+                <Input {...register('instagram_handle')} placeholder="@seu_usuario" className={FIELD} />
+              </label>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <label className="col-span-2 block space-y-2">
+                <span className={LABEL}>
+                  <MapPin className="w-3.5 h-3.5" /> Cidade
+                </span>
+                <Input {...register('city')} placeholder="Ex: São Paulo" className={FIELD} />
+              </label>
+              <label className="block space-y-2">
+                <span className={LABEL}>Estado</span>
+                <Input {...register('state')} placeholder="SP" maxLength={2} className={`${FIELD} uppercase`} />
+              </label>
+            </div>
+          </section>
+
+          {!isPro ? (
+            <section className="bg-surface border border-line rounded-2xl p-4 space-y-2">
+              <h2 className="type-label">Sobre você (opcional)</h2>
+              <Textarea
+                {...register('bio')}
+                placeholder="Seus objetivos: Ex: gosto de esportes ao ar livre e quero melhorar o condicionamento."
+                className="bg-elevated border-line h-24 resize-none"
+              />
+            </section>
+          ) : (
+            <>
+              <section className="bg-surface border border-line rounded-2xl p-4 space-y-4">
+                <h2 className="type-label">Sua vitrine</h2>
+                <label className="block space-y-2">
+                  <span className={LABEL}>
+                    <LinkIcon className="w-3.5 h-3.5" /> Link da bio
+                  </span>
+                  <div className="flex items-center">
+                    <span className="h-12 bg-bg border border-r-0 border-line px-3 rounded-l-md text-sm text-ink-muted flex items-center">riff.pro/@</span>
+                    <Input {...register('public_slug')} placeholder="seunome" className={`${FIELD} rounded-l-none lowercase`} />
+                  </div>
+                  <span className="block text-xs text-ink-muted">Coloque na bio do Instagram: quem abre vê suas atividades e reserva.</span>
+                </label>
+                <label className="block space-y-2">
+                  <span className={LABEL}>Bio e metodologia</span>
+                  <Textarea {...register('bio')} placeholder="Como você trabalha? Qual seu diferencial?" className="bg-elevated border-line h-24 resize-none" />
+                </label>
+              </section>
+
+              <section id="pix" className="bg-surface border border-line rounded-2xl p-4 space-y-4 scroll-mt-24">
+                <h2 className="type-label">Recebimento</h2>
+                <label className="block space-y-2">
+                  <span className={LABEL}>
+                    <MessageCircle className="w-3.5 h-3.5" /> WhatsApp para reservas
+                  </span>
+                  <Input {...register('whatsapp_number')} placeholder="(00) 00000-0000" type="tel" className={FIELD} />
+                </label>
+                <div className="space-y-2">
+                  <span className={LABEL}>
+                    <Wallet className="w-3.5 h-3.5" /> Tipo de chave Pix
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {PIX_TYPES.map((t) => (
+                      <button key={t.value} type="button" aria-pressed={pix_key_type === t.value} onClick={() => setValue('pix_key_type', t.value)} className={chipClass(pix_key_type === t.value)}>
+                        {t.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <label className="block space-y-2">
+                  <span className={LABEL}>Chave Pix</span>
+                  <Input {...register('pix_key')} placeholder="Sua chave" className={FIELD} />
+                  <span className="block text-xs text-ink-muted">Aparece para quem reserva, junto do QR do Pix com o valor certo.</span>
+                </label>
+              </section>
+            </>
+          )}
+
+          <Button type="submit" size="lg" disabled={isUpdating} className="w-full">
+            {isUpdating ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Salvar alterações'}
+          </Button>
         </form>
 
-                <div className="mt-8 pt-8 border-t border-danger pb-4 space-y-4">
-          <h3 className="type-subtitle text-danger">Zona de Perigo</h3>
-
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button 
-                variant="outline" 
-                className="w-full h-12 text-danger border-danger hover:bg-danger/15 font-semibold"
-              >
-                Excluir Minha Conta (LGPD)
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent className="bg-background border-danger">
-              <AlertDialogHeader>
-                <AlertDialogTitle className="text-danger">Você tem certeza absoluta?</AlertDialogTitle>
-                <AlertDialogDescription className="text-muted-foreground">
-                  Esta ação não pode ser desfeita. Isso excluirá permanentemente sua conta, removerá seus dados dos nossos servidores e cancelará todas as suas atividades e reservas ativas.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-
-              <div className="my-4 space-y-2">
-                <label className="text-sm font-medium">Digite <span className="font-bold text-danger">EXCLUIR</span> para confirmar:</label>
-                <Input 
-                  value={deleteConfirmation}
-                  onChange={(e) => setDeleteConfirmation(e.target.value)}
-                  className="bg-black/30 border-white/10"
-                  placeholder="EXCLUIR"
-                />
-              </div>
-
-              <AlertDialogFooter>
-                <AlertDialogCancel className="bg-white/5 hover:bg-white/10 border-0">Cancelar</AlertDialogCancel>
-                <AlertDialogAction 
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleDeleteAccount();
-                  }}
-                  disabled={deleteConfirmation !== 'EXCLUIR' || isDeleting}
-                  className="bg-danger/15 hover:bg-danger/15 text-bg font-bold"
-                >
-                  {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Sim, excluir minha conta'}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-
-          <Button 
-            onClick={handleLogout} 
-            variant="ghost" 
-            className="w-full h-12 text-muted-foreground hover:text-bg hover:bg-white/5 font-semibold"
-          >
-            Sair da Conta (Logout)
-          </Button>
-        </div>
-
+        <section className="space-y-2">
+          <h2 className="type-label px-2">Conta</h2>
+          <div className="bg-surface border border-line rounded-2xl divide-y divide-line">
+            {[
+              { path: '/termos', title: 'Termos de Uso', icon: FileText },
+              { path: '/privacidade', title: 'Política de Privacidade', icon: ShieldCheck },
+              ...(isPro ? [{ path: '/termos-organizador', title: 'Termo do Organizador', icon: FileText }] : []),
+            ].map((doc) => (
+              <Link key={doc.path} to={doc.path} className={ROW}>
+                <doc.icon className="w-5 h-5 text-ink-muted" />
+                <span className="flex-1">{doc.title}</span>
+                <ChevronRight className="w-4 h-4 text-ink-muted" />
+              </Link>
+            ))}
+          </div>
+          <div className="bg-surface border border-line rounded-2xl divide-y divide-line">
+            <button type="button" onClick={handleLogout} className={`${ROW} w-full`}>
+              <LogOut className="w-5 h-5 text-ink-muted" />
+              <span className="flex-1 text-left">Sair</span>
+            </button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <button type="button" className={`${ROW} w-full text-danger`}>
+                  <Trash2 className="w-5 h-5" />
+                  <span className="flex-1 text-left">Excluir minha conta</span>
+                </button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="bg-surface border-line sm:rounded-3xl gap-6">
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="font-display text-xl text-ink">Excluir sua conta?</AlertDialogTitle>
+                  <AlertDialogDescription className="text-ink-muted">
+                    A conta é a mesma do Riff Clubes: ela sai dos dois apps. Suas reservas e atividades futuras são canceladas e seus
+                    dados pessoais são apagados. Não dá para desfazer.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <label className="block space-y-2">
+                  <span className="text-sm text-ink">
+                    Digite <strong>EXCLUIR</strong> para confirmar
+                  </span>
+                  <Input value={deleteConfirmation} onChange={(e) => setDeleteConfirmation(e.target.value)} className="h-11 bg-elevated border-line" placeholder="EXCLUIR" />
+                </label>
+                <AlertDialogFooter className="gap-2">
+                  <AlertDialogCancel className="bg-elevated border-line">Voltar</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleDeleteAccount();
+                    }}
+                    disabled={deleteConfirmation !== 'EXCLUIR' || isDeleting}
+                    className="bg-danger text-bg font-bold hover:brightness-105"
+                  >
+                    {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Excluir conta'}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        </section>
       </div>
     </PageContainer>
   );
