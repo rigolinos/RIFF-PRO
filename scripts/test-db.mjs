@@ -708,6 +708,80 @@ ok(hiddenEntry && hiddenEntry.id === null && hiddenEntry.avatar_url === null, 'm
 r = await as('authenticated', M5, 'SELECT * FROM public.activity_participants($1::uuid[])', [[sGame]]);
 ok(r.rows?.[0]?.people?.some((p) => p.name === 'Bruno R.'), 'a própria pessoa se vê pelo nome mesmo no modo reservado');
 
+// ── Riff Pro: quem vai, avaliação e perfil esportista (P5) ───────────────
+console.log('Riff Pro (P5):');
+const PO = 'd5000000-0000-4000-8000-000000000001'; // organizador
+const PA = 'd5000000-0000-4000-8000-000000000002'; // participante que pagou
+const PB = 'd5000000-0000-4000-8000-000000000003'; // participante com Pix pendente
+const PC = 'd5000000-0000-4000-8000-000000000004'; // não reservou
+const pPO = await newUser(PO, 'org.p5@teste.dev', 'Organizador Cinco', 'professional');
+const pPA = await newUser(PA, 'ana.p5@teste.dev', 'Ana Paula Souza', 'student');
+const pPB = await newUser(PB, 'beto.p5@teste.dev', 'Beto Lima', 'student');
+await newUser(PC, 'caio.p5@teste.dev', 'Caio Reis', 'student');
+await ex("SELECT set_config('request.jwt.claim.sub', '', false)");
+const proSession = async (title, dayOffset) => (await one(
+  `INSERT INTO public.sessions (professional_id, category_id, title, date, start_time, duration_minutes, location_name, max_participants, price_per_slot, status)
+   VALUES ($1, $2, $3, current_date + $4::int, '07:00', 60, 'Parque da Orla', 10, 30, 'active') RETURNING id`,
+  [pPO, category, title, dayOffset])).id;
+const sDone = await proSession('Treino de ontem', -1);
+const sNext5 = await proSession('Treino de amanhã', 1);
+const proBook = async (s, pid, payment) => (await one(
+  `INSERT INTO public.bookings (session_id, student_id, professional_id, amount_total, professional_payout, payment_status, status, product)
+   VALUES ($1, $2, $3, 30, 30, $4, 'confirmed', 'pro') RETURNING id`, [s, pid, pPO, payment])).id;
+const bA = await proBook(sDone, pPA, 'paid');
+const bB = await proBook(sDone, pPB, 'pending');
+const bAnext = await proBook(sNext5, pPA, 'paid');
+
+// quem vai
+const pw = (role, uid, s) => as(role, uid, 'SELECT public.pro_session_participants($1) AS r', [s]);
+r = await pw('authenticated', PA, sDone);
+ok(r.rows?.[0]?.r?.count === 2 && JSON.stringify(r.rows[0].r.people.map((p) => p.name)) === JSON.stringify(['Ana S.', 'Beto L.']),
+  'quem reservou vê foto e nome curto de quem vai' + (r.err ? ` (${r.err})` : ''));
+r = await pw('authenticated', PO, sDone);
+ok(r.rows?.[0]?.r?.people?.length === 2, 'quem organiza vê quem vai');
+r = await pw('authenticated', PC, sDone);
+ok(r.rows?.[0]?.r?.count === 2 && r.rows[0].r.people === null, 'quem não reservou vê só a contagem');
+r = await pw('anon', '', sDone);
+ok(r.rows?.[0]?.r?.count === 2 && r.rows[0].r.people === null, 'visitante sem login vê só a contagem');
+await q('UPDATE public.profiles SET sports_hidden = true WHERE id = $1', [pPB]);
+r = await pw('authenticated', PA, sDone);
+const hiddenP = r.rows?.[0]?.r?.people?.find((p) => p.name === 'Participante');
+ok(hiddenP && hiddenP.id === null && hiddenP.avatar_url === null, 'modo reservado aparece como "Participante", sem id e sem foto');
+await q('UPDATE public.profiles SET sports_hidden = false WHERE id = $1', [pPB]);
+r = await pw('authenticated', PA, sA);
+ok(r.rows?.[0]?.r === null, 'atividade do Clubes não passa por esta função');
+
+// avaliar o organizador
+const proReview = (uid, b, s, pro, rating = 5) => as('authenticated', uid,
+  'INSERT INTO public.reviews (booking_id, session_id, professional_id, reviewer_id, rating, comment) VALUES ($1, $2, $3, public._profile_id(), $4, null)', [b, s, pro, rating]);
+r = await proReview(PA, bA, sDone, pPO);
+ok(!r.err, 'quem pagou e foi pode avaliar sem o organizador encerrar a atividade' + (r.err ? ` (${r.err})` : ''));
+r = await proReview(PB, bB, sDone, pPO);
+ok(!!r.err, 'com Pix pendente ainda não avalia');
+r = await proReview(PA, bAnext, sNext5, pPO);
+ok(!!r.err, 'atividade que não aconteceu não é avaliada');
+await q("UPDATE public.bookings SET attendance_status = 'absent' WHERE id = $1", [bB]);
+await q("UPDATE public.bookings SET payment_status = 'paid' WHERE id = $1", [bB]);
+r = await proReview(PB, bB, sDone, pPO);
+ok(!!r.err, 'quem foi marcado como ausente não avalia');
+
+// perfil esportista pessoal
+r = await as('authenticated', PA, 'SELECT public.my_pro_sports_profile() AS p');
+const sp = r.rows?.[0]?.p;
+ok(sp?.games === 1 && sp?.sports?.length === 1 && sp?.reviews_given === 1, 'perfil esportista pessoal: jogos, esportes e avaliações dadas' + (r.err ? ` (${r.err})` : ''));
+const fiel = sp?.achievements?.find((a) => a.key === 'fiel');
+ok(fiel?.current === 1 && fiel?.detail === 'Organizador C.', 'conquista "Fiel" conta atividades com o mesmo organizador');
+r = await as('authenticated', PB, 'SELECT public.my_pro_sports_profile() AS p');
+ok(r.rows?.[0]?.p?.games === 0 && r.rows[0].p.attendance === 0, 'ausência não conta como jogo e pesa na frequência');
+r = await as('anon', '', 'SELECT public.my_pro_sports_profile() AS p');
+ok(!!r.err, 'visitante sem login não chama o perfil esportista');
+
+// painel conta só o Pro
+r = await as('authenticated', IA, 'SELECT public.get_professional_dashboard() AS d');
+ok(r.rows?.[0]?.d?.total_sessions === 0, 'painel do organizador não soma atividades do Clubes' + (r.err ? ` (${r.err})` : ''));
+r = await as('authenticated', PO, 'SELECT public.get_professional_dashboard() AS d');
+ok(r.rows?.[0]?.d?.total_sessions === 2 && Number(r.rows[0].d.total_revenue) === 90, 'painel do organizador conta as atividades e a receita do Pro');
+
 // ── Script de métricas do dono do produto ──────────────────────────────
 console.log('Métricas:');
 try {

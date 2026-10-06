@@ -1167,6 +1167,7 @@ export type Database = {
         Args: { p_action: string; p_org: string; p_profile: string }
         Returns: Json
       }
+      my_pro_sports_profile: { Args: never; Returns: Json }
       now_sp: { Args: never; Returns: string }
       pending_game_reviews: {
         Args: never
@@ -1200,6 +1201,18 @@ export type Database = {
         Args: { p_org?: string; p_profile: string }
         Returns: Json
       }
+      pro_player_games: {
+        Args: { p_profile: string }
+        Returns: {
+          att: string
+          category_id: string
+          d: string
+          organizer: string
+          session_id: string
+          venue_name: string
+        }[]
+      }
+      pro_session_participants: { Args: { p_session: string }; Returns: Json }
       remove_dependent: { Args: { p_dependent: string }; Returns: undefined }
       resolve_venue: {
         Args: {

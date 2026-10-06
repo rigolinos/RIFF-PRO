@@ -15,6 +15,7 @@ import { ModeSwitcher } from '@/components/layout/ModeSwitcher';
 import { useSessions } from '@/hooks/useSessions';
 import { useCategories } from '@/hooks/useCategories';
 import { SessionRow } from '@/components/cards/SessionRow';
+import { ReviewPrompt } from '@/components/reviews/ReviewPrompt';
 import { SessionCardSkeleton } from '@/components/skeletons/SessionCardSkeleton';
 import type { SessionWithJoins } from '@/types/session';
 
@@ -164,6 +165,7 @@ export const Feed = () => {
       </div>
 
       <div className="py-6 space-y-6">
+        <ReviewPrompt className="px-4" />
         {isLoadingFeed ? (
           <div className="px-4 space-y-4">
             <SessionCardSkeleton />

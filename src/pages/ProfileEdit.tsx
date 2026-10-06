@@ -40,6 +40,9 @@ import { Textarea } from '@riff/core/ui/textarea';
 import { useProfile } from '@riff/core/hooks/useProfile';
 import { supabase } from '@riff/core/supabase/client';
 import { ModeSwitcher } from '@/components/layout/ModeSwitcher';
+import { SportsProfileSection } from '@/components/profile/SportsProfileSection';
+import { useViewMode } from '@/contexts/ViewModeContext';
+import { useMySportsProfile } from '@/hooks/useSportsProfile';
 
 const PIX_TYPES = [
   { value: 'cpf', label: 'CPF ou CNPJ' },
@@ -52,6 +55,10 @@ export default function ProfileEdit() {
   const { profile, updateProfile, isLoading, isUpdating } = useProfile();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const { viewMode } = useViewMode();
+  // No modo participante, o perfil mostra o lado esportista (só a própria pessoa vê)
+  const sportsMode = viewMode === 'student';
+  const { data: sports } = useMySportsProfile();
 
   const { register, handleSubmit, setValue, reset, control } = useForm({
     defaultValues: {
@@ -199,7 +206,7 @@ export default function ProfileEdit() {
   return (
     <PageContainer withBottomNav>
       {/* Cabeçalho: foto, nome e papel */}
-      <HeroHeader overlap={isPro} topLeft={<ModeSwitcher />} topRight={<span />} contentClassName="text-center">
+      <HeroHeader overlap={sportsMode ? !!sports : isPro} topLeft={<ModeSwitcher />} topRight={<span />} contentClassName="text-center">
         <div className="flex flex-col items-center gap-2">
           <div className="relative">
             <Avatar src={avatar_url} name={full_name} className="w-24 h-24 ring-4 ring-bg" fallbackClassName="text-3xl" />
@@ -232,7 +239,17 @@ export default function ProfileEdit() {
         </div>
       </HeroHeader>
 
-      {isPro && (
+      {sportsMode && sports && (
+        <TicketGrid
+          items={[
+            { label: 'Atividades', value: sports.games, sub: 'que você foi' },
+            { label: 'Frequência', value: sports.attendance == null ? '—' : `${sports.attendance}%`, sub: 'de presença' },
+            { label: 'Avaliações', value: sports.reviews_given, sub: 'que você deu' },
+          ]}
+        />
+      )}
+
+      {!sportsMode && isPro && (
         <TicketGrid
           items={[
             { label: 'Nota', value: profile?.total_reviews ? Number(profile.rating_avg ?? 0).toFixed(1) : '—', sub: `${profile?.total_reviews ?? 0} avaliações` },
@@ -243,6 +260,8 @@ export default function ProfileEdit() {
       )}
 
       <div className="px-4 py-6 space-y-6">
+        {sportsMode && sports && <SportsProfileSection p={sports} />}
+
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <section className="bg-surface border border-line rounded-2xl p-4 space-y-4">
             <h2 className="type-label">Seus dados</h2>

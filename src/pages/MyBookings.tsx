@@ -13,7 +13,8 @@ import { formatBRL } from '@riff/core/lib/money';
 import { useBookings } from '@/hooks/useBookings';
 import { buildWhatsAppUrl } from '@/lib/whatsapp';
 import { useProfile } from '@riff/core/hooks/useProfile';
-import { ReviewModal } from '@/components/reviews/ReviewModal';
+import { ReviewPrompt } from '@/components/reviews/ReviewPrompt';
+import { canReview } from '@/lib/reviews';
 import { supabase } from '@riff/core/supabase/client';
 
 type BookingType = NonNullable<ReturnType<typeof useBookings>['bookings']>[number];
@@ -24,7 +25,7 @@ const MyBookings = () => {
   if (isError && error) console.error('Error fetching bookings:', error);
   const [cancelingId, setCancelingId] = useState<string | null>(null);
   const [bookingToCancel, setBookingToCancel] = useState<BookingType | null>(null);
-  const [reviewBooking, setReviewBooking] = useState<BookingType | null>(null);
+  const [now] = useState(() => Date.now());
   const [tab, setTab] = useState<'upcoming' | 'history'>('upcoming');
   const navigate = useNavigate();
 
@@ -208,15 +209,14 @@ const MyBookings = () => {
             </button>
           </div>
         ) : (
-          st.effective === 'completed' && (
+          canReview(booking, now) && (
             <div className="border-t border-line p-3">
-              <button
-                type="button"
-                onClick={() => setReviewBooking(booking)}
+              <Link
+                to={`/avaliar/${booking.id}`}
                 className="w-full h-10 rounded-xl bg-brand/10 text-brand font-semibold text-sm flex items-center justify-center gap-2 active:scale-[.98]"
               >
                 <Star className="w-4 h-4" /> Avaliar o organizador
-              </button>
+              </Link>
             </div>
           )
         )}
@@ -239,6 +239,7 @@ const MyBookings = () => {
       />
 
       <div className="px-4 py-6 space-y-4">
+        <ReviewPrompt />
         <div className="grid grid-cols-2 gap-1 bg-surface border border-line rounded-full p-1" role="tablist">
           {(['upcoming', 'history'] as const).map((t) => (
             <button
@@ -281,7 +282,6 @@ const MyBookings = () => {
         isLoading={!!cancelingId}
         onConfirm={confirmCancel}
       />
-      <ReviewModal booking={reviewBooking} isOpen={!!reviewBooking} onClose={() => setReviewBooking(null)} onSuccess={() => setReviewBooking(null)} />
     </PageContainer>
   );
 };
