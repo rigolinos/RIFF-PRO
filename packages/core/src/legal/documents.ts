@@ -20,7 +20,7 @@ export const LEGAL_VERSIONS: Record<LegalDocumentId, string> = {
   privacy: '2026-10-01',
   organizer_terms: '2026-10-01',
   clubes_terms: '2026-10-03',
-  clubes_privacy: '2026-10-03',
+  clubes_privacy: '2026-10-05',
   guardian_consent: '2026-10-03',
 };
 

@@ -6,3 +6,4 @@ export * from './Avatar';
 export * from './CoverImage';
 export * from './EmptyState';
 export * from './ConfirmDialog';
+export * from './BrandLines';

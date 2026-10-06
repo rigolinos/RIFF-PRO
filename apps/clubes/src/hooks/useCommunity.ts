@@ -6,9 +6,7 @@ import { errorMessage } from '@riff/core/lib/utils';
 // Data de hoje no fuso de São Paulo (AAAA-MM-DD)
 export const todaySP = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(new Date());
 
-const STAFF_ROLES = ['owner', 'admin', 'instructor'];
-
-/** A comunidade e o papel da pessoa nela (só membros ativos enxergam: RLS do C2). */
+/** A comunidade e o papel da pessoa nela (só membros ativos enxergam: RLS do C2). Qualquer membro cria atividade. */
 export function useCommunity(orgId: string | undefined) {
   const { profile } = useProfile();
   return useQuery({
@@ -26,57 +24,12 @@ export function useCommunity(orgId: string | undefined) {
       return {
         ...data.organization,
         role: data.role,
-        canManage: STAFF_ROLES.includes(data.role),
         isAdmin: data.role === 'owner' || data.role === 'admin',
       };
     },
     enabled: !!orgId && !!profile?.id,
   });
 }
-
-/** Próximas atividades da comunidade, mais as reservas da pessoa nelas. */
-export function useCommunityAgenda(orgId: string | undefined) {
-  const { profile } = useProfile();
-  return useQuery({
-    queryKey: ['community-agenda', orgId, profile?.id],
-    queryFn: async () => {
-      const { data: sessions, error } = await supabase
-        .from('sessions')
-        .select('id, professional_id, minors_allowed, min_age, title, date, start_time, duration_minutes, location_name, max_participants, current_participants, kind, status, category:categories(name, emoji), professional:profiles!sessions_professional_id_fkey(full_name)')
-        .eq('organization_id', orgId!)
-        .in('status', ['active', 'full'])
-        .gte('date', todaySP())
-        .order('date', { ascending: true })
-        .order('start_time', { ascending: true });
-      if (error) throw error;
-
-      const ids = (sessions ?? []).map((s) => s.id);
-      const { data: bookings, error: bookingsError } = ids.length
-        ? await supabase
-            .from('bookings')
-            .select('id, session_id, status, dependent_id')
-            .eq('student_id', profile!.id)
-            .in('session_id', ids)
-            .in('status', ['pending', 'confirmed'])
-        : { data: [], error: null };
-      if (bookingsError) throw bookingsError;
-
-      // inscrição da própria pessoa e, à parte, as dos dependentes dela (dependent_id -> booking)
-      const own = (bookings ?? []).filter((b) => !b.dependent_id);
-      const myBooking = new Map(own.map((b) => [b.session_id, b.id]));
-      return (sessions ?? []).map((s) => ({
-        ...s,
-        myBookingId: myBooking.get(s.id) ?? null,
-        dependentBookings: Object.fromEntries(
-          (bookings ?? []).filter((b) => b.session_id === s.id && b.dependent_id).map((b) => [b.dependent_id!, b.id]),
-        ) as Record<string, string>,
-      }));
-    },
-    enabled: !!orgId && !!profile?.id,
-  });
-}
-
-export type AgendaItem = NonNullable<ReturnType<typeof useCommunityAgenda>['data']>[number];
 
 const BOOKING_ERRORS: Record<string, string> = {
   not_member: 'Só membros da comunidade podem se inscrever.',
@@ -92,9 +45,10 @@ const BOOKING_ERRORS: Record<string, string> = {
 };
 
 /** Inscrever e cancelar (sem pagamento no Clubes v1). */
-export function useAgendaActions(orgId: string | undefined) {
+export function useAgendaActions() {
   const queryClient = useQueryClient();
-  const refresh = () => queryClient.invalidateQueries({ queryKey: ['community-agenda', orgId] });
+  // a mesma atividade aparece no início, na comunidade, no detalhe e na agenda pessoal
+  const refresh = () => queryClient.invalidateQueries({ queryKey: ['community-agenda'] });
 
   const book = useMutation({
     mutationFn: async (sessionId: string) => {

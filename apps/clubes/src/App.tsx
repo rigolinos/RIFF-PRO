@@ -6,6 +6,7 @@ import { Toaster as SonnerToaster } from '@riff/core/ui/sonner';
 import { ProtectedRoute } from '@riff/core/routing/ProtectedRoute';
 import { PublicRoute } from '@riff/core/routing/PublicRoute';
 import { GlobalErrorBoundary } from '@riff/core/app/GlobalErrorBoundary';
+import { AppNav } from '@/components/AppNav';
 
 const Landing = lazy(() => import('@/pages/Landing'));
 const Login = lazy(() => import('@/pages/Login'));
@@ -14,7 +15,12 @@ const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
 const LegalPage = lazy(() => import('@/pages/LegalPage'));
 const AcceptTerms = lazy(() => import('@/pages/AcceptTerms'));
+const Home = lazy(() => import('@/pages/Home'));
 const Communities = lazy(() => import('@/pages/Communities'));
+const Create = lazy(() => import('@/pages/Create'));
+const MyAgenda = lazy(() => import('@/pages/MyAgenda'));
+const Profile = lazy(() => import('@/pages/Profile'));
+const ActivityDetail = lazy(() => import('@/pages/ActivityDetail'));
 const Community = lazy(() => import('@/pages/Community'));
 const NewActivity = lazy(() => import('@/pages/NewActivity'));
 const Manage = lazy(() => import('@/pages/Manage'));
@@ -50,7 +56,12 @@ export default function App() {
                 <Route path="/privacidade" element={<LegalPage />} />
                 <Route path="/termo-responsavel" element={<LegalPage />} />
                 <Route path="/aceite" element={<ProtectedRoute skipLegal><AcceptTerms /></ProtectedRoute>} />
-                <Route path="/inicio" element={<ProtectedRoute><Communities /></ProtectedRoute>} />
+                <Route path="/inicio" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+                <Route path="/comunidades" element={<ProtectedRoute><Communities /></ProtectedRoute>} />
+                <Route path="/criar" element={<ProtectedRoute><Create /></ProtectedRoute>} />
+                <Route path="/agenda" element={<ProtectedRoute><MyAgenda /></ProtectedRoute>} />
+                <Route path="/perfil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                <Route path="/atividade/:id" element={<ProtectedRoute><ActivityDetail /></ProtectedRoute>} />
                 <Route path="/dependentes" element={<ProtectedRoute><Dependents /></ProtectedRoute>} />
                 <Route path="/c/:orgId" element={<ProtectedRoute><Community /></ProtectedRoute>} />
                 <Route path="/c/:orgId/nova" element={<ProtectedRoute><NewActivity /></ProtectedRoute>} />
@@ -58,6 +69,7 @@ export default function App() {
                 <Route path="/c/:orgId/atividade/:sessionId" element={<ProtectedRoute><ActivityRoster /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              <AppNav />
             </Suspense>
           </MotionConfig>
         </BrowserRouter>

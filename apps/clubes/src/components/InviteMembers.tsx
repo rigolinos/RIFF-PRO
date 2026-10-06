@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Copy, Share2, UserPlus } from 'lucide-react';
+import { Copy, GraduationCap, Share2, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@riff/core/supabase/client';
 import { Button } from '@riff/core/ui/button';
@@ -56,15 +56,29 @@ export function InviteMembers({ organizationId, organizationName, role = 'member
   };
 
   if (!code) {
+    const Icon = role === 'instructor' ? GraduationCap : UserPlus;
     return (
-      <Button variant="outline" size="sm" className="w-full mt-3" onClick={handleCreate} disabled={isCreating}>
-        <UserPlus className="w-4 h-4 mr-2" /> {isCreating ? 'Gerando...' : role === 'instructor' ? 'Convidar instrutor' : 'Convidar moradores'}
-      </Button>
+      <button
+        type="button"
+        onClick={handleCreate}
+        disabled={isCreating}
+        className="text-left bg-surface border border-line rounded-2xl p-4 space-y-2 active:scale-[.98] transition-transform disabled:opacity-60"
+      >
+        <span className="w-10 h-10 rounded-xl bg-brand/15 text-brand flex items-center justify-center">
+          <Icon className="w-5 h-5" />
+        </span>
+        <span className="block text-sm font-semibold text-ink">
+          {isCreating ? 'Gerando…' : role === 'instructor' ? 'Convidar instrutor' : 'Convidar moradores'}
+        </span>
+        <span className="block text-xs text-ink-muted">
+          {role === 'instructor' ? 'Para quem vai dar aulas' : 'Moradores e sócios'}
+        </span>
+      </button>
     );
   }
 
   return (
-    <div className="mt-3 bg-elevated border border-line rounded-xl p-3 space-y-3">
+    <div className="col-span-2 bg-elevated border border-brand/40 rounded-2xl p-4 space-y-3">
       <p className="type-label">{role === 'instructor' ? 'Convite de instrutor' : 'Código de convite'} (vale 30 dias)</p>
       <p className="type-number text-2xl text-ink text-center tracking-[0.25em]">{code}</p>
       <div className="flex gap-2">

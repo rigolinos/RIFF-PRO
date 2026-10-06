@@ -1,4 +1,5 @@
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
+import { useAuth } from '@riff/core/hooks/useAuth';
 import { ArrowRight, Building2, CalendarDays, ShieldCheck, Users, KeyRound } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Logo } from "@riff/core/ui/logo";
@@ -7,6 +8,10 @@ import { BRAND } from '@/brand';
 
 const Landing = () => {
   const navigate = useNavigate();
+  const { user, loading } = useAuth();
+
+  // Quem já entrou vai direto para o início
+  if (!loading && user) return <Navigate to="/inicio" replace />;
 
   return (
     <div className="min-h-screen bg-bg flex flex-col">

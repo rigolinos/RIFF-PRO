@@ -1,60 +1,21 @@
-import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { Baby, Building2, KeyRound, LogOut, ChevronRight } from 'lucide-react';
-import { supabase } from '@riff/core/supabase/client';
-import { useProfile } from '@riff/core/hooks/useProfile';
+import { Building2, ChevronRight, KeyRound, Settings } from 'lucide-react';
 import { PageContainer } from '@riff/core/layout/PageContainer';
 import { EmptyState } from '@riff/core/domain';
+import { useMyCommunities } from '@/hooks/useActivities';
 import { JoinWithCode } from '@/components/JoinWithCode';
-import { InviteMembers } from '@/components/InviteMembers';
+import { ROLE_LABEL } from '@/lib/roles';
 
-const ROLE_LABEL: Record<string, string> = {
-  owner: 'Gestor',
-  admin: 'Gestor',
-  instructor: 'Instrutor',
-  member: 'Membro',
-};
-
-// Condomínios e clubes de que a pessoa faz parte (organization_members, Lote 3)
-function useMyCommunities(profileId: string | undefined) {
-  return useQuery({
-    queryKey: ['communities', profileId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('organization_members')
-        .select('role, organization:organizations(id, name, kind)')
-        .eq('profile_id', profileId!)
-        .eq('status', 'active');
-      if (error) throw error;
-      return (data ?? []).filter((m) => m.organization && ['condo', 'club'].includes(m.organization.kind));
-    },
-    enabled: !!profileId,
-  });
-}
-
+// Condomínios e clubes de que a pessoa faz parte
 export default function Communities() {
-  const { profile } = useProfile();
-  const { data: communities, isLoading, isError } = useMyCommunities(profile?.id);
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    window.location.href = '/login';
-  };
-
-  const firstName = profile?.full_name?.split(' ')[0];
+  const { data: communities, isLoading, isError } = useMyCommunities();
 
   return (
-    <PageContainer
-      title="Suas comunidades"
-      withBottomNav={false}
-      rightAction={
-        <button onClick={handleLogout} aria-label="Sair" className="w-10 h-10 rounded-full flex items-center justify-center text-ink-muted hover:text-ink">
-          <LogOut className="w-5 h-5" />
-        </button>
-      }
-    >
+    <PageContainer title="Clubes e condomínios">
       <div className="px-6 py-6 space-y-6">
-        {firstName && <p className="text-ink-muted">Olá, {firstName}!</p>}
+        <p className="text-sm text-ink-muted">
+          Cada condomínio ou clube tem a própria agenda. Só quem é da comunidade vê e participa.
+        </p>
 
         {isLoading ? (
           <div className="flex justify-center py-12">
@@ -70,40 +31,34 @@ export default function Communities() {
           />
         ) : (
           <ul className="space-y-3">
-            {communities.map((m) => (
-              <li key={m.organization!.id}>
-                <div className="bg-surface border border-line rounded-2xl p-4">
-                  <Link to={`/c/${m.organization!.id}`} className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-xl bg-elevated border border-line flex items-center justify-center shrink-0">
-                      <Building2 className="w-5 h-5 text-brand" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h2 className="type-subtitle truncate">{m.organization!.name}</h2>
-                      <p className="type-label mt-0.5">
-                        {m.organization!.kind === 'condo' ? 'Condomínio' : 'Clube'} · {ROLE_LABEL[m.role] ?? m.role}
-                      </p>
-                    </div>
-                    <ChevronRight className="w-5 h-5 text-ink-muted shrink-0" />
+            {communities.map((c) => (
+              <li key={c.id} className="bg-surface border border-line rounded-2xl">
+                <Link to={`/c/${c.id}`} className="flex items-center gap-3 p-4">
+                  <div className="w-11 h-11 rounded-xl bg-elevated border border-line flex items-center justify-center shrink-0">
+                    <Building2 className="w-5 h-5 text-brand" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h2 className="type-subtitle truncate">{c.name}</h2>
+                    <p className="text-xs text-ink-muted mt-0.5">
+                      {c.kind === 'condo' ? 'Condomínio' : 'Clube'} · {ROLE_LABEL[c.role] ?? c.role}
+                    </p>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-ink-muted shrink-0" />
+                </Link>
+                {c.isAdmin && (
+                  <Link
+                    to={`/c/${c.id}/gestao`}
+                    className="flex items-center gap-2 border-t border-line px-4 py-3 text-sm text-brand"
+                  >
+                    <Settings className="w-4 h-4" /> Gestão: membros, convites e presença
                   </Link>
-                  {(m.role === 'owner' || m.role === 'admin') && (
-                    <InviteMembers organizationId={m.organization!.id} organizationName={m.organization!.name ?? ''} />
-                  )}
-                </div>
+                )}
               </li>
             ))}
           </ul>
         )}
 
         <JoinWithCode />
-
-        <Link to="/dependentes" className="flex items-center gap-3 bg-surface border border-line rounded-2xl p-4">
-          <Baby className="w-5 h-5 text-brand shrink-0" />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-ink">Seus dependentes</p>
-            <p className="text-xs text-ink-muted">Cadastre filhos menores para inscrevê-los nas atividades</p>
-          </div>
-          <ChevronRight className="w-5 h-5 text-ink-muted shrink-0" />
-        </Link>
       </div>
     </PageContainer>
   );
