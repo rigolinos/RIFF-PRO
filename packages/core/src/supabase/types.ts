@@ -1262,11 +1262,11 @@ export type Database = {
         Returns: string
       }
       short_name: { Args: { p_full: string }; Returns: string }
-      tax_id_kind: { Args: { p_value: string }; Returns: string }
       submit_game_review: {
         Args: { p_kudos?: Json; p_session: string; p_vibe: number }
         Returns: Json
       }
+      tax_id_kind: { Args: { p_value: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never
