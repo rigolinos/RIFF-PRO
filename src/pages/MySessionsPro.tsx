@@ -84,7 +84,12 @@ const MySessionsPro = () => {
       });
       toast.success(`Atividade duplicada para ${format(parseISO(nextWeekDate), "EEE, d 'de' MMM", { locale: ptBR })}!`);
     } catch (error: unknown) {
-      toast.error(errorMessage(error, 'Erro ao duplicar atividade.'));
+      if (errorMessage(error, '').includes('organizer_profile_incomplete')) {
+        toast.error('Complete seu cadastro de organizador para publicar.');
+        navigate('/onboarding/pro?next=/my-sessions');
+      } else {
+        toast.error(errorMessage(error, 'Erro ao duplicar atividade.'));
+      }
     } finally {
       setIsDuplicating(null);
     }

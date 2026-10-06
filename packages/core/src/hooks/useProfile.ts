@@ -48,8 +48,8 @@ export function useProfile() {
     mutationFn: async (updates: ProfileUpdates) => {
       if (!user?.id) throw new Error('Not authenticated');
 
-      // Separate public vs private fields
-      const { email, phone, whatsapp_number, pix_key, pix_key_type, credential_number, profile_id: _profile_id, user_id: _user_id, ...publicUpdates } = updates as ProfileUpdates;
+      // Separate public vs private fields (CPF/CNPJ e nascimento só mudam pela porta de organizador)
+      const { email, phone, whatsapp_number, pix_key, pix_key_type, credential_number, profile_id: _profile_id, user_id: _user_id, tax_id: _tax_id, tax_id_type: _tax_id_type, birth_date: _birth_date, ...publicUpdates } = updates as ProfileUpdates;
 
       const profileId = profileQuery.data?.id;
 

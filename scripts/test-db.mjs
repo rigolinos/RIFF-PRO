@@ -827,6 +827,76 @@ r = await as('authenticated', PC, "UPDATE public.bookings SET status = 'cancelle
 ok(!!r.err && /late_cancellation/.test(r.err), 'a menos de 4 horas o cancelamento é barrado');
 await ex('RESET timezone');
 
+// ── Porta de organizador (migration 0019) ────────────────────────────────
+console.log('Virar organizador:');
+const become = (uid, over = {}) => {
+  const a = { name: 'Caio Reis', tax: '529.982.247-25', birth: '1990-05-10', whats: '(51) 99999-0000', type: 'organizer', cred: null, credNum: null,
+    city: 'Porto Alegre', bio: 'Organizo vôlei de praia aos sábados.', pixType: 'email', pix: 'caio@teste.dev', ...over };
+  return as('authenticated', uid, 'SELECT public.become_organizer($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) AS r',
+    [a.name, a.tax, a.birth, a.whats, a.type, a.cred, a.credNum, a.city, a.bio, a.pixType, a.pix]);
+};
+const insertPro = (uid, pid) => as('authenticated', uid,
+  `INSERT INTO public.sessions (professional_id, category_id, title, date, start_time, duration_minutes, location_name, max_participants, price_per_slot, status)
+   VALUES ($1, $2, 'Treino novo', current_date + 3, '08:00', 60, 'Parque da Orla', 10, 30, 'active') RETURNING id`, [pid, category]);
+const pPC = (await one('SELECT id FROM public.profiles WHERE user_id = $1', [PC])).id;
+const okCode = (res, code) => !!res.err && res.err.includes(code);
+
+r = await as('authenticated', PC, "UPDATE public.profiles SET role = 'professional' WHERE user_id = auth.uid()");
+ok(!!r.err, 'participante não muda o próprio papel direto na tabela');
+r = await insertPro(PC, pPC);
+ok(okCode(r, 'organizer_profile_incomplete'), 'participante não cria atividade do Pro direto pela API');
+r = await become(PC);
+ok(okCode(r, 'organizer_terms_required'), 'sem aceitar o Termo do Organizador não vira organizador');
+r = await as('authenticated', PC, "INSERT INTO public.legal_acceptances (profile_id, document, version) VALUES ($1, 'organizer_terms', 'teste')", [pPC]);
+ok(!r.err, 'participante registra o aceite do Termo do Organizador' + (r.err ? ` (${r.err})` : ''));
+r = await become(PC, { name: 'Caio' });
+ok(okCode(r, 'full_name_required'), 'sem sobrenome não vira organizador');
+r = await become(PC, { tax: '123.456.789-00' });
+ok(okCode(r, 'tax_id_invalid'), 'CPF com dígito verificador errado é recusado');
+r = await become(PC, { tax: '111.111.111-11' });
+ok(okCode(r, 'tax_id_invalid'), 'CPF de números repetidos é recusado');
+r = await as('authenticated', PC, "SELECT public.become_organizer('Caio Reis', '529.982.247-25', (public.now_sp()::date - interval '17 years')::date, '51999990000', 'organizer', null, null, 'Porto Alegre', 'Organizo vôlei de praia aos sábados.', 'email', 'caio@teste.dev') AS r");
+ok(okCode(r, 'underage'), 'menor de 18 anos não vira organizador');
+r = await become(PC, { whats: '123' });
+ok(okCode(r, 'whatsapp_required'), 'sem celular válido não vira organizador');
+r = await become(PC, { pix: '' });
+ok(okCode(r, 'pix_required'), 'sem chave Pix não vira organizador');
+r = await become(PC, { bio: 'oi' });
+ok(okCode(r, 'bio_too_short'), 'sem apresentação não vira organizador');
+r = await become(PC, { type: 'astronauta' });
+ok(!!r.err, 'área de atuação fora da lista é barrada');
+r = await become(PC, { cred: 'CREF', credNum: '123456-G/RS' });
+const pcRow = await one(`SELECT p.role, p.full_name, p.credential_number, pp.tax_id, pp.tax_id_type, pp.birth_date, pp.whatsapp_number, pp.pix_key
+  FROM public.profiles p JOIN public.profile_private pp ON pp.profile_id = p.id WHERE p.id = $1`, [pPC]);
+ok(r.rows?.[0]?.r?.success === true && pcRow.role === 'professional' && pcRow.tax_id === '52998224725' && pcRow.tax_id_type === 'cpf'
+  && pcRow.whatsapp_number === '51999990000' && pcRow.pix_key === 'caio@teste.dev', 'com termo e cadastro completo a conta vira organizadora' + (r.err ? ` (${r.err})` : ''));
+ok(pcRow.credential_number === '123456-G/RS', 'registro profissional vai para a vitrine pública');
+r = await as('authenticated', PB, 'SELECT tax_id, birth_date FROM public.profile_private WHERE profile_id = $1', [pPC]);
+ok(!r.err && r.rows.length === 0, 'CPF e nascimento não são lidos por outra conta');
+r = await insertPro(PC, pPC);
+ok(!r.err, 'organizador completo publica atividade do Pro' + (r.err ? ` (${r.err})` : ''));
+r = await as('authenticated', PC, 'SELECT public.my_organizer_missing() AS m');
+ok(Array.isArray(r.rows?.[0]?.m) && r.rows[0].m.length === 0, 'app vê que não falta nada');
+r = await as('authenticated', PC, 'SELECT public.create_booking($1) AS r', [await spSession('Jogo de outro organizador', 6)]);
+ok(r.rows?.[0]?.r?.success === true, 'organizador continua podendo reservar atividades de outros');
+
+// CPF de outra conta e CNPJ
+await q("INSERT INTO public.legal_acceptances (profile_id, document, version) VALUES ($1, 'organizer_terms', 'teste')", [pPB]);
+r = await become(PB, { name: 'Beto Lima' });
+ok(okCode(r, 'tax_id_in_use'), 'o mesmo CPF não serve para duas contas');
+r = await become(PB, { name: 'Beto Lima', tax: '11.222.333/0001-81' });
+ok(r.rows?.[0]?.r?.success === true && (await one('SELECT tax_id_type FROM public.profile_private WHERE profile_id = $1', [pPB])).tax_id_type === 'cnpj',
+  'CNPJ válido também é aceito' + (r.err ? ` (${r.err})` : ''));
+
+// organizador antigo completa ao publicar
+r = await as('authenticated', PO, 'SELECT public.my_organizer_missing() AS m');
+const poMissing = r.rows?.[0]?.m ?? [];
+ok(poMissing.includes('tax_id') && poMissing.includes('birth_date'), 'organizador antigo vê o que falta (' + poMissing.join(', ') + ')');
+r = await insertPro(PO, pPO);
+ok(okCode(r, 'organizer_profile_incomplete'), 'organizador antigo sem os dados novos não publica');
+r = await as('anon', '', "SELECT public.become_organizer('A B', '52998224725', '1990-01-01', '51999990000', 'organizer', null, null, 'X', 'xxxxxxxxxxxx', 'email', 'a@b.cd') AS r");
+ok(!!r.err, 'visitante sem login não chama a função');
+
 // ── Higiene de segurança (verificador do Supabase) ─────────────────────
 console.log('Higiene de segurança:');
 const noPath = (await q(`SELECT p.proname FROM pg_proc p WHERE p.pronamespace = 'public'::regnamespace

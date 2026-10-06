@@ -17,8 +17,8 @@ export type LegalDocumentId = ProLegalDocumentId | ClubesLegalDocumentId;
 
 export const LEGAL_VERSIONS: Record<LegalDocumentId, string> = {
   terms: '2026-10-01',
-  privacy: '2026-10-06',
-  organizer_terms: '2026-10-01',
+  privacy: '2026-10-06.2',
+  organizer_terms: '2026-10-06',
   clubes_terms: '2026-10-06',
   clubes_privacy: '2026-10-06',
   guardian_consent: '2026-10-03',
@@ -120,6 +120,7 @@ export const LEGAL_DOCUMENTS: Record<ProLegalDocumentId, LegalDocument> = {
         heading: '3. Informações verdadeiras e atualizadas',
         paragraphs: [
           'As informações das atividades (data, horário, local, vagas, nível, o que levar) devem ser verdadeiras. Se algo mudar ou a atividade for cancelada, você deve atualizar no app e avisar os participantes.',
+          'Para organizar, você precisa ter 18 anos ou mais e informar nome completo, CPF ou CNPJ, data de nascimento e celular verdadeiros e seus. Esses dados identificam quem recebe os pagamentos e protegem quem reserva. O Riff pode suspender contas com dados falsos ou de terceiros.',
         ],
       },
       {
@@ -153,7 +154,7 @@ export const LEGAL_DOCUMENTS: Record<ProLegalDocumentId, LegalDocument> = {
       {
         heading: '2. Quais dados usamos',
         paragraphs: [
-          'Cadastro: nome, e-mail, telefone, cidade, foto e bio. Organizadores: também chave Pix, WhatsApp e registro profissional, quando informados.',
+          'Cadastro: nome, e-mail, telefone, cidade, foto e bio. Organizadores: também nome completo, CPF ou CNPJ, data de nascimento, celular (WhatsApp), chave Pix e registro profissional, quando informado.',
           'Uso do app: reservas, presença, avaliações, resultados de atividades e locais. Dados técnicos: registros de acesso e informações do dispositivo e navegador.',
           'Perfil esportista: a partir das suas presenças calculamos jogos, frequência, esportes, locais, organizadores e conquistas. Só você vê esses números.',
         ],
@@ -163,6 +164,7 @@ export const LEGAL_DOCUMENTS: Record<ProLegalDocumentId, LegalDocument> = {
         paragraphs: [
           'Para prestar o serviço que você contratou: criar a conta, publicar e reservar atividades, permitir o pagamento direto ao organizador (execução de contrato, LGPD art. 7º, V).',
           'Para segurança, prevenção de fraudes e melhoria do app (legítimo interesse, art. 7º, IX), para cumprir obrigações legais (art. 7º, II) e para nos defender em processos (exercício regular de direitos, art. 7º, VI).',
+          'De quem organiza, o CPF ou CNPJ e a data de nascimento servem para identificar quem recebe pagamentos de participantes, confirmar a maioridade, impedir contas repetidas e apurar fraudes (legítimo interesse, art. 7º, IX, e exercício regular de direitos, art. 7º, VI). Esses dados não aparecem no app.',
         ],
       },
       {
@@ -171,6 +173,7 @@ export const LEGAL_DOCUMENTS: Record<ProLegalDocumentId, LegalDocument> = {
           'Com o organizador da atividade que você reserva, na medida necessária (por exemplo, seu nome). Com o participante que reserva sua atividade, os dados necessários para o pagamento (por exemplo, sua chave Pix e WhatsApp).',
           'Com quem também reservou a mesma atividade: sua foto e seu primeiro nome com a inicial do sobrenome (por exemplo, "Marina L."), na lista de quem vai. Quem não reservou vê só a quantidade de confirmados. Com o modo reservado, no seu perfil, você aparece só como "Participante".',
           'Com prestadores de serviço que operam a infraestrutura do app (hospedagem e banco de dados), que podem armazenar dados fora do Brasil com as garantias exigidas pela LGPD (art. 33). Com autoridades, quando a lei exigir.',
+          'CPF, CNPJ e data de nascimento não são mostrados a outros usuários. Podem ser informados a autoridades quando a lei exigir ou para apurar fraude em atividade do organizador.',
           'Não vendemos seus dados.',
         ],
       },

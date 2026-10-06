@@ -1,16 +1,25 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Apple, Dumbbell, HandHeart, Info, Loader2, Megaphone, Shapes, Timer, Trophy } from 'lucide-react';
+import { useState } from 'react';
+import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
+import { Apple, Dumbbell, HandHeart, Info, Loader2, Lock, Megaphone, Shapes, Timer, Trophy } from 'lucide-react';
 import { toast } from 'sonner';
 import { useProfile } from '@riff/core/hooks/useProfile';
+import { useLegalAcceptance } from '@riff/core/hooks/useLegalAcceptance';
 import { AuthShell } from '@riff/core/layout/AuthShell';
 import { Field } from '@riff/core/domain/Field';
 import { FIELD_CLASS } from '@riff/core/lib/fields';
 import { Button } from '@riff/core/ui/button';
+import { Checkbox } from '@riff/core/ui/checkbox';
 import { Input } from '@riff/core/ui/input';
 import { Textarea } from '@riff/core/ui/textarea';
 import { chipClass } from '@riff/core/lib/chips';
-import { cn, errorMessage } from '@riff/core/lib/utils';
+import { cn } from '@riff/core/lib/utils';
+import { safeRedirect } from '@riff/core/auth/redirect';
+import { digits, isAdult, maskPhone, maskTaxId, taxIdKind } from '@riff/core/lib/taxId';
+import { LEGAL_DOCUMENTS } from '@riff/core/legal/documents';
+import { supabase } from '@riff/core/supabase/client';
+import { useViewMode } from '@/contexts/ViewModeContext';
+import { organizerErrorMessage, useOrganizerMissing } from '@/hooks/useOrganizer';
 import { BRAND } from '@/brand';
 
 // Valores aceitos pelo banco (profiles_professional_type_check)
@@ -31,99 +40,210 @@ const PIX_TYPES = [
   { value: 'random', label: 'Aleatória', placeholder: 'Cole a chave aleatória' },
 ];
 
+const todaySP = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(new Date());
+
+type Profile = NonNullable<ReturnType<typeof useProfile>['profile']>;
+
+// A "porta" de organizador: participante vira organizador, e organizador antigo completa os dados
 const OnboardingPro = () => {
-  const navigate = useNavigate();
-  const { profile, updateProfile, isLoading, isUpdating } = useProfile();
-  const [step, setStep] = useState<1 | 2>(1);
-  const [type, setType] = useState('');
-  const [credential, setCredential] = useState('');
-  const [credentialNumber, setCredentialNumber] = useState('');
-  const [city, setCity] = useState('');
-  const [bio, setBio] = useState('');
-  const [whatsapp, setWhatsapp] = useState('');
-  const [pixType, setPixType] = useState('');
-  const [pixKey, setPixKey] = useState('');
+  const { profile, isLoading } = useProfile();
+  const { data: missing, isLoading: loadingMissing } = useOrganizerMissing();
+  const [params] = useSearchParams();
+  const next = safeRedirect(params.get('next'), '/dashboard');
 
-  // Já configurado (ou participante): segue para a tela certa
-  useEffect(() => {
-    if (!isLoading && profile) {
-      if (profile.role !== 'professional') navigate('/onboarding/student', { replace: true });
-      else if (profile.professional_type && profile.pix_key) navigate('/dashboard', { replace: true });
-    }
-  }, [profile, isLoading, navigate]);
-
-  const step1Missing = !type ? 'Escolha como você atua' : city.trim().length < 2 ? 'Informe sua cidade' : bio.trim().length < 10 ? 'Escreva uma apresentação curta' : '';
-  const step2Missing = !pixType ? 'Escolha o tipo da chave Pix' : pixKey.trim().length < 5 ? 'Informe a chave Pix' : '';
-
-  const finish = async () => {
-    try {
-      await updateProfile({
-        professional_type: type,
-        credential_type: credential || null,
-        credential_number: credential ? credentialNumber.trim() || null : null,
-        city: city.trim(),
-        bio: bio.trim(),
-        whatsapp_number: whatsapp.trim() || null,
-        pix_key_type: pixType,
-        pix_key: pixKey.trim(),
-      });
-      toast.success('Tudo pronto! Agora é publicar sua primeira atividade.');
-      navigate('/dashboard', { replace: true });
-    } catch (error: unknown) {
-      toast.error(errorMessage(error, 'Não foi possível salvar. Tente de novo.'));
-    }
-  };
-
-  if (isLoading) {
+  if (isLoading || loadingMissing || !profile) {
     return (
       <div className="min-h-[100dvh] bg-bg flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-brand animate-spin" />
       </div>
     );
   }
+  // Já pode organizar: segue
+  if (missing && missing.length === 0) return <Navigate to={next} replace />;
+  return <OrganizerForm profile={profile} next={next} />;
+};
 
-  const firstName = profile?.full_name?.split(' ')[0];
+function OrganizerForm({ profile, next }: { profile: Profile; next: string }) {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { setViewMode } = useViewMode();
+  const { missing: legalMissing, accept } = useLegalAcceptance();
+  const upgrading = profile.role !== 'professional';
+  const needsTerms = upgrading || legalMissing.includes('organizer_terms');
+  const [today] = useState(todaySP);
+
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [fullName, setFullName] = useState(profile.full_name ?? '');
+  const [taxId, setTaxId] = useState('');
+  const [taxTouched, setTaxTouched] = useState(false);
+  const [birthDate, setBirthDate] = useState('');
+  const [whatsapp, setWhatsapp] = useState(maskPhone(profile.whatsapp_number ?? profile.phone ?? ''));
+  const [type, setType] = useState(profile.professional_type ?? '');
+  const [credential, setCredential] = useState(profile.credential_type ?? '');
+  const [credentialNumber, setCredentialNumber] = useState(profile.credential_number ?? '');
+  const [city, setCity] = useState(profile.city ?? '');
+  const [bio, setBio] = useState(profile.bio ?? '');
+  const [pixType, setPixType] = useState(profile.pix_key_type ?? '');
+  const [pixKey, setPixKey] = useState(profile.pix_key ?? '');
+  const [termsChecked, setTermsChecked] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const firstName = fullName.trim().split(/\s+/)[0];
+  const taxKind = taxIdKind(taxId);
+  const step1Missing =
+    fullName.trim().split(/\s+/).length < 2
+      ? 'Informe nome e sobrenome'
+      : !taxKind
+        ? digits(taxId).length >= 11 ? 'Confira o CPF ou CNPJ' : 'Informe seu CPF ou CNPJ'
+        : !birthDate
+          ? 'Informe sua data de nascimento'
+          : !isAdult(birthDate, today)
+            ? 'Para organizar é preciso ter 18 anos ou mais'
+            : digits(whatsapp).length < 10
+              ? 'Informe seu celular com DDD'
+              : '';
+  const step2Missing = !type ? 'Escolha como você atua' : city.trim().length < 2 ? 'Informe sua cidade' : bio.trim().length < 10 ? 'Escreva uma apresentação curta' : '';
+  const step3Missing = !pixType ? 'Escolha o tipo da chave Pix' : pixKey.trim().length < 5 ? 'Informe a chave Pix' : needsTerms && !termsChecked ? 'Aceite o Termo do Organizador' : '';
+
+  const finish = async () => {
+    setSaving(true);
+    try {
+      if (needsTerms) await accept(['organizer_terms']);
+      const { error } = await supabase.rpc('become_organizer', {
+        p_full_name: fullName.trim(),
+        p_tax_id: digits(taxId),
+        p_birth_date: birthDate,
+        p_whatsapp: digits(whatsapp),
+        p_professional_type: type,
+        p_credential_type: credential,
+        p_credential_number: credential ? credentialNumber.trim() : '',
+        p_city: city.trim(),
+        p_bio: bio.trim(),
+        p_pix_key_type: pixType,
+        p_pix_key: pixKey.trim(),
+      });
+      if (error) throw error;
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['profile'] }),
+        queryClient.invalidateQueries({ queryKey: ['organizer-missing'] }),
+        queryClient.invalidateQueries({ queryKey: ['legal-acceptances'] }),
+      ]);
+      setViewMode('professional');
+      toast.success(upgrading ? 'Pronto! Agora você também organiza no Riff.' : 'Cadastro completo. Pode publicar.');
+      navigate(next, { replace: true });
+    } catch (error: unknown) {
+      toast.error(organizerErrorMessage(error, 'Não foi possível salvar. Tente de novo.'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const shellBase = { product: BRAND.name, progress: { step, total: 3 } };
 
   if (step === 1) {
     return (
       <AuthShell
-        product={BRAND.name}
-        progress={{ step: 1, total: 2 }}
-        label="Seu perfil de organizador"
-        title={firstName ? `Prazer, ${firstName}!` : 'Prazer!'}
-        subtitle="Conta rapidinho o que você organiza. É isso que aparece na sua vitrine para quem vai reservar."
+        {...shellBase}
+        onBack={() => navigate(-1)}
+        label={upgrading ? 'Quero organizar' : 'Cadastro de organizador'}
+        title={upgrading ? `Bora organizar${firstName ? `, ${firstName}` : ''}?` : 'Complete seu cadastro'}
+        subtitle={
+          upgrading
+            ? 'Sua conta continua a mesma: você segue reservando atividades e ganha o painel de organizador. Primeiro, quem é você.'
+            : 'Agora pedimos CPF, nascimento e celular de quem organiza, para a segurança de quem reserva. Leva um minuto.'
+        }
+      >
+        <div className="space-y-4 flex-1">
+          <Field label="Nome completo" htmlFor="ob-name" hint="Como aparece na sua vitrine.">
+            <Input id="ob-name" autoComplete="name" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Nome e sobrenome" className={FIELD_CLASS} />
+          </Field>
+          <Field
+            label="CPF ou CNPJ"
+            htmlFor="ob-tax"
+            error={taxTouched && digits(taxId).length >= 11 && !taxKind ? 'Os números não conferem.' : undefined}
+          >
+            <Input
+              id="ob-tax"
+              inputMode="numeric"
+              value={taxId}
+              onChange={(e) => setTaxId(maskTaxId(e.target.value))}
+              onBlur={() => setTaxTouched(true)}
+              placeholder="000.000.000-00"
+              className={FIELD_CLASS}
+            />
+          </Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Nascimento" htmlFor="ob-birth" error={birthDate && !isAdult(birthDate, today) ? 'Precisa ter 18+' : undefined}>
+              <Input id="ob-birth" type="date" max={today} value={birthDate} onChange={(e) => setBirthDate(e.target.value)} className={FIELD_CLASS} />
+            </Field>
+            <Field label="Celular (WhatsApp)" htmlFor="ob-whats">
+              <Input
+                id="ob-whats"
+                type="tel"
+                autoComplete="tel"
+                value={whatsapp}
+                onChange={(e) => setWhatsapp(maskPhone(e.target.value))}
+                placeholder="(11) 99999-9999"
+                className={FIELD_CLASS}
+              />
+            </Field>
+          </div>
+          <p className="flex items-start gap-2 rounded-2xl border border-line bg-surface px-4 py-3 text-xs text-ink-muted leading-relaxed">
+            <Lock className="w-4 h-4 text-success shrink-0" />
+            CPF/CNPJ e nascimento não aparecem no app: servem para identificar quem recebe pagamentos e proteger quem reserva. O celular só é
+            usado por quem reservou com você, pelo botão de WhatsApp.{' '}
+            <Link to="/privacidade" target="_blank" className="text-brand underline underline-offset-4">
+              Privacidade
+            </Link>
+          </p>
+        </div>
+        <div className="pt-6 space-y-2">
+          <Button size="lg" className="w-full" onClick={() => setStep(2)} disabled={!!step1Missing}>
+            Continuar
+          </Button>
+          {step1Missing && <p className="text-center text-xs text-ink-muted">{step1Missing}</p>}
+        </div>
+      </AuthShell>
+    );
+  }
+
+  if (step === 2) {
+    return (
+      <AuthShell
+        {...shellBase}
+        onBack={() => setStep(1)}
+        label="Sua vitrine"
+        title="O que você organiza?"
+        subtitle="É isso que aparece para quem vai reservar."
       >
         <div className="space-y-6 flex-1">
-          <section className="space-y-2">
-            <h2 className="type-label">O que você organiza?</h2>
-            <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Área de atuação">
-              {TYPES.map((t) => {
-                const active = type === t.value;
-                return (
-                  <button
-                    key={t.value}
-                    type="button"
-                    role="radio"
-                    aria-checked={active}
-                    onClick={() => setType(t.value)}
-                    className={cn(
-                      'flex items-start gap-2.5 rounded-2xl border p-3 text-left transition-all active:scale-[.98]',
-                      active ? 'bg-brand/10 border-brand' : 'bg-surface border-line',
-                      t.value === 'organizer' && 'col-span-2',
-                    )}
-                  >
-                    <span className={cn('w-9 h-9 rounded-xl flex items-center justify-center shrink-0', active ? 'bg-brand text-brand-ink' : 'bg-elevated text-ink-muted')}>
-                      <t.icon className="w-4 h-4" strokeWidth={1.75} />
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block text-sm font-semibold text-ink">{t.label}</span>
-                      <span className="block text-xs text-ink-muted">{t.text}</span>
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </section>
+          <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Área de atuação">
+            {TYPES.map((t) => {
+              const active = type === t.value;
+              return (
+                <button
+                  key={t.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  onClick={() => setType(t.value)}
+                  className={cn(
+                    'flex items-start gap-2.5 rounded-2xl border p-3 text-left transition-all active:scale-[.98]',
+                    active ? 'bg-brand/10 border-brand' : 'bg-surface border-line',
+                    t.value === 'organizer' && 'col-span-2',
+                  )}
+                >
+                  <span className={cn('w-9 h-9 rounded-xl flex items-center justify-center shrink-0', active ? 'bg-brand text-brand-ink' : 'bg-elevated text-ink-muted')}>
+                    <t.icon className="w-4 h-4" strokeWidth={1.75} />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-sm font-semibold text-ink">{t.label}</span>
+                    <span className="block text-xs text-ink-muted">{t.text}</span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
 
           <section className="space-y-2">
             <h2 className="type-label">Registro profissional (opcional)</h2>
@@ -163,12 +283,11 @@ const OnboardingPro = () => {
             />
           </Field>
         </div>
-
         <div className="pt-6 space-y-2">
-          <Button size="lg" className="w-full" onClick={() => setStep(2)} disabled={!!step1Missing}>
+          <Button size="lg" className="w-full" onClick={() => setStep(3)} disabled={!!step2Missing}>
             Continuar
           </Button>
-          {step1Missing && <p className="text-center text-xs text-ink-muted">{step1Missing}</p>}
+          {step2Missing && <p className="text-center text-xs text-ink-muted">{step2Missing}</p>}
         </div>
       </AuthShell>
     );
@@ -178,12 +297,11 @@ const OnboardingPro = () => {
 
   return (
     <AuthShell
-      product={BRAND.name}
-      progress={{ step: 2, total: 2 }}
+      {...shellBase}
+      onBack={() => setStep(2)}
       label="Recebimento"
       title="Como você recebe?"
       subtitle="No Riff o dinheiro vai direto para você, por Pix. Sem intermediário no caminho."
-      onBack={() => setStep(1)}
     >
       <div className="space-y-6 flex-1">
         <p className="flex items-start gap-2 rounded-2xl border border-brand/30 bg-brand/5 px-4 py-3 text-sm text-ink-muted">
@@ -214,19 +332,29 @@ const OnboardingPro = () => {
           />
         </Field>
 
-        <Field label="WhatsApp para reservas (recomendado)" htmlFor="ob-whats" hint="Para receber comprovantes e dúvidas de quem reservou.">
-          <Input id="ob-whats" type="tel" autoComplete="tel" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="(11) 99999-9999" className={FIELD_CLASS} />
-        </Field>
+        {needsTerms && (
+          <label className={cn('flex items-start gap-3 p-4 rounded-2xl border cursor-pointer transition-colors', termsChecked ? 'bg-brand/10 border-brand/50' : 'bg-surface border-line')}>
+            <Checkbox checked={termsChecked} onCheckedChange={(v) => setTermsChecked(v === true)} className="mt-0.5" />
+            <span className="text-sm text-ink leading-relaxed">
+              Li e aceito o{' '}
+              <Link to={LEGAL_DOCUMENTS.organizer_terms.path} target="_blank" onClick={(e) => e.stopPropagation()} className="text-brand underline underline-offset-4">
+                Termo do Organizador
+              </Link>{' '}
+              e declaro que sou o responsável pelas atividades que publico, pela segurança dos participantes e por pagamentos, cancelamentos e
+              reembolsos.
+            </span>
+          </label>
+        )}
       </div>
 
       <div className="pt-6 space-y-2">
-        <Button size="lg" className="w-full shadow-[var(--shadow-cta)]" onClick={finish} disabled={!!step2Missing || isUpdating}>
-          {isUpdating ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Concluir e ir para o painel'}
+        <Button size="lg" className="w-full shadow-[var(--shadow-cta)]" onClick={finish} disabled={!!step3Missing || saving}>
+          {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : upgrading ? 'Virar organizador' : 'Salvar e continuar'}
         </Button>
-        {step2Missing && <p className="text-center text-xs text-ink-muted">{step2Missing}</p>}
+        {step3Missing && <p className="text-center text-xs text-ink-muted">{step3Missing}</p>}
       </div>
     </AuthShell>
   );
-};
+}
 
 export default OnboardingPro;

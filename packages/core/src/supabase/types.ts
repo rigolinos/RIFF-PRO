@@ -635,6 +635,7 @@ export type Database = {
       }
       profile_private: {
         Row: {
+          birth_date: string | null
           created_at: string | null
           credential_number: string | null
           email: string | null
@@ -642,10 +643,13 @@ export type Database = {
           pix_key: string | null
           pix_key_type: string | null
           profile_id: string
+          tax_id: string | null
+          tax_id_type: string | null
           updated_at: string | null
           whatsapp_number: string | null
         }
         Insert: {
+          birth_date?: string | null
           created_at?: string | null
           credential_number?: string | null
           email?: string | null
@@ -653,10 +657,13 @@ export type Database = {
           pix_key?: string | null
           pix_key_type?: string | null
           profile_id: string
+          tax_id?: string | null
+          tax_id_type?: string | null
           updated_at?: string | null
           whatsapp_number?: string | null
         }
         Update: {
+          birth_date?: string | null
           created_at?: string | null
           credential_number?: string | null
           email?: string | null
@@ -664,6 +671,8 @@ export type Database = {
           pix_key?: string | null
           pix_key_type?: string | null
           profile_id?: string
+          tax_id?: string | null
+          tax_id_type?: string | null
           updated_at?: string | null
           whatsapp_number?: string | null
         }
@@ -1093,6 +1102,22 @@ export type Database = {
         Args: { p_kind: string; p_name: string; p_owner_email: string }
         Returns: string
       }
+      become_organizer: {
+        Args: {
+          p_bio: string
+          p_birth_date: string
+          p_city: string
+          p_credential_number: string
+          p_credential_type: string
+          p_full_name: string
+          p_pix_key: string
+          p_pix_key_type: string
+          p_professional_type: string
+          p_tax_id: string
+          p_whatsapp: string
+        }
+        Returns: Json
+      }
       calculate_professional_rating: {
         Args: { pro_id: string }
         Returns: number
@@ -1167,8 +1192,10 @@ export type Database = {
         Args: { p_action: string; p_org: string; p_profile: string }
         Returns: Json
       }
+      my_organizer_missing: { Args: never; Returns: string[] }
       my_pro_sports_profile: { Args: never; Returns: Json }
       now_sp: { Args: never; Returns: string }
+      organizer_missing: { Args: { p_profile: string }; Returns: string[] }
       pending_game_reviews: {
         Args: never
         Returns: {
@@ -1235,6 +1262,7 @@ export type Database = {
         Returns: string
       }
       short_name: { Args: { p_full: string }; Returns: string }
+      tax_id_kind: { Args: { p_value: string }; Returns: string }
       submit_game_review: {
         Args: { p_kudos?: Json; p_session: string; p_vibe: number }
         Returns: Json
