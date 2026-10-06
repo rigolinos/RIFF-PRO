@@ -83,3 +83,21 @@ export function usePlayerProfile(profileId: string | undefined, orgId?: string |
     enabled: !!profileId,
   });
 }
+
+/** Ranking do mês da comunidade (month: AAAA-MM-01; sem mês = mês atual). */
+export function useRanking(orgId: string | undefined, month?: string) {
+  return useQuery({
+    queryKey: ['ranking', orgId, month ?? 'atual'],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('community_ranking', {
+        p_org: orgId!,
+        ...(month ? { p_month: month } : {}),
+      });
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!orgId,
+  });
+}
+
+export type RankingRow = NonNullable<ReturnType<typeof useRanking>['data']>[number];
