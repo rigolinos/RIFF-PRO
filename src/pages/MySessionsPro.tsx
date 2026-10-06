@@ -1,20 +1,24 @@
 import { useState } from 'react';
 import { format, parseISO, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import {
-  Users, Clock, Loader2,
-  Edit, XCircle, Copy, Share2, ClipboardCheck, CalendarDays
-} from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Users, Loader2, Edit, XCircle, Copy, Share2, ClipboardCheck, CalendarDays, MoreHorizontal, Lock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { errorMessage } from '@riff/core/lib/utils';
-
 import { PageContainer } from '@riff/core/layout/PageContainer';
+import { HeroHeader } from '@riff/core/layout/HeroHeader';
+import { ConfirmDialog, EmptyState, TicketGrid } from '@riff/core/domain';
+import { Button } from '@riff/core/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@riff/core/ui/dropdown-menu';
 import { useProSessions } from '@/hooks/useProSessions';
 import { useSessions } from '@/hooks/useSessions';
-import { EmptyState } from '@riff/core/domain';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@riff/core/ui/alert-dialog';
+import { ProSessionRow } from '@/components/cards/ProSessionRow';
 
 const MySessionsPro = () => {
   const { sessions, isLoading, isError, error, cancelSession, updateSessionStatus } = useProSessions();
@@ -25,6 +29,8 @@ const MySessionsPro = () => {
 
   const { createSession } = useSessions();
   const [isDuplicating, setIsDuplicating] = useState<string | null>(null);
+  const [tab, setTab] = useState<'upcoming' | 'toClose' | 'done'>('upcoming');
+  const [toCancel, setToCancel] = useState<SessionType | null>(null);
   const navigate = useNavigate();
 
   const handleCancelSession = async (session: SessionType) => {
@@ -88,166 +94,165 @@ const MySessionsPro = () => {
   const isCancelled = (s: SessionType) => s.status === 'cancelled';
   const isCompleted = (s: SessionType) => s.status === 'completed';
 
+  const all = sessions ?? [];
+  const upcoming = all.filter((s) => !isPast(s) && !isCancelled(s) && !isCompleted(s)).sort((a, b) => `${a.date}${a.start_time}`.localeCompare(`${b.date}${b.start_time}`));
+  const toClose = all.filter((s) => isPast(s) && !isCancelled(s) && !isCompleted(s));
+  const done = all.filter((s) => isCancelled(s) || isCompleted(s));
+  const list = tab === 'upcoming' ? upcoming : tab === 'toClose' ? toClose : done;
+
+  const share = (session: SessionType) => {
+    const url = `${window.location.origin}/session/${session.id}`;
+    if (navigator.share) {
+      navigator.share({ title: session.title, url }).catch(() => undefined);
+    } else {
+      navigator.clipboard.writeText(url);
+      toast.success('Link da atividade copiado.');
+    }
+  };
+
+  const actionsFor = (session: SessionType) => {
+    const past = isPast(session);
+    const cancelled = isCancelled(session);
+    const completed = isCompleted(session);
+    const isFull = (session.current_participants ?? 0) >= (session.max_participants ?? 1);
+    if (cancelled || completed) {
+      return (
+        <Button variant="secondary" size="sm" className="w-full" onClick={() => handleDuplicateSession(session)} disabled={isDuplicating === session.id}>
+          {isDuplicating === session.id ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Copy className="w-4 h-4 mr-2" />} Repetir na semana seguinte
+        </Button>
+      );
+    }
+    return (
+      <div className="flex gap-2">
+        {past ? (
+          <Button size="sm" className="flex-1" onClick={() => navigate(`/session/${session.id}/attendance`)}>
+            <ClipboardCheck className="w-4 h-4 mr-2" /> Fazer a chamada
+          </Button>
+        ) : (
+          <Button variant="secondary" size="sm" className="flex-1" onClick={() => share(session)}>
+            <Share2 className="w-4 h-4 mr-2" /> Compartilhar
+          </Button>
+        )}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="secondary" size="sm" aria-label={`Mais opções de ${session.title}`}>
+              <MoreHorizontal className="w-4 h-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="bg-elevated border-line">
+            <DropdownMenuItem onSelect={() => navigate(`/session/${session.id}/attendance`)}>
+              <Users className="w-4 h-4 mr-2" /> Inscritos e presença
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => handleDuplicateSession(session)}>
+              <Copy className="w-4 h-4 mr-2" /> Repetir na semana seguinte
+            </DropdownMenuItem>
+            {!past && (
+              <DropdownMenuItem onSelect={() => navigate(`/edit-session/${session.id}`)}>
+                <Edit className="w-4 h-4 mr-2" /> Editar
+              </DropdownMenuItem>
+            )}
+            {!past && !isFull && (
+              <DropdownMenuItem onSelect={() => handleCloseRegistrations(session)}>
+                <Lock className="w-4 h-4 mr-2" /> Encerrar inscrições
+              </DropdownMenuItem>
+            )}
+            {!past && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="text-danger" onSelect={() => setToCancel(session)}>
+                  <XCircle className="w-4 h-4 mr-2" /> Cancelar atividade
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    );
+  };
+
+  const TABS = [
+    { key: 'upcoming' as const, label: 'Próximas', n: upcoming.length },
+    { key: 'toClose' as const, label: 'Fechar', n: toClose.length },
+    { key: 'done' as const, label: 'Passadas', n: done.length },
+  ];
+
   return (
-    <PageContainer title="Minhas Atividades" withBottomNav>
-      <div className="px-6 py-6 flex-1 flex flex-col">
+    <PageContainer withBottomNav>
+      <HeroHeader overlap label="Atividades" title="Suas atividades" subtitle="Compartilhe, faça a chamada e repita as que deram certo." />
+
+      <TicketGrid
+        items={[
+          { label: 'Próximas', value: upcoming.length },
+          { label: 'Fechar presença', value: <span className={toClose.length ? 'text-accent' : ''}>{toClose.length}</span> },
+          { label: 'Passadas', value: done.length },
+        ]}
+      />
+
+      <div className="px-4 py-6 flex-1 flex flex-col space-y-4">
+        <div className="grid grid-cols-3 gap-1 bg-surface border border-line rounded-full p-1" role="tablist">
+          {TABS.map((t) => (
+            <button
+              key={t.key}
+              type="button"
+              role="tab"
+              aria-selected={tab === t.key}
+              onClick={() => setTab(t.key)}
+              className={`h-9 rounded-full text-sm font-medium transition-colors ${tab === t.key ? 'bg-brand text-brand-ink font-semibold' : 'text-ink-muted'}`}
+            >
+              {t.label}
+              {t.n ? ` · ${t.n}` : ''}
+            </button>
+          ))}
+        </div>
+
         {isLoading ? (
-          <div className="flex-1 flex items-center justify-center">
+          <div className="flex justify-center py-12">
             <Loader2 className="w-8 h-8 text-brand animate-spin" />
           </div>
-        ) : !sessions || sessions.length === 0 ? (
-                    <EmptyState 
+        ) : all.length === 0 ? (
+          <EmptyState
             icon={CalendarDays}
-            title="Nenhuma atividade criada" 
-            description="Você ainda não criou nenhuma atividade." 
-            action={{ label: 'Criar Atividade', onClick: () => navigate('/create-session') }} 
+            title="Nenhuma atividade criada"
+            description="Crie a primeira e compartilhe o link com seus participantes."
+            action={{ label: 'Criar atividade', onClick: () => navigate('/create-session') }}
+          />
+        ) : list.length === 0 ? (
+          <EmptyState
+            icon={CalendarDays}
+            title={tab === 'upcoming' ? 'Nada marcado à frente' : tab === 'toClose' ? 'Tudo em dia' : 'Nada por aqui ainda'}
+            description={
+              tab === 'upcoming'
+                ? 'Crie a próxima atividade ou repita uma que já aconteceu.'
+                : tab === 'toClose'
+                  ? 'Nenhuma atividade esperando a chamada.'
+                  : 'As atividades encerradas e canceladas aparecem aqui.'
+            }
+            action={tab === 'upcoming' ? { label: 'Criar atividade', onClick: () => navigate('/create-session') } : undefined}
           />
         ) : (
-          <div className="space-y-4">
-            {sessions.map((session, i) => {
-              const _dateStr = format(parseISO(session.date), "EEE, d 'de' MMM", { locale: ptBR });
-              const dateStr = _dateStr.charAt(0).toUpperCase() + _dateStr.slice(1);
-              const timeStr = session.start_time.substring(0, 5);
-              const isFull = (session.current_participants ?? 0) >= (session.max_participants ?? 1);
-              const past = isPast(session);
-              const cancelled = isCancelled(session);
-              const completed = isCompleted(session);
-              const canClose = past && !cancelled && !completed;
-              const activeBookings = session.bookings?.filter((b: BookingType) => !(b.status || '').startsWith('cancelled') && b.status !== 'no_show') || [];
-
-              return (
-                <motion.div
-                  key={session.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                  className={`glass-card p-4 hover:bg-white/[0.04] transition-colors relative ${past || cancelled ? 'opacity-60' : ''}`}
-                >
-                  <div className="flex justify-between items-start mb-2 cursor-pointer" onClick={() => navigate(`/session/${session.id}/attendance`)}>
-                    <h3 className="type-subtitle truncate pr-4">
-                      {session.category?.emoji} {session.title}
-                    </h3>
-                    {cancelled ? (
-                      <span className="text-xs font-semibold text-danger bg-danger/15 border border-danger px-2 py-1 rounded shrink-0">Cancelada</span>
-                    ) : completed ? (
-                      <span className="text-xs font-semibold text-brand bg-brand/10 border border-brand/20 px-2 py-1 rounded shrink-0">Encerrada</span>
-                    ) : past ? (
-                      <span className="text-xs font-semibold text-accent bg-accent/15 border border-accent/20 px-2 py-1 rounded shrink-0">Encerrar</span>
-                    ) : isFull ? (
-                      <span className="text-xs font-semibold text-brand bg-brand/10 border border-brand/20 px-2 py-1 rounded shrink-0">Lotada</span>
-                    ) : (
-                      <span className="text-xs font-semibold text-accent bg-accent/15 border border-accent/20 px-2 py-1 rounded shrink-0">Ativa</span>
-                    )}
-                  </div>
-
-                  <div className="flex flex-wrap items-center justify-between gap-3 mt-3">
-                    <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate(`/session/${session.id}/attendance`)}>
-                      <div className="flex items-center gap-1.5 text-xs text-ink-muted bg-white/5 px-2 py-1 rounded-md">
-                        <Clock className="w-3.5 h-3.5" />
-                        <span className="whitespace-nowrap">{dateStr} • {timeStr}</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-md bg-white/5">
-                        <Users className="w-3.5 h-3.5 text-brand" />
-                        <span className="whitespace-nowrap">{activeBookings.length} / {session.max_participants}</span>
-                      </div>
-                    </div>
-
-                    {!cancelled && !completed && (
-                      <div className="flex items-center gap-1.5">
-                        {/* Share Link */}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            const url = `${window.location.origin}/session/${session.id}`;
-                            if (navigator.share) {
-                              navigator.share({ title: session.title, url });
-                            } else {
-                              navigator.clipboard.writeText(url);
-                              toast.success('Link direto copiado!');
-                            }
-                          }}
-                          className="text-xs flex items-center gap-1 font-semibold text-brand bg-brand/10 px-2.5 py-1.5 rounded-lg hover:bg-brand/20 transition-colors"
-                        >
-                          <Share2 className="w-3 h-3" />
-                        </button>
-
-                        {/* Duplicate */}
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handleDuplicateSession(session); }}
-                          disabled={isDuplicating === session.id}
-                          className="text-xs flex items-center gap-1 font-semibold text-ink-muted bg-white/5 px-2.5 py-1.5 rounded-lg hover:bg-line transition-colors disabled:opacity-50"
-                        >
-                          {isDuplicating === session.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Copy className="w-3 h-3" />}
-                        </button>
-
-                        {!past && (
-                          <>
-                            {/* Edit */}
-                            <button
-                              onClick={(e) => { e.stopPropagation(); navigate(`/edit-session/${session.id}`); }}
-                              className="text-xs flex items-center gap-1 font-semibold text-brand bg-brand/10 px-2.5 py-1.5 rounded-lg hover:bg-brand/20 transition-colors"
-                            >
-                              <Edit className="w-3 h-3" />
-                            </button>
-                            
-                            {/* Close Registrations Early */}
-                            {!isFull && (
-                              <button
-                                onClick={(e) => { e.stopPropagation(); handleCloseRegistrations(session); }}
-                                className="text-xs flex items-center gap-1 font-semibold text-accent bg-accent/15 px-2.5 py-1.5 rounded-lg hover:bg-accent/15 transition-colors"
-                                title="Encerrar Inscrições"
-                              >
-                                <XCircle className="w-3 h-3" />
-                              </button>
-                            )}
-
-
-                            {/* Cancel with AlertDialog */}
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <button
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="text-xs flex items-center gap-1 font-semibold text-danger bg-danger/15 px-2.5 py-1.5 rounded-lg hover:bg-danger/15 transition-colors"
-                                >
-                                  <XCircle className="w-3 h-3" />
-                                </button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent className="bg-bg border-line">
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Cancelar atividade "{session.title}"?</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Todos os participantes inscritos serão notificados. Esta ação não pode ser desfeita.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel className="bg-white/5 hover:bg-line border-0">Manter</AlertDialogCancel>
-                                  <AlertDialogAction onClick={() => handleCancelSession(session)} className="bg-danger/15 hover:bg-danger/15 text-ink">
-                                    Sim, cancelar atividade
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </>
-                        )}
-
-                        {/* Close Session button (past, not cancelled/completed) */}
-                        {canClose && (
-                          <button
-                            onClick={(e) => { e.stopPropagation(); navigate(`/session/${session.id}/attendance`); }}
-                            className="text-xs flex items-center gap-1 font-semibold text-accent bg-accent/15 px-2.5 py-1.5 rounded-lg hover:bg-accent/15 transition-colors"
-                          >
-                            <ClipboardCheck className="w-3 h-3" /> Encerrar
-                          </button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
-              );
-            })}
+          <div className="space-y-3">
+            {list.map((session) => (
+              <div key={session.id} className="bg-surface border border-line rounded-2xl overflow-hidden">
+                <ProSessionRow session={session} showDay action={actionsFor(session)} />
+              </div>
+            ))}
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        open={!!toCancel}
+        onOpenChange={(open) => !open && setToCancel(null)}
+        title={toCancel ? `Cancelar "${toCancel.title}"?` : 'Cancelar atividade?'}
+        description="As reservas são canceladas e abrimos o WhatsApp com uma mensagem pronta para avisar os inscritos. Não dá para desfazer."
+        cancelLabel="Manter"
+        confirmLabel="Cancelar atividade"
+        isDestructive
+        onConfirm={async () => {
+          if (toCancel) await handleCancelSession(toCancel);
+          setToCancel(null);
+        }}
+      />
     </PageContainer>
   );
 };

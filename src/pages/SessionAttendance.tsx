@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Loader2, User } from 'lucide-react';
+import { Loader2, User } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -10,7 +10,9 @@ import { supabase } from '@riff/core/supabase/client';
 import { Button } from '@riff/core/ui/button';
 import { Input } from '@riff/core/ui/input';
 import { Textarea } from '@riff/core/ui/textarea';
-import { Avatar, ConfirmDialog } from '@riff/core/domain';
+import { Avatar, ConfirmDialog, EmptyState, TicketGrid } from '@riff/core/domain';
+import { HeroHeader } from '@riff/core/layout/HeroHeader';
+import { StickyActions } from '@riff/core/layout/StickyActions';
 import { useProSessions } from '@/hooks/useProSessions';
 import { useProfile } from '@riff/core/hooks/useProfile';
 import { errorMessage } from '@riff/core/lib/utils';
@@ -194,27 +196,17 @@ export default function SessionAttendance() {
 
   return (
     <div className={`min-h-screen bg-bg ${canClose ? 'pb-40' : 'pb-12'}`}>
-      <div className="bg-surface border-b border-line p-4 pt-safe sticky top-0 z-30 flex items-center justify-between">
-        <button
-          onClick={() => navigate(-1)}
-          aria-label="Voltar"
-          className="w-10 h-10 rounded-full bg-elevated flex items-center justify-center text-ink"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </button>
-        <h1 className="type-subtitle text-ink truncate max-w-[220px]">{title}</h1>
-        <div className="w-10" />
-      </div>
+      <HeroHeader overlap showBack label={title} title={session.title} subtitle={<span className="first-letter:uppercase">{dateLabel} · {session.start_time.substring(0, 5)}</span>} />
 
-      <div className="p-6 space-y-6">
-        <div>
-          <h2 className="type-subtitle text-ink mb-1">{session.title}</h2>
-          <p className="text-sm text-ink-muted first-letter:uppercase">
-            {dateLabel} • {session.start_time.substring(0, 5)} • {bookings.length}{' '}
-            {bookings.length === 1 ? 'participante' : 'participantes'}
-          </p>
-        </div>
+      <TicketGrid
+        items={[
+          { label: 'Inscritos', value: bookings.length },
+          { label: 'Presentes', value: bookings.filter((b) => ['present', 'late'].includes(rows[b.id]?.status ?? '')).length },
+          { label: 'Pagos', value: bookings.filter((b) => b.payment_status === 'paid' || b.payment_status === 'free' || rows[b.id]?.paid).length },
+        ]}
+      />
 
+      <div className="px-4 py-6 space-y-4">
         {isOpen && !hasStarted && (
           <p className="text-sm text-ink-muted bg-surface border border-line rounded-2xl p-4">
             Você poderá registrar a presença e encerrar a atividade depois do horário de início.
@@ -228,10 +220,7 @@ export default function SessionAttendance() {
         )}
 
         {bookings.length === 0 ? (
-          <div className="p-8 text-center bg-surface border border-line rounded-2xl">
-            <User className="w-8 h-8 text-ink-muted mx-auto mb-3" />
-            <p className="text-sm text-ink-muted">Nenhum participante inscrito nesta atividade.</p>
-          </div>
+          <EmptyState icon={User} title="Ninguém inscrito ainda" description="Compartilhe o link da atividade para encher as vagas." />
         ) : (
           <div className="space-y-4">
             {bookings.map((b) => {
@@ -335,7 +324,7 @@ export default function SessionAttendance() {
       </div>
 
       {canClose && (
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-surface/90 backdrop-blur-md border-t border-line pb-safe z-40 space-y-2">
+        <StickyActions>
           <Button variant="primary" size="lg" className="w-full" onClick={handleClose} disabled={isClosing}>
             {isClosing ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Confirmar encerramento'}
           </Button>
@@ -346,7 +335,7 @@ export default function SessionAttendance() {
           >
             A atividade não aconteceu
           </button>
-        </div>
+        </StickyActions>
       )}
 
       <ConfirmDialog

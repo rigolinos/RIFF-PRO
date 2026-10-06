@@ -18,7 +18,7 @@ export function useProSessions() {
           id, title, description, date, start_time, duration_minutes,
           location_name, location_address, max_participants, current_participants,
           price_per_slot, status, session_type, category_id, kind, city,
-          category:categories(name, emoji),
+          category:categories(name, emoji, slug),
           bookings(
             id, status, payment_status, amount_total, checked_in, created_at,
             student:profiles!bookings_student_id_fkey(

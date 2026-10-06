@@ -1,17 +1,22 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Link2, Share2, Wallet, Users, Calendar, Loader2, CheckCircle2, RefreshCw } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { Link2, Share2, Calendar, Loader2, CheckCircle2, RefreshCw, ClipboardCheck } from 'lucide-react';
 import { toast } from 'sonner';
-
 import { PageContainer } from '@riff/core/layout/PageContainer';
+import { HeroHeader } from '@riff/core/layout/HeroHeader';
 import { useProfile } from '@riff/core/hooks/useProfile';
+import { Button } from '@riff/core/ui/button';
+import { BrandLines, EmptyState, TicketGrid } from '@riff/core/domain';
+import { formatBRL } from '@riff/core/lib/money';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import { useViewMode } from '@/contexts/ViewModeContext';
-import { Button } from '@riff/core/ui/button';
-import { EmptyState, StatusPill } from '@riff/core/domain';
 import { GettingStarted, PixMissingBanner } from '@/components/dashboard/GettingStarted';
 import { InsightsCard } from '@/components/dashboard/InsightsCard';
 import { useProfessionalInsights } from '@/hooks/useProfessionalInsights';
+import { ModeSwitcher } from '@/components/layout/ModeSwitcher';
+import { ProSessionRow } from '@/components/cards/ProSessionRow';
 
 const SHARED_KEY = 'riff-link-shared';
 const readShared = () => {
@@ -32,36 +37,42 @@ export default function DashboardPro() {
   const { setViewMode } = useViewMode();
 
 
+  const switchToParticipant = (
+    <button
+      type="button"
+      onClick={() => {
+        setViewMode('student');
+        navigate('/feed');
+      }}
+      className="flex items-center gap-1.5 h-8 px-3 rounded-full bg-bg/50 backdrop-blur-sm border border-line text-xs font-semibold text-ink"
+    >
+      <RefreshCw className="w-3.5 h-3.5" /> Participante
+    </button>
+  );
+
   if (isLoading) {
     return (
-      <PageContainer title="Visão Geral" withBottomNav rightAction={<Button 
-              variant="outline"
-              size="sm"
-              className="gap-1.5 h-8 px-3 rounded-full border-line text-ink"
-              onClick={() => {
-                setViewMode('student');
-                navigate('/feed');
-              }}
-            >
-              <RefreshCw className="w-3.5 h-3.5" /> Participante
-            </Button>}>
-        <div className="flex-1 flex items-center justify-center">
+      <PageContainer withBottomNav>
+        <HeroHeader topLeft={<ModeSwitcher />} topRight={switchToParticipant} label="Painel do organizador" />
+        <div className="flex-1 flex items-center justify-center py-16">
           <Loader2 className="w-8 h-8 text-brand animate-spin" />
         </div>
       </PageContainer>
     );
   }
 
-  const metrics: { total_revenue: number; unique_students: number; total_bookings: number; total_sessions: number; } = (data?.metrics as { total_revenue: number; unique_students: number; total_bookings: number; total_sessions: number; }) || {
-    total_revenue: 0,
-    unique_students: 0,
-    total_bookings: 0,
-    total_sessions: 0
-  };
-  
+  const metrics: { total_revenue: number; unique_students: number; total_bookings: number; total_sessions: number } =
+    (data?.metrics as { total_revenue: number; unique_students: number; total_bookings: number; total_sessions: number }) || {
+      total_revenue: 0,
+      unique_students: 0,
+      total_bookings: 0,
+      total_sessions: 0,
+    };
   const todaySessions = data?.todaySessions || [];
+  const nextSession = data?.nextSession;
   const publicSlug = profile?.public_slug || profile?.id;
   const publicUrl = `${import.meta.env.VITE_PUBLIC_URL || window.location.origin}/@${publicSlug}`;
+  const firstName = profile?.full_name?.split(' ')[0];
 
   const markShared = () => {
     setHasSharedLink(true);
@@ -76,182 +87,115 @@ export default function DashboardPro() {
     markShared();
     navigator.clipboard.writeText(publicUrl);
     setCopied(true);
-    toast.success('Link copiado para a área de transferência!');
+    toast.success('Link copiado. Cole na bio do Instagram ou no WhatsApp.');
     setTimeout(() => setCopied(false), 3000);
   };
 
   const handleShare = () => {
     markShared();
     if (navigator.share) {
-      navigator.share({
-        title: `Atividades com ${profile?.full_name}`,
-        text: 'Garanta sua vaga nas minhas próximas atividades!',
-        url: publicUrl,
-      }).catch(console.error);
+      navigator
+        .share({ title: `Atividades com ${profile?.full_name}`, text: 'Garanta sua vaga nas minhas próximas atividades!', url: publicUrl })
+        .catch(() => undefined);
     } else {
       handleCopyLink();
     }
   };
 
   return (
-    <PageContainer title="Visão Geral" withBottomNav rightAction={<Button 
-              variant="outline"
-              size="sm"
-              className="gap-1.5 h-8 px-3 rounded-full border-line text-ink"
-              onClick={() => {
-                setViewMode('student');
-                navigate('/feed');
-              }}
-            >
-              <RefreshCw className="w-3.5 h-3.5" /> Participante
-            </Button>}>
-      <div className="px-6 py-6 flex-1 flex flex-col space-y-8 pb-32">
+    <PageContainer withBottomNav>
+      <HeroHeader
+        overlap
+        topLeft={<ModeSwitcher />}
+        topRight={switchToParticipant}
+        label="Painel do organizador"
+        title={`Olá${firstName ? `, ${firstName}` : ''}!`}
+        subtitle={
+          todaySessions.length
+            ? `Hoje você tem ${todaySessions.length} atividade${todaySessions.length > 1 ? 's' : ''}.`
+            : nextSession
+              ? `Próxima: ${nextSession.title}, ${format(parseISO(nextSession.date), "EEEE, d 'de' MMM", { locale: ptBR })} às ${nextSession.start_time.substring(0, 5)}.`
+              : 'Crie uma atividade e compartilhe seu link.'
+        }
+      />
+
+      {/* Números (todo o período) */}
+      <TicketGrid
+        items={[
+          { label: 'Receita', value: <span className="text-accent">{formatBRL(metrics.total_revenue)}</span> },
+          { label: 'Participantes', value: metrics.unique_students },
+          { label: 'Reservas abertas', value: metrics.total_bookings },
+        ]}
+        footer={
+          <span className="text-ink-muted">
+            {metrics.total_sessions} atividade{metrics.total_sessions === 1 ? '' : 's'} criada{metrics.total_sessions === 1 ? '' : 's'} ·{' '}
+            <button type="button" onClick={() => navigate('/earnings')} className="text-brand font-semibold">
+              Ver ganhos
+            </button>
+          </span>
+        }
+      />
+
+      <div className="px-4 py-6 flex-1 flex flex-col space-y-6 pb-32">
         {profile && !profile.pix_key && <PixMissingBanner />}
-        <GettingStarted
-          profile={profile}
-          totalSessions={metrics.total_sessions}
-          hasSharedLink={hasSharedLink}
-          onShare={handleShare}
-        />
+
+        <GettingStarted profile={profile} totalSessions={metrics.total_sessions} hasSharedLink={hasSharedLink} onShare={handleShare} />
 
         {/* Hoje */}
-        <section>
-          <h2 className="type-subtitle mb-4">Hoje</h2>
+        <section className="space-y-2">
+          <div className="flex items-baseline justify-between px-2">
+            <h2 className="type-subtitle">Hoje</h2>
+            <span className="text-xs text-ink-muted">{format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR })}</span>
+          </div>
           {todaySessions.length === 0 ? (
-            <EmptyState 
-              title="Dia livre!" 
-              description="Você não tem atividades marcadas para hoje."
-              icon={Calendar}
-            />
+            nextSession ? (
+              <div className="space-y-2">
+                <p className="text-sm text-ink-muted px-2">Dia livre. Sua próxima atividade:</p>
+                <ProSessionRow session={nextSession} showDay highlight />
+              </div>
+            ) : (
+              <EmptyState
+                title="Nenhuma atividade marcada"
+                description="Crie a próxima e compartilhe o link com seus participantes."
+                icon={Calendar}
+                action={{ label: 'Criar atividade', onClick: () => navigate('/create-session') }}
+              />
+            )
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {todaySessions.map((session) => (
-                <div key={session.id} className="bg-surface border border-line rounded-2xl p-4 flex flex-col gap-3 shadow-sm">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="type-title">{session.title}</h3>
-                      <div className="flex items-center gap-1.5 mt-1 text-sm text-ink-muted">
-                        <span>{session.start_time.substring(0,5)}</span>
-                        <span>·</span>
-                        <span>{session.location_name}</span>
-                      </div>
-                    </div>
-                    {session.status === 'full' ? (
-                      <StatusPill text="Lotada" variant="danger" />
-                    ) : (
-                      <StatusPill text={`${session.current_participants}/${session.max_participants} participantes`} variant="info" />
-                    )}
-                  </div>
-                  
-                  <div className="flex gap-2 mt-1">
-                    <Button 
-                      variant="secondary" 
-                      size="sm" 
-                      className="flex-1"
-                      onClick={() => navigate(`/session/${session.id}/attendance`)}
-                    >
-                      Encerrar Atividade
+                <ProSessionRow
+                  key={session.id}
+                  session={session}
+                  highlight
+                  action={
+                    <Button variant="secondary" size="sm" className="w-full" onClick={() => navigate(`/session/${session.id}/attendance`)}>
+                      <ClipboardCheck className="w-4 h-4 mr-2" /> Inscritos e presença
                     </Button>
-                    <Button 
-                      variant="primary" 
-                      size="sm" 
-                      className="flex-1"
-                      onClick={() => navigate(`/session/${session.id}`)}
-                    >
-                      Detalhes
-                    </Button>
-                  </div>
-                </div>
+                  }
+                />
               ))}
             </div>
           )}
         </section>
 
-        {/* Share Banner (Link Público) */}
-        <section>
-          <div className="bg-surface rounded-2xl p-5 border border-brand/30 shadow-1 relative overflow-hidden">
-            <div className="absolute inset-0 opacity-[0.03] pointer-events-none flex" style={{
-              background: 'repeating-linear-gradient(45deg, transparent 0 10px, var(--brand) 10px 12px)'
-            }} />
-            <div className="relative z-10">
-              <h3 className="type-subtitle text-brand mb-1">Seu Link Público</h3>
-              <p className="text-sm text-ink-muted mb-4 max-w-[280px]">
-                Coloque este link na bio do seu Instagram para receber reservas automáticas.
-              </p>
-              <div className="flex gap-2">
-                <div className="h-12 bg-elevated rounded-xl px-4 flex items-center flex-1 font-mono text-sm border border-line truncate select-all text-ink">
-                  riff.pro/@{publicSlug}
-                </div>
-                <Button 
-                  variant="primary"
-                  onClick={handleCopyLink}
-                  className="shrink-0 font-semibold w-12 p-0"
-                >
-                  {copied ? <CheckCircle2 className="w-5 h-5 text-bg" /> : <Link2 className="w-5 h-5 text-bg" />}
-                </Button>
-                <Button 
-                  variant="secondary"
-                  onClick={handleShare}
-                  className="shrink-0 w-12 p-0"
-                >
-                  <Share2 className="w-5 h-5" />
-                </Button>
+        {/* Link público */}
+        <section className="relative overflow-hidden bg-surface rounded-2xl p-5 border border-brand/40">
+          <BrandLines className="absolute inset-y-0 right-0 h-full w-1/2 opacity-60" />
+          <div className="relative">
+            <p className="type-label text-brand">Seu link público</p>
+            <h3 className="type-subtitle mt-1">Coloque na bio e receba reservas</h3>
+            <p className="text-sm text-ink-muted mt-1 max-w-[260px]">Quem abre vê suas próximas atividades e reserva direto.</p>
+            <div className="flex gap-2 mt-4">
+              <div className="h-12 bg-elevated rounded-xl px-4 flex items-center flex-1 font-mono text-sm border border-line truncate select-all text-ink">
+                riff.pro/@{publicSlug}
               </div>
-            </div>
-          </div>
-        </section>
-
-        {/* KPI Grid */}
-        <section>
-          <h2 className="type-subtitle mb-4">Métricas (todo o período)</h2>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-surface border border-line rounded-2xl p-4 flex flex-col shadow-sm">
-              <div className="flex items-center gap-2 text-ink-muted mb-2">
-                <Wallet className="w-4 h-4 text-slate" />
-                <span className="type-label">Receita</span>
-              </div>
-              <div className="mt-auto">
-                <span className="text-sm text-accent font-bold mr-1">R$</span>
-                <span className="type-number text-2xl text-ink">
-                  {metrics.total_revenue.toFixed(2).replace('.', ',')}
-                </span>
-              </div>
-            </div>
-
-            <div className="bg-surface border border-line rounded-2xl p-4 flex flex-col shadow-sm">
-              <div className="flex items-center gap-2 text-ink-muted mb-2">
-                <Users className="w-4 h-4 text-slate" />
-                <span className="type-label">Participantes Únicos</span>
-              </div>
-              <div className="mt-auto">
-                <span className="type-number text-2xl text-ink">
-                  {metrics.unique_students}
-                </span>
-              </div>
-            </div>
-            
-            <div className="bg-surface border border-line rounded-2xl p-4 flex flex-col shadow-sm">
-              <div className="flex items-center gap-2 text-ink-muted mb-2">
-                <CheckCircle2 className="w-4 h-4 text-slate" />
-                <span className="type-label">Reservas em aberto</span>
-              </div>
-              <div className="mt-auto">
-                <span className="type-number text-2xl text-ink">
-                  {metrics.total_bookings}
-                </span>
-              </div>
-            </div>
-
-            <div className="bg-surface border border-line rounded-2xl p-4 flex flex-col shadow-sm">
-              <div className="flex items-center gap-2 text-ink-muted mb-2">
-                <Calendar className="w-4 h-4 text-slate" />
-                <span className="type-label">Atividades criadas</span>
-              </div>
-              <div className="mt-auto">
-                <span className="type-number text-2xl text-ink">
-                  {metrics.total_sessions}
-                </span>
-              </div>
+              <Button variant="primary" onClick={handleCopyLink} className="shrink-0 w-12 p-0" aria-label="Copiar link">
+                {copied ? <CheckCircle2 className="w-5 h-5" /> : <Link2 className="w-5 h-5" />}
+              </Button>
+              <Button variant="secondary" onClick={handleShare} className="shrink-0 w-12 p-0" aria-label="Compartilhar link">
+                <Share2 className="w-5 h-5" />
+              </Button>
             </div>
           </div>
         </section>
