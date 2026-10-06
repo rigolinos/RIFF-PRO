@@ -64,6 +64,7 @@ export const CLUBES_LEGAL_DOCUMENTS: Record<ClubesLegalDocumentId, LegalDocument
         heading: '6. Conduta',
         paragraphs: [
           'É proibido usar o app para conteúdo falso, ilegal, ofensivo ou discriminatório, ou para contatar pessoas de forma abusiva. O Riff pode suspender ou encerrar contas que violem estes termos.',
+          'Depois de cada jogo, quem jogou pode dizer como foi e dar elogios a quem jogou junto. Os pontos do ranking da comunidade vêm de presença, eventos organizados, elogios recebidos e avaliações feitas. É proibido combinar elogios ou inscrições falsas para ganhar pontos; nesses casos o Riff pode zerar os pontos ou suspender a conta.',
         ],
       },
       {
@@ -93,6 +94,7 @@ export const CLUBES_LEGAL_DOCUMENTS: Record<ClubesLegalDocumentId, LegalDocument
         paragraphs: [
           'Cadastro: nome, e-mail, telefone e foto. Comunidade: de quais condomínios ou clubes você participa e seu papel em cada um.',
           'Uso do app: inscrições, presença e resultados das atividades. Dados técnicos: registros de acesso e informações do dispositivo e navegador.',
+          'Perfil esportista: a partir das suas presenças, calculamos jogos, frequência, esportes e locais preferidos, conquistas e pontos do ranking mensal da comunidade. Depois de cada jogo você pode dizer como foi (avaliação do evento) e dar elogios a quem jogou com você.',
           'Dependentes menores de idade: apenas nome, data de nascimento e parentesco, informados pelo responsável. Não pedimos dados de saúde nem documentos de menores.',
         ],
       },
@@ -109,7 +111,9 @@ export const CLUBES_LEGAL_DOCUMENTS: Record<ClubesLegalDocumentId, LegalDocument
         paragraphs: [
           'O gestor da comunidade vê quem é membro e quem se inscreveu nas atividades dela. Quem conduz uma atividade vê os inscritos daquela atividade.',
           'Os membros da mesma comunidade veem quem confirmou presença em cada evento dela: só a foto e o primeiro nome com a inicial do sobrenome (por exemplo, "Marina L."). Quem não é da comunidade não vê nada.',
-          'O nome e a idade de um dependente só aparecem para quem conduz e para o gestor da atividade em que ele está inscrito. Para os outros membros, os menores entram apenas na contagem (por exemplo, "+2 crianças"), nunca pelo nome.',
+          'Os membros da mesma comunidade também veem o seu perfil esportista daquela comunidade (jogos, frequência, esportes, elogios recebidos e conquistas) e a sua posição no ranking do mês. Ninguém vê quem deu cada elogio. A avaliação do evento (como foi) só é vista por quem o organizou e pelo gestor.',
+          'Modo reservado: no seu perfil você pode ligar o modo reservado. Com ele, você sai do ranking, ninguém abre o seu perfil esportista, você não recebe elogios e aparece como "Membro" na lista de quem vai. Seus dados continuam guardados e só você os vê. Dá para desligar a qualquer momento.',
+          'O nome e a idade de um dependente só aparecem para quem conduz e para o gestor da atividade em que ele está inscrito. Para os outros membros, os menores entram apenas na contagem (por exemplo, "+2 crianças"), nunca pelo nome. Menores não têm perfil esportista, não recebem elogios e não entram no ranking.',
           'Prestadores de serviço que operam a infraestrutura do app (hospedagem e banco de dados) podem armazenar dados fora do Brasil, com as garantias exigidas pela LGPD (art. 33). Também compartilhamos com autoridades quando a lei exigir. Não vendemos dados.',
         ],
       },

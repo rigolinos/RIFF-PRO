@@ -346,6 +346,94 @@ export type Database = {
           },
         ]
       }
+      game_kudos: {
+        Row: {
+          created_at: string
+          giver_id: string
+          id: string
+          receiver_id: string
+          session_id: string
+          tag: string
+        }
+        Insert: {
+          created_at?: string
+          giver_id: string
+          id?: string
+          receiver_id: string
+          session_id: string
+          tag: string
+        }
+        Update: {
+          created_at?: string
+          giver_id?: string
+          id?: string
+          receiver_id?: string
+          session_id?: string
+          tag?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_kudos_giver_id_fkey"
+            columns: ["giver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "game_kudos_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "game_kudos_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      game_reviews: {
+        Row: {
+          created_at: string
+          id: string
+          reviewer_id: string
+          session_id: string
+          vibe: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reviewer_id: string
+          session_id: string
+          vibe: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reviewer_id?: string
+          session_id?: string
+          vibe?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "game_reviews_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       legal_acceptances: {
         Row: {
           accepted_at: string
@@ -608,6 +696,7 @@ export type Database = {
           rating_avg: number | null
           role: string
           specialties: string[] | null
+          sports_hidden: boolean
           state: string | null
           total_reviews: number | null
           total_sessions_given: number | null
@@ -633,6 +722,7 @@ export type Database = {
           rating_avg?: number | null
           role?: string
           specialties?: string[] | null
+          sports_hidden?: boolean
           state?: string | null
           total_reviews?: number | null
           total_sessions_given?: number | null
@@ -658,6 +748,7 @@ export type Database = {
           rating_avg?: number | null
           role?: string
           specialties?: string[] | null
+          sports_hidden?: boolean
           state?: string | null
           total_reviews?: number | null
           total_sessions_given?: number | null
@@ -1029,6 +1120,17 @@ export type Database = {
         }
         Returns: undefined
       }
+      community_ranking: {
+        Args: { p_month?: string; p_org: string }
+        Returns: {
+          avatar_url: string
+          is_me: boolean
+          points: number
+          profile_id: string
+          rank: number
+          short_name: string
+        }[]
+      }
       create_booking: {
         Args: { p_attribution?: Json; p_session_id: string; p_source?: string }
         Returns: Json
@@ -1065,6 +1167,39 @@ export type Database = {
         Args: { p_action: string; p_org: string; p_profile: string }
         Returns: Json
       }
+      now_sp: { Args: never; Returns: string }
+      pending_game_reviews: {
+        Args: never
+        Returns: {
+          category_slug: string
+          date: string
+          kind: string
+          organization_id: string
+          organization_name: string
+          players: Json
+          session_id: string
+          start_time: string
+          title: string
+        }[]
+      }
+      played_session: {
+        Args: { p_profile: string; p_session: string }
+        Returns: boolean
+      }
+      player_games: {
+        Args: { p_org: string; p_profile: string }
+        Returns: {
+          att: string
+          category_id: string
+          d: string
+          session_id: string
+          venue_name: string
+        }[]
+      }
+      player_profile: {
+        Args: { p_org?: string; p_profile: string }
+        Returns: Json
+      }
       remove_dependent: { Args: { p_dependent: string }; Returns: undefined }
       resolve_venue: {
         Args: {
@@ -1082,6 +1217,15 @@ export type Database = {
       revoke_invite: { Args: { p_invite: string }; Returns: undefined }
       sanitize_attribution: { Args: { p: Json }; Returns: Json }
       session_community: { Args: { p_session: string }; Returns: string }
+      session_end_local: {
+        Args: { p_date: string; p_minutes: number; p_time: string }
+        Returns: string
+      }
+      short_name: { Args: { p_full: string }; Returns: string }
+      submit_game_review: {
+        Args: { p_kudos?: Json; p_session: string; p_vibe: number }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
