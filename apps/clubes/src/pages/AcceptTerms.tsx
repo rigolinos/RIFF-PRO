@@ -3,7 +3,9 @@ import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { Logo } from '@riff/core/ui/logo';
+import { AuthShell } from '@riff/core/layout/AuthShell';
+import { cn } from '@riff/core/lib/utils';
+import { BRAND } from '@/brand';
 import { Button } from '@riff/core/ui/button';
 import { Checkbox } from '@riff/core/ui/checkbox';
 import { useLegalAcceptance } from '@riff/core/hooks/useLegalAcceptance';
@@ -68,21 +70,15 @@ const AcceptTerms = () => {
   };
 
   return (
-    <div className="min-h-screen bg-bg flex flex-col px-6 py-8">
-      <Logo variant="icon" size="md" className="justify-start mb-8" />
-      <div className="w-12 h-12 rounded-xl bg-elevated border border-line flex items-center justify-center mb-4">
-        <ShieldCheck className="w-6 h-6 text-brand" />
-      </div>
-      <h1 className="type-display mb-2">Antes de continuar</h1>
-      <p className="text-ink-muted mb-8">
-        O Riff Clubes organiza as atividades esportivas do seu condomínio ou clube. Leia e confirme:
-      </p>
-
-      <div className="space-y-4 flex-1">
+    <AuthShell product={BRAND.name} label="Antes de continuar" title="Combinados do Riff" subtitle="O Riff Clubes organiza as atividades esportivas do seu condomínio ou clube.">
+      <div className="space-y-3 flex-1">
         {items.map((item) => (
           <label
             key={item.key}
-            className="flex items-start gap-3 p-4 rounded-2xl bg-surface border border-line cursor-pointer"
+            className={cn(
+              'flex items-start gap-3 p-4 rounded-2xl border cursor-pointer transition-colors',
+              checked[item.key] ? 'bg-brand/10 border-brand/50' : 'bg-surface border-line',
+            )}
           >
             <Checkbox
               checked={!!checked[item.key]}
@@ -94,10 +90,15 @@ const AcceptTerms = () => {
         ))}
       </div>
 
-      <Button onClick={handleAccept} disabled={!allChecked || isAccepting} className="h-12 mt-8 w-full">
-        {isAccepting ? 'Registrando...' : 'Aceitar e continuar'}
-      </Button>
-    </div>
+      <div className="pt-6 space-y-2">
+        <Button size="lg" onClick={handleAccept} disabled={!allChecked || isAccepting} className="w-full">
+          {isAccepting ? 'Registrando…' : allChecked ? 'Aceitar e continuar' : `Marque os ${items.length} itens para continuar`}
+        </Button>
+        <p className="flex items-center justify-center gap-1.5 text-xs text-ink-muted">
+          <ShieldCheck className="w-3.5 h-3.5" /> Guardamos a data e a versão do que você aceitou.
+        </p>
+      </div>
+    </AuthShell>
   );
 };
 

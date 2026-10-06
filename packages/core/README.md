@@ -13,7 +13,8 @@ Importe sempre por `@riff/core/...` (alias configurado no `vite.config.ts` e no 
 | `hooks/` | Sessão e conta, iguais nos dois apps: `useAuth`, `useProfile`, `useLegalAcceptance`, além de utilitários (`useDebounce`, `use-mobile`, `use-toast`). |
 | `lib/` | `utils` (`cn`, `errorMessage`), `copy` (vocabulário oficial e tipos de atividade), `attribution` (origem das reservas). |
 | `legal/` | Documentos legais e versões (`LEGAL_VERSIONS`). |
-| `layout/` | `Header` e `PageContainer`. |
+| `layout/` | `Header`, `PageContainer`, `HeroHeader`, `StickyActions`, `BottomNavBar` e `AuthShell` (moldura das telas de entrada e do onboarding). |
+| `auth/` | Telas de entrada iguais nos dois apps, com o nome do produto como parâmetro: `LoginScreen`, `ForgotPasswordScreen`, `ResetPasswordScreen`, `NotFoundScreen` e `safeRedirect`. Cadastro e aceite ficam em cada app (o conteúdo muda). |
 | `routing/` | `ProtectedRoute` (sessão + aceite dos termos) e `PublicRoute`. |
 | `app/` | `GlobalErrorBoundary`. |
 | `assets/brand/` | Imagens do logo Riff Sports, empacotadas pelo Vite. |

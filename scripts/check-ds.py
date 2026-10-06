@@ -6,7 +6,7 @@ files += glob.glob('apps/*/src/**/*.tsx', recursive=True) + glob.glob('apps/*/sr
 banned_colors_pattern = re.compile(
     r'emerald-\d+|text-black\b|text-white\b|bg-\[#(?!(25D366|20bd5a|1DB954|E4E4EC))|text-\[#(?!(25D366|20bd5a|1DB954|E4E4EC))|#0B6B4F|#10B981|text-\[9px\]|text-\[10px\]|text-\[11px\]'
 )
-encoding_pattern = re.compile(r'Ã|ð')
+encoding_pattern = re.compile(r'Ã|ð|âœ|â€')
 
 errors = []
 for f in files:
