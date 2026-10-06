@@ -10,6 +10,7 @@ import { useUpcomingActivities } from '@/hooks/useActivities';
 import { usePendingClose } from '@/hooks/useManagement';
 import { ActivityRow } from '@/components/ActivityRow';
 import { ROLE_LABEL } from '@/lib/roles';
+import { RankingPreview } from '@/components/RankingPreview';
 
 // Página de uma comunidade: agenda dela e, para o gestor, o atalho da gestão
 export default function Community() {
@@ -40,6 +41,8 @@ export default function Community() {
             </Button>
           )}
         </div>
+
+        {orgId && community && <RankingPreview orgId={orgId} />}
 
         {pendingClose && pendingClose.length > 0 && (
           <section>

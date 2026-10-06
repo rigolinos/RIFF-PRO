@@ -43,8 +43,9 @@ export function useSubmitReview() {
         throw new Error(key ? REVIEW_ERRORS[key] : 'Não foi possível enviar a avaliação.');
       }
     },
+    // as pendências só recarregam quando a pessoa sai da tela de avaliação
+    // (senão o jogo some da lista e a tela perde o passo da recompensa)
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pending-reviews'] });
       queryClient.invalidateQueries({ queryKey: ['player-profile'] });
       queryClient.invalidateQueries({ queryKey: ['ranking'] });
     },
@@ -83,3 +84,21 @@ export function usePlayerProfile(profileId: string | undefined, orgId?: string |
     enabled: !!profileId,
   });
 }
+
+/** Ranking do mês da comunidade (month: AAAA-MM-01; sem mês = mês atual). */
+export function useRanking(orgId: string | undefined, month?: string) {
+  return useQuery({
+    queryKey: ['ranking', orgId, month ?? 'atual'],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('community_ranking', {
+        p_org: orgId!,
+        ...(month ? { p_month: month } : {}),
+      });
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!orgId,
+  });
+}
+
+export type RankingRow = NonNullable<ReturnType<typeof useRanking>['data']>[number];

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { addDays, format, isSameDay, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Baby, Building2, CalendarPlus, ChevronDown, ClipboardCheck, KeyRound, Plus, UserPlus, Users } from 'lucide-react';
+import { Baby, Building2, CalendarPlus, ChevronDown, ClipboardCheck, KeyRound, Plus, Trophy, UserPlus, Users } from 'lucide-react';
 import { useProfile } from '@riff/core/hooks/useProfile';
 import { PageContainer } from '@riff/core/layout/PageContainer';
 import { Avatar, BrandLines } from '@riff/core/domain';
@@ -20,6 +20,7 @@ import { todaySP } from '@/hooks/useCommunity';
 import { ActivityRow } from '@/components/ActivityRow';
 import { JoinWithCode } from '@/components/JoinWithCode';
 import { ReviewPrompt } from '@/components/ReviewPrompt';
+import { useRanking } from '@/hooks/useSports';
 
 const Spinner = () => (
   <div className="flex justify-center py-12">
@@ -79,6 +80,8 @@ export default function Home() {
   );
   const { data: activities, isLoading } = useUpcomingActivities(orgIds);
   const { data: pendingClose } = usePendingClose(selected?.isAdmin ? selected.id : undefined, true);
+  const { data: ranking } = useRanking(selected?.id);
+  const myRank = ranking?.find((r) => r.is_me && r.points > 0);
 
   const today = parseISO(todaySP());
   const week = Array.from({ length: 7 }, (_, i) => addDays(today, i));
@@ -182,6 +185,14 @@ export default function Home() {
               <span className="px-3 h-7 rounded-full bg-elevated border border-line text-ink text-xs font-semibold flex items-center">
                 {todayItems.length + restOfWeek.length} esta semana
               </span>
+              {myRank && selected && (
+                <Link
+                  to={`/c/${selected.id}/ranking`}
+                  className="px-3 h-7 rounded-full bg-elevated border border-brand/50 text-brand text-xs font-bold flex items-center gap-1"
+                >
+                  <Trophy className="w-3.5 h-3.5" /> {myRank.rank}º no ranking
+                </Link>
+              )}
             </div>
           )}
         </div>

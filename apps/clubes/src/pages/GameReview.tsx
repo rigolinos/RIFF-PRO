@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Frown, Laugh, Meh, Trophy } from 'lucide-react';
 import { toast } from 'sonner';
@@ -83,6 +84,9 @@ function ReviewFlow({ item }: { item: PendingReview }) {
   const navigate = useNavigate();
   const { profile } = useProfile();
   const submit = useSubmitReview();
+  const queryClient = useQueryClient();
+  // ao sair da avaliação, atualiza a lista de jogos pendentes
+  useEffect(() => () => void queryClient.invalidateQueries({ queryKey: ['pending-reviews'] }), [queryClient]);
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [vibe, setVibe] = useState<1 | 2 | 3 | null>(null);
   const [tag, setTag] = useState<KudosTag>('craque');
