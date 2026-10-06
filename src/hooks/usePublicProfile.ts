@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@riff/core/supabase/client';
+import { activityPhase, nowSP } from '@riff/core/lib/activityTime';
 
 // Timezone-safe "today" for São Paulo
 function todaySP(): string {
@@ -59,7 +60,8 @@ export function usePublicProfile(slugOrId: string) {
 
       return {
         profile,
-        sessions: sessions || [],
+        // as de hoje que já começaram não aceitam mais inscrição
+        sessions: (sessions || []).filter((s) => activityPhase(s, nowSP()) === 'open'),
         reviews: reviews || []
       };
     },

@@ -9,6 +9,7 @@ import { PageContainer } from '@riff/core/layout/PageContainer';
 import { Avatar, BrandLines, SpotsMeter, StatusPill } from '@riff/core/domain';
 import { Button } from '@riff/core/ui/button';
 import { KINDS, type ActivityKind } from '@riff/core/lib/copy';
+import { activityPhase, nowSP, PHASE_LABEL } from '@riff/core/lib/activityTime';
 import { useActivity } from '@/hooks/useActivities';
 import { useAgendaActions, useCommunity } from '@/hooks/useCommunity';
 import { useDependents, ageOn } from '@/hooks/useDependents';
@@ -26,6 +27,7 @@ export default function ActivityDetail() {
   const { book, cancel, bookDependent } = useAgendaActions();
   const { data: dependents } = useDependents();
   const [showAll, setShowAll] = useState(false);
+  const [now] = useState(nowSP);
 
   if (!isLoading && activity === null) return <Navigate to="/inicio" replace />;
 
@@ -43,7 +45,10 @@ export default function ActivityDetail() {
   const max = activity.max_participants ?? 0;
   const current = activity.current_participants ?? 0;
   const full = current >= max || activity.status === 'full';
-  const open = ['active', 'full'].includes(activity.status ?? '');
+  // Inscrição só antes do início e com a atividade ativa (mesma regra do create_booking)
+  const phase = activityPhase(activity, now);
+  const open = phase === 'open' && ['active', 'full'].includes(activity.status ?? '');
+  const closed = phase === 'open' ? null : PHASE_LABEL[phase];
   const organizing = activity.professional_id === profile?.id;
   const canSeeRoster = organizing || !!community?.isAdmin;
 
@@ -115,7 +120,7 @@ export default function ActivityDetail() {
             <StatusPill text={kind?.chip ?? 'Atividade'} variant="neutral" />
             {organizing && <StatusPill text="Você organiza" variant="info" />}
             {activity.myBookingId && <StatusPill text="Inscrito" variant="success" />}
-            {!open && <StatusPill text={activity.status === 'cancelled' ? 'Cancelada' : 'Encerrada'} variant="danger" />}
+            {closed && <StatusPill text={closed.pill} variant={phase === 'live' ? 'alert' : 'danger'} />}
           </div>
           <h1 className="type-display leading-tight mt-3">{activity.title}</h1>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-sm text-ink-muted">
@@ -290,7 +295,9 @@ export default function ActivityDetail() {
             <ClipboardCheck className="w-4 h-4 mr-2" /> Inscritos e presença
           </Button>
         )}
-        {!open ? null : organizing ? (
+        {closed && !organizing ? (
+          <p className="text-sm text-ink-muted text-center">{closed.message}</p>
+        ) : !open ? null : organizing ? (
           <p className="text-xs text-ink-muted text-center">Você organiza esta atividade.</p>
         ) : activity.myBookingId ? (
           <Button

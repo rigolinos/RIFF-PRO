@@ -798,6 +798,35 @@ ok(r.rows?.[0]?.professional_type === 'organizer', 'organizador salva "Organizad
 r = await as('authenticated', PO, "UPDATE public.profiles SET professional_type = 'astronauta' WHERE user_id = auth.uid()");
 ok(!!r.err, 'área de atuação fora da lista continua barrada');
 
+// ── Horário das atividades no fuso de Brasília (migration 0018) ─────────
+console.log('Horário de Brasília:');
+await ex("SET timezone = 'UTC'"); // como no Supabase
+await ex("SELECT set_config('request.jwt.claim.sub', '', false)");
+// atividade do Pro que começa daqui a N horas, no horário de Brasília
+const spSession = async (title, hours, status = 'active') => (await one(
+  `INSERT INTO public.sessions (professional_id, category_id, title, date, start_time, duration_minutes, location_name, max_participants, price_per_slot, status)
+   VALUES ($1, $2, $3, (public.now_sp() + make_interval(hours => $4))::date, (public.now_sp() + make_interval(hours => $4))::time, 60,
+           'Parque da Orla', 10, 0, $5) RETURNING id`,
+  [pPO, category, title, hours, status])).id;
+const book = async (uid, s) => (await as('authenticated', uid, 'SELECT public.create_booking($1) AS r', [s])).rows?.[0]?.r;
+r = await book(PC, await spSession('Começa em 1 hora', 1));
+ok(r?.success === true, 'inscrição aberta até a hora do início (começa em 1 hora)' + (r?.success ? '' : ` (${r?.code})`));
+r = await book(PC, await spSession('Começou há 1 hora', -1));
+ok(r?.code === 'session_started', 'atividade que já começou não aceita inscrição');
+r = await book(PC, await spSession('Cancelada', 5, 'cancelled'));
+ok(r?.code === 'session_unavailable', 'atividade cancelada não aceita inscrição');
+r = await book(PC, await spSession('Concluída', -30, 'completed'));
+ok(r?.code === 'session_unavailable', 'atividade concluída não aceita inscrição');
+const s5h = await spSession('Começa em 5 horas', 5);
+r = await book(PC, s5h);
+r = await as('authenticated', PC, "UPDATE public.bookings SET status = 'cancelled_by_student', cancelled_at = now() WHERE id = $1", [r?.booking_id]);
+ok(!r.err, 'cancelar com 5 horas de antecedência é permitido' + (r.err ? ` (${r.err})` : ''));
+const s3h = await spSession('Começa em 3 horas', 3);
+const b3h = (await book(PC, s3h))?.booking_id;
+r = await as('authenticated', PC, "UPDATE public.bookings SET status = 'cancelled_by_student', cancelled_at = now() WHERE id = $1", [b3h]);
+ok(!!r.err && /late_cancellation/.test(r.err), 'a menos de 4 horas o cancelamento é barrado');
+await ex('RESET timezone');
+
 // ── Higiene de segurança (verificador do Supabase) ─────────────────────
 console.log('Higiene de segurança:');
 const noPath = (await q(`SELECT p.proname FROM pg_proc p WHERE p.pronamespace = 'public'::regnamespace

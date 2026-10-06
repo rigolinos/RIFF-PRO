@@ -14,6 +14,7 @@ import { StickyActions } from '@riff/core/layout/StickyActions';
 import { Avatar, PriceTag, RatingBadge, SportIcon, SpotsMeter, StatusPill, TicketGrid } from '@riff/core/domain';
 import { Button } from '@riff/core/ui/button';
 import { KINDS, type ActivityKind } from '@riff/core/lib/copy';
+import { activityPhase, nowSP, PHASE_LABEL } from '@riff/core/lib/activityTime';
 import { CheckoutModal } from '@/components/checkout/CheckoutModal';
 import { useProParticipants } from '@/hooks/useSportsProfile';
 
@@ -64,6 +65,7 @@ const SessionDetails = () => {
 
   // Quem vai: fotos e nomes só para quem reservou e quem organiza
   const { data: going } = useProParticipants(id);
+  const [now] = useState(nowSP);
 
   if (isLoading) {
     return (
@@ -93,6 +95,9 @@ const SessionDetails = () => {
   const spotsLeft = Math.max(0, max - current);
   const isFull = spotsLeft <= 0 || session.status === 'full';
   const isOrganizer = !!profile?.id && profile.id === session.professional_id;
+  // Inscrição só antes do início e com a atividade ativa (mesma regra do create_booking)
+  const phase = activityPhase(session, now);
+  const closed = phase === 'open' ? null : PHASE_LABEL[phase];
   const date = parseISO(session.date);
 
   const handleShare = async () => {
@@ -135,6 +140,7 @@ const SessionDetails = () => {
       >
         <div className="flex flex-wrap gap-2 mt-1">
           <StatusPill text={kind?.chip ?? 'Atividade'} variant="neutral" />
+          {closed && <StatusPill text={closed.pill} variant={phase === 'live' ? 'alert' : 'danger'} />}
           {isOrganizer && <StatusPill text="Você organiza" variant="info" />}
           {myBooking && (
             <StatusPill text={myBooking.payment_status === 'pending' ? 'Aguardando pagamento' : 'Reserva confirmada'} variant={myBooking.payment_status === 'pending' ? 'alert' : 'success'} />
@@ -167,10 +173,14 @@ const SessionDetails = () => {
                 <span className="type-display text-brand">{current}</span> de {max} confirmados
               </p>
             </div>
-            <StatusPill
-              text={isFull ? 'Lotada' : `${spotsLeft} livre${spotsLeft === 1 ? '' : 's'}`}
-              variant={isFull ? 'danger' : spotsLeft <= 2 ? 'alert' : 'success'}
-            />
+            {closed ? (
+              <StatusPill text="Inscrições fechadas" variant="neutral" />
+            ) : (
+              <StatusPill
+                text={isFull ? 'Lotada' : `${spotsLeft} livre${spotsLeft === 1 ? '' : 's'}`}
+                variant={isFull ? 'danger' : spotsLeft <= 2 ? 'alert' : 'success'}
+              />
+            )}
           </div>
           <SpotsMeter current={current} max={max || 1} />
           {going && going.count > 0 && (
@@ -253,9 +263,11 @@ const SessionDetails = () => {
       <StickyActions>
         {isOrganizer ? (
           <div className="flex gap-2">
-            <Button variant="secondary" className="flex-1" onClick={() => navigate(`/edit-session/${session.id}`)}>
-              <Pencil className="w-4 h-4 mr-2" /> Editar
-            </Button>
+            {!closed && (
+              <Button variant="secondary" className="flex-1" onClick={() => navigate(`/edit-session/${session.id}`)}>
+                <Pencil className="w-4 h-4 mr-2" /> Editar
+              </Button>
+            )}
             <Button className="flex-1" onClick={() => navigate(`/session/${session.id}/attendance`)}>
               <ClipboardCheck className="w-4 h-4 mr-2" /> Inscritos e presença
             </Button>
@@ -264,6 +276,18 @@ const SessionDetails = () => {
           <Button size="lg" variant="secondary" className="w-full" onClick={() => navigate('/my-bookings')}>
             <Ticket className="w-4 h-4 mr-2" /> Ver minha reserva
           </Button>
+        ) : closed ? (
+          <div className="space-y-2">
+            <p className="text-sm text-ink-muted text-center">{closed.message}</p>
+            <Button
+              size="lg"
+              variant="secondary"
+              className="w-full"
+              onClick={() => navigate(pro.public_slug ? `/pro/${pro.public_slug}` : '/feed')}
+            >
+              {pro.public_slug ? `Ver próximas de ${pro.full_name?.split(' ')[0] ?? 'quem organiza'}` : 'Ver outras atividades'}
+            </Button>
+          </div>
         ) : (
           <div className="flex items-center justify-between gap-4">
             <div className="flex flex-col">

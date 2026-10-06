@@ -1,6 +1,7 @@
 ﻿import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@riff/core/supabase/client';
 import { useProfile } from '@riff/core/hooks/useProfile';
+import { activityPhase, nowSP } from '@riff/core/lib/activityTime';
 import type { TablesInsert, TablesUpdate } from '@riff/core/supabase/types';
 
 // Timezone-safe "today" for São Paulo
@@ -17,7 +18,7 @@ export function useCities() {
         .select('city')
         .eq('product', 'pro')
         .in('status', ['active', 'full'])
-        .gte('date', new Date().toISOString().split('T')[0]);
+        .gte('date', todaySP());
       if (error) throw error;
       const cities = Array.from(new Set(data.map(d => d.city).filter(Boolean))) as string[];
       return cities.sort();
@@ -49,7 +50,9 @@ export function useSessions(cityFilter?: string | null) {
         .order('start_time', { ascending: true });
 
       if (error) throw error;
-      return data;
+      // as de hoje que já começaram não aceitam mais inscrição
+      const now = nowSP();
+      return data.filter((s) => activityPhase(s, now) === 'open');
     },
   });
 
