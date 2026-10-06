@@ -1,10 +1,13 @@
 import { useMemo } from 'react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Wallet, ArrowDownLeft, ArrowUpRight, Loader2, DollarSign, Clock } from 'lucide-react';
+import { Wallet, ArrowDownLeft, Loader2, Clock } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 
 import { PageContainer } from '@riff/core/layout/PageContainer';
+import { HeroHeader } from '@riff/core/layout/HeroHeader';
+import { EmptyState, TicketGrid } from '@riff/core/domain';
+import { formatBRL } from '@riff/core/lib/money';
 import { supabase } from '@riff/core/supabase/client';
 import { useProfile } from '@riff/core/hooks/useProfile';
 
@@ -47,107 +50,60 @@ export default function Earnings() {
     return { totalPaid: paid, totalPending: pending };
   }, [transactions]);
 
-  if (isLoading) {
-    return (
-      <PageContainer title="Meus Ganhos" withBottomNav>
-        <div className="flex-1 flex items-center justify-center">
-          <Loader2 className="w-8 h-8 text-brand animate-spin" />
-        </div>
-      </PageContainer>
-    );
-  }
+  const paidCount = transactions?.filter((t) => t.payment_status === 'paid').length ?? 0;
+  const pendingCount = transactions?.filter((t) => t.payment_status === 'pending').length ?? 0;
 
   return (
-    <PageContainer title="Financeiro" withBottomNav>
-      <div className="px-6 py-6 flex-1 flex flex-col space-y-6">
-        
-        {/* Balance Cards */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="glass-card p-4 relative overflow-hidden bg-brand/10 border-brand/20">
-            <div className="absolute top-0 right-0 p-3 opacity-20">
-              <DollarSign className="w-12 h-12 text-brand" />
-            </div>
-            <div className="flex items-center gap-1.5 text-brand mb-2">
-              <ArrowDownLeft className="w-4 h-4" />
-              <span className="text-xs font-semibold">Saldo Recebido</span>
-            </div>
-            <div className="flex items-baseline gap-1 relative z-10">
-              <span className="text-sm font-semibold text-brand">R$</span>
-              <span className="text-2xl font-bold text-brand">
-                {totalPaid.toFixed(2).replace('.', ',')}
-              </span>
-            </div>
-          </div>
+    <PageContainer withBottomNav>
+      <HeroHeader overlap label="Ganhos" title="Seu financeiro" subtitle="O Pix cai direto na sua conta. Aqui você acompanha quem já pagou." />
 
-          <div className="glass-card p-4 relative overflow-hidden border-accent/20 bg-accent/15">
-            <div className="absolute top-0 right-0 p-3 opacity-10">
-              <Clock className="w-12 h-12 text-accent" />
-            </div>
-            <div className="flex items-center gap-1.5 text-accent mb-2">
-              <ArrowUpRight className="w-4 h-4" />
-              <span className="text-xs font-semibold">A Receber</span>
-            </div>
-            <div className="flex items-baseline gap-1 relative z-10">
-              <span className="text-sm font-semibold text-accent">R$</span>
-              <span className="text-2xl font-bold text-accent">
-                {totalPending.toFixed(2).replace('.', ',')}
-              </span>
-            </div>
-          </div>
-        </div>
+      <TicketGrid
+        items={[
+          { label: 'Recebido', value: <span className="text-success">{formatBRL(totalPaid)}</span>, sub: `${paidCount} pagamento${paidCount === 1 ? '' : 's'}` },
+          { label: 'A receber', value: <span className="text-accent">{formatBRL(totalPending)}</span>, sub: `${pendingCount} pendente${pendingCount === 1 ? '' : 's'}` },
+        ]}
+      />
 
-        {/* Transactions List */}
-        <div className="flex-1">
-          <h3 className="type-label text-ink-muted mb-4">
-            Extrato Recente
-          </h3>
-          
-          {!transactions || transactions.length === 0 ? (
-            <div className="text-center py-12 text-ink-muted bg-white/[0.02] rounded-2xl border border-white/5">
-              <Wallet className="w-8 h-8 mx-auto mb-3 opacity-20" />
-              <p className="text-sm">Nenhuma transação encontrada.</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {transactions.map((t: NonNullable<typeof transactions>[number]) => {
-                const isPaid = t.payment_status === 'paid';
-                const price = t.session?.price_per_slot || 0;
-                
-                return (
-                  <div key={t.id} className="glass-card p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${isPaid ? 'bg-brand/10 text-brand' : 'bg-surface border border-line text-ink-muted'}`}>
-                        {isPaid ? <ArrowDownLeft className="w-5 h-5" /> : <Clock className="w-5 h-5" />}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="font-semibold text-sm text-ink truncate">
-                          {t.student?.full_name?.split(' ').map(n => n.charAt(0).toUpperCase() + n.slice(1).toLowerCase()).join(' ') || 'Participante'}
-                        </p>
-                        <div className="flex items-center gap-1.5 mt-0.5">
-                          <span className={`text-xs font-semibold px-2 py-0.5 rounded-md whitespace-nowrap shrink-0 ${isPaid ? 'bg-success/15 text-success' : 'bg-surface border border-line text-ink-muted'}`}>
-                            {isPaid ? 'Pix Recebido' : 'Pendente'}
-                          </span>
-                          <span className="text-xs text-ink-muted truncate">
-                            {t.session?.title}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="text-right shrink-0 ml-3">
-                      <p className={`font-bold text-sm ${isPaid ? 'text-brand' : 'text-ink'}`}>
-                        + R$ {price.toFixed(2).replace('.', ',')}
-                      </p>
-                      <p className="text-xs text-ink-muted mt-1">
-                        {format(parseISO((t.created_at || '')), "dd MMM, HH:mm", { locale: ptBR })}
-                      </p>
-                    </div>
+      <div className="px-4 py-6 flex-1 flex flex-col space-y-3">
+        <h2 className="type-label px-2">Extrato</h2>
+        {isLoading ? (
+          <div className="flex justify-center py-12">
+            <Loader2 className="w-8 h-8 text-brand animate-spin" />
+          </div>
+        ) : !transactions || transactions.length === 0 ? (
+          <EmptyState icon={Wallet} title="Nenhum pagamento ainda" description="Quando alguém reservar uma atividade paga, aparece aqui." />
+        ) : (
+          <ul className="bg-surface border border-line rounded-2xl divide-y divide-line overflow-hidden">
+            {transactions.map((t: NonNullable<typeof transactions>[number]) => {
+              const isPaid = t.payment_status === 'paid';
+              const price = t.session?.price_per_slot || 0;
+              const name =
+                t.student?.full_name
+                  ?.split(' ')
+                  .map((n) => n.charAt(0).toUpperCase() + n.slice(1).toLowerCase())
+                  .join(' ') || 'Participante';
+              return (
+                <li key={t.id} className="flex items-center gap-3 px-4 py-3">
+                  <span
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isPaid ? 'bg-success/15 text-success' : 'bg-accent/15 text-accent'}`}
+                  >
+                    {isPaid ? <ArrowDownLeft className="w-5 h-5" /> : <Clock className="w-5 h-5" />}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-ink truncate">{name}</p>
+                    <p className="text-xs text-ink-muted truncate">{t.session?.title}</p>
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+                  <div className="text-right shrink-0">
+                    <p className={`text-sm font-bold font-display ${isPaid ? 'text-success' : 'text-ink'}`}>{formatBRL(price)}</p>
+                    <p className="text-xs text-ink-muted">
+                      {isPaid ? 'Pix recebido' : 'Pendente'} · {format(parseISO(t.created_at || ''), 'dd MMM', { locale: ptBR })}
+                    </p>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </div>
     </PageContainer>
   );

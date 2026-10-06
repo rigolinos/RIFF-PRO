@@ -32,7 +32,7 @@ export function useDashboardMetrics() {
       // Atividades de hoje (data no fuso de São Paulo)
       const { data: todaySessions } = await supabase
         .from('sessions')
-        .select('id, title, date, start_time, duration_minutes, location_name, current_participants, max_participants, status, category:categories(name, emoji)')
+        .select('id, title, date, start_time, duration_minutes, location_name, current_participants, max_participants, status, category:categories(name, emoji, slug)')
         .eq('professional_id', profileData.id)
         .eq('product', 'pro')
         .in('status', ['active', 'full'])
@@ -41,7 +41,7 @@ export function useDashboardMetrics() {
 
       const { data: nextSession } = await supabase
         .from('sessions')
-        .select('id, title, date, start_time, duration_minutes, location_name, current_participants, max_participants, status, category:categories(name, emoji)')
+        .select('id, title, date, start_time, duration_minutes, location_name, current_participants, max_participants, status, category:categories(name, emoji, slug)')
         .eq('professional_id', profileData.id)
         .eq('product', 'pro')
         .in('status', ['active', 'full'])
