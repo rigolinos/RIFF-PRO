@@ -1,107 +1,101 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
+import { CalendarCheck, Loader2, QrCode, Search } from 'lucide-react';
 import { toast } from 'sonner';
-
 import { useProfile } from '@riff/core/hooks/useProfile';
-import { PageContainer } from '@riff/core/layout/PageContainer';
+import { AuthShell } from '@riff/core/layout/AuthShell';
+import { Field } from '@riff/core/domain/Field';
+import { FIELD_CLASS } from '@riff/core/lib/fields';
 import { Button } from '@riff/core/ui/button';
 import { Input } from '@riff/core/ui/input';
+import { errorMessage } from '@riff/core/lib/utils';
+import { BRAND } from '@/brand';
 
-const studentSchema = z.object({
-  city: z.string().min(2, 'Informe sua cidade'),
-  phone: z.string().min(10, 'Informe um WhatsApp válido').optional(),
-});
-
-type StudentFormValues = z.infer<typeof studentSchema>;
+const NEXT = [
+  { icon: Search, text: 'Veja aulas, jogos e eventos perto de você' },
+  { icon: QrCode, text: 'Reserve a vaga e pague por Pix direto para quem organiza' },
+  { icon: CalendarCheck, text: 'Mostre o ingresso na hora e avalie depois' },
+];
 
 const OnboardingStudent = () => {
   const navigate = useNavigate();
   const { profile, updateProfile, isLoading, isUpdating } = useProfile();
+  const [city, setCity] = useState('');
+  const [phone, setPhone] = useState('');
 
-  const { register, handleSubmit, formState: { errors } } = useForm<StudentFormValues>({
-    resolver: zodResolver(studentSchema),
-    defaultValues: {
-      city: '',
-      phone: '',
-    }
-  });
-
-  // Redirect if already onboarded or not a student
+  // Já configurado (ou organizador): segue para a tela certa
   useEffect(() => {
     if (!isLoading && profile) {
-      if (profile.role !== 'student') {
-        navigate('/onboarding/pro');
-      } else if (profile.city) {
-        navigate('/feed');
-      }
+      if (profile.role !== 'student') navigate('/onboarding/pro', { replace: true });
+      else if (profile.city) navigate('/feed', { replace: true });
     }
   }, [profile, isLoading, navigate]);
 
-  const onSubmit = async (data: StudentFormValues) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
-      await updateProfile({
-        city: data.city,
-        phone: data.phone || null,
-        whatsapp_number: data.phone || null, // Keeping both in sync
-      });
-      
-      toast.success('Tudo pronto! Bem-vindo ao Riff 🚀');
-      navigate('/feed');
+      await updateProfile({ city: city.trim(), phone: phone.trim() || null, whatsapp_number: phone.trim() || null });
+      navigate('/feed', { replace: true });
     } catch (error: unknown) {
-      toast.error('Erro ao salvar. Tente novamente.');
-      console.error(error);
+      toast.error(errorMessage(error, 'Não foi possível salvar. Tente de novo.'));
     }
   };
 
-  if (isLoading) return <PageContainer headerTransparent><div className="p-8">Carregando...</div></PageContainer>;
+  if (isLoading) {
+    return (
+      <div className="min-h-[100dvh] bg-bg flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-brand animate-spin" />
+      </div>
+    );
+  }
+
+  const firstName = profile?.full_name?.split(' ')[0];
 
   return (
-    <PageContainer title="Só mais um passo" withBottomNav={false}>
-      <div className="px-6 py-4 flex-1 flex flex-col">
-        <div className="mb-8">
-          <h2 className="type-title mb-2">Onde você vai treinar?</h2>
-          <p className="text-muted-foreground text-sm">Precisamos saber sua cidade para mostrar as atividades mais próximas de você.</p>
+    <AuthShell
+      product={BRAND.name}
+      label="Só mais um passo"
+      title={firstName ? `Onde você joga, ${firstName}?` : 'Onde você joga?'}
+      subtitle="Com a sua cidade, mostramos primeiro o que está rolando perto de você."
+    >
+      <form onSubmit={handleSubmit} className="flex-1 flex flex-col">
+        <div className="space-y-4 flex-1">
+          <Field label="Cidade" htmlFor="obs-city">
+            <Input
+              id="obs-city"
+              autoComplete="address-level2"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              placeholder="Ex: São Paulo"
+              required
+              minLength={2}
+              className={FIELD_CLASS}
+            />
+          </Field>
+          <Field label="WhatsApp (opcional)" htmlFor="obs-phone" hint="Para quem organiza falar com você sobre a reserva.">
+            <Input id="obs-phone" type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="(11) 99999-9999" className={FIELD_CLASS} />
+          </Field>
+
+          <section className="pt-2 space-y-2">
+            <h2 className="type-label">Como funciona</h2>
+            <ul className="bg-surface border border-line rounded-2xl divide-y divide-line overflow-hidden">
+              {NEXT.map((n) => (
+                <li key={n.text} className="flex items-center gap-3 px-4 py-3">
+                  <span className="w-9 h-9 rounded-xl bg-brand/15 text-brand flex items-center justify-center shrink-0">
+                    <n.icon className="w-4 h-4" strokeWidth={1.75} />
+                  </span>
+                  <span className="text-sm text-ink">{n.text}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="flex-1 flex flex-col space-y-6">
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Sua Cidade</label>
-              <Input 
-                {...register('city')} 
-                className="bg-white/[0.05] border-white/10 h-12 text-lg" 
-                placeholder="Ex: São Paulo, SP" 
-              />
-              {errors.city && <span className="text-destructive text-xs">{errors.city.message}</span>}
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">WhatsApp (Opcional)</label>
-              <Input 
-                {...register('phone')} 
-                type="tel"
-                className="bg-white/[0.05] border-white/10 h-12" 
-                placeholder="(11) 99999-9999" 
-              />
-              <p className="text-xs text-muted-foreground">Usado para receber comprovantes de reserva via Pix.</p>
-            </div>
-          </div>
-
-          <div className="mt-auto pt-6">
-            <Button 
-              type="submit" 
-              className="w-full h-14 bg-brand hover:brightness-105 text-brand-ink font-bold rounded-xl glow-brand text-lg"
-              disabled={isUpdating}
-            >
-              {isUpdating ? 'Salvando...' : 'Começar a Treinar'}
-            </Button>
-          </div>
-        </form>
-      </div>
-    </PageContainer>
+        <Button type="submit" size="lg" className="w-full mt-6 shadow-[var(--shadow-cta)]" disabled={isUpdating || city.trim().length < 2}>
+          {isUpdating ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Ver atividades'}
+        </Button>
+      </form>
+    </AuthShell>
   );
 };
 

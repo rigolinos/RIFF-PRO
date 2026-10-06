@@ -791,6 +791,13 @@ try {
   ok(false, 'scripts/metrics.sql roda (' + e.message + ')');
 }
 
+// ── Riff Pro (P6): área de atuação "organizador" ────────────────────────
+console.log('Riff Pro (P6):');
+r = await as('authenticated', PO, "UPDATE public.profiles SET professional_type = 'organizer' WHERE user_id = auth.uid() RETURNING professional_type");
+ok(r.rows?.[0]?.professional_type === 'organizer', 'organizador salva "Organizador(a)" como área de atuação' + (r.err ? ` (${r.err})` : ''));
+r = await as('authenticated', PO, "UPDATE public.profiles SET professional_type = 'astronauta' WHERE user_id = auth.uid()");
+ok(!!r.err, 'área de atuação fora da lista continua barrada');
+
 // ── Higiene de segurança (verificador do Supabase) ─────────────────────
 console.log('Higiene de segurança:');
 const noPath = (await q(`SELECT p.proname FROM pg_proc p WHERE p.pronamespace = 'public'::regnamespace

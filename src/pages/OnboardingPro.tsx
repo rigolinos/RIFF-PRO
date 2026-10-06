@@ -1,223 +1,231 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useForm, useWatch } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { motion } from 'framer-motion';
-import { Info, } from 'lucide-react';
+import { Apple, Dumbbell, HandHeart, Info, Loader2, Megaphone, Shapes, Timer, Trophy } from 'lucide-react';
 import { toast } from 'sonner';
-
 import { useProfile } from '@riff/core/hooks/useProfile';
-import { PageContainer } from '@riff/core/layout/PageContainer';
+import { AuthShell } from '@riff/core/layout/AuthShell';
+import { Field } from '@riff/core/domain/Field';
+import { FIELD_CLASS } from '@riff/core/lib/fields';
 import { Button } from '@riff/core/ui/button';
 import { Input } from '@riff/core/ui/input';
 import { Textarea } from '@riff/core/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@riff/core/ui/select';
+import { chipClass } from '@riff/core/lib/chips';
+import { cn, errorMessage } from '@riff/core/lib/utils';
+import { BRAND } from '@/brand';
 
-const proSchema = z.object({
-  professionalType: z.string().min(1, 'Selecione o seu tipo de atuação'),
-  credentialType: z.string().optional(),
-  credentialNumber: z.string().optional(),
-  bio: z.string().min(10, 'Sua bio deve ter pelo menos 10 caracteres').max(500),
-  pixKeyType: z.string().min(1, 'Selecione o tipo de chave Pix'),
-  pixKey: z.string().min(5, 'Informe sua chave Pix válida'),
-});
-
-type ProFormValues = z.infer<typeof proSchema>;
+// Valores aceitos pelo banco (profiles_professional_type_check)
+const TYPES = [
+  { value: 'organizer', label: 'Organizador(a)', text: 'eventos, jogos, campeonatos', icon: Megaphone },
+  { value: 'personal_trainer', label: 'Educador(a) físico', text: 'personal, funcional, corrida', icon: Dumbbell },
+  { value: 'instructor', label: 'Instrutor(a)', text: 'lutas, dança, yoga, esportes', icon: Timer },
+  { value: 'coach', label: 'Treinador(a)', text: 'equipes e atletas', icon: Trophy },
+  { value: 'physiotherapist', label: 'Fisioterapeuta', text: 'reabilitação e prevenção', icon: HandHeart },
+  { value: 'nutritionist', label: 'Nutricionista', text: 'alimentação e esporte', icon: Apple },
+  { value: 'other', label: 'Outro', text: 'conta mais na apresentação', icon: Shapes },
+];
+const CREDENTIALS = ['CREF', 'CREFITO', 'CRN', 'CRM'];
+const PIX_TYPES = [
+  { value: 'cpf', label: 'CPF ou CNPJ', placeholder: 'Só os números' },
+  { value: 'phone', label: 'Telefone', placeholder: '(11) 99999-9999' },
+  { value: 'email', label: 'E-mail', placeholder: 'voce@email.com' },
+  { value: 'random', label: 'Aleatória', placeholder: 'Cole a chave aleatória' },
+];
 
 const OnboardingPro = () => {
   const navigate = useNavigate();
   const { profile, updateProfile, isLoading, isUpdating } = useProfile();
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState<1 | 2>(1);
+  const [type, setType] = useState('');
+  const [credential, setCredential] = useState('');
+  const [credentialNumber, setCredentialNumber] = useState('');
+  const [city, setCity] = useState('');
+  const [bio, setBio] = useState('');
+  const [whatsapp, setWhatsapp] = useState('');
+  const [pixType, setPixType] = useState('');
+  const [pixKey, setPixKey] = useState('');
 
-  const { register, handleSubmit, setValue, control, formState: { errors } } = useForm<ProFormValues>({
-    resolver: zodResolver(proSchema),
-    defaultValues: {
-      professionalType: '',
-      credentialType: '',
-      credentialNumber: '',
-      bio: '',
-      pixKeyType: '',
-      pixKey: '',
-    }
-  });
-
-  const professionalType = useWatch({ control, name: 'professionalType' });
-  const bio = useWatch({ control, name: 'bio' });
-
-
-  // Redirect if already onboarded or not a pro
+  // Já configurado (ou participante): segue para a tela certa
   useEffect(() => {
     if (!isLoading && profile) {
-      if (profile.role !== 'professional') {
-        navigate('/onboarding/student');
-      } else if (profile.professional_type && profile.pix_key) {
-        navigate('/dashboard');
-      }
+      if (profile.role !== 'professional') navigate('/onboarding/student', { replace: true });
+      else if (profile.professional_type && profile.pix_key) navigate('/dashboard', { replace: true });
     }
   }, [profile, isLoading, navigate]);
 
-  const onSubmit = async (data: ProFormValues) => {
+  const step1Missing = !type ? 'Escolha como você atua' : city.trim().length < 2 ? 'Informe sua cidade' : bio.trim().length < 10 ? 'Escreva uma apresentação curta' : '';
+  const step2Missing = !pixType ? 'Escolha o tipo da chave Pix' : pixKey.trim().length < 5 ? 'Informe a chave Pix' : '';
+
+  const finish = async () => {
     try {
       await updateProfile({
-        professional_type: data.professionalType,
-        credential_type: data.credentialType || null,
-        credential_number: data.credentialNumber || null,
-        bio: data.bio,
-        pix_key_type: data.pixKeyType,
-        pix_key: data.pixKey,
+        professional_type: type,
+        credential_type: credential || null,
+        credential_number: credential ? credentialNumber.trim() || null : null,
+        city: city.trim(),
+        bio: bio.trim(),
+        whatsapp_number: whatsapp.trim() || null,
+        pix_key_type: pixType,
+        pix_key: pixKey.trim(),
       });
-      
-      toast.success('Perfil configurado com sucesso! 🎉');
-      navigate('/dashboard');
+      toast.success('Tudo pronto! Agora é publicar sua primeira atividade.');
+      navigate('/dashboard', { replace: true });
     } catch (error: unknown) {
-      toast.error('Erro ao salvar perfil. Tente novamente.');
-      console.error(error);
+      toast.error(errorMessage(error, 'Não foi possível salvar. Tente de novo.'));
     }
   };
 
-  if (isLoading) return <PageContainer headerTransparent><div className="p-8">Carregando...</div></PageContainer>;
+  if (isLoading) {
+    return (
+      <div className="min-h-[100dvh] bg-bg flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-brand animate-spin" />
+      </div>
+    );
+  }
 
-  return (
-    <PageContainer title="Complete seu Perfil" withBottomNav={false}>
-      <div className="px-6 py-4 flex-1 flex flex-col">
-        {/* Progress */}
-        <div className="flex gap-2 mb-8">
-          <div className={`h-1.5 flex-1 rounded-full ${step >= 1 ? 'bg-brand' : 'bg-white/10'}`} />
-          <div className={`h-1.5 flex-1 rounded-full ${step >= 2 ? 'bg-brand' : 'bg-white/10'}`} />
+  const firstName = profile?.full_name?.split(' ')[0];
+
+  if (step === 1) {
+    return (
+      <AuthShell
+        product={BRAND.name}
+        progress={{ step: 1, total: 2 }}
+        label="Seu perfil de organizador"
+        title={firstName ? `Prazer, ${firstName}!` : 'Prazer!'}
+        subtitle="Conta rapidinho o que você organiza. É isso que aparece na sua vitrine para quem vai reservar."
+      >
+        <div className="space-y-6 flex-1">
+          <section className="space-y-2">
+            <h2 className="type-label">O que você organiza?</h2>
+            <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Área de atuação">
+              {TYPES.map((t) => {
+                const active = type === t.value;
+                return (
+                  <button
+                    key={t.value}
+                    type="button"
+                    role="radio"
+                    aria-checked={active}
+                    onClick={() => setType(t.value)}
+                    className={cn(
+                      'flex items-start gap-2.5 rounded-2xl border p-3 text-left transition-all active:scale-[.98]',
+                      active ? 'bg-brand/10 border-brand' : 'bg-surface border-line',
+                      t.value === 'organizer' && 'col-span-2',
+                    )}
+                  >
+                    <span className={cn('w-9 h-9 rounded-xl flex items-center justify-center shrink-0', active ? 'bg-brand text-brand-ink' : 'bg-elevated text-ink-muted')}>
+                      <t.icon className="w-4 h-4" strokeWidth={1.75} />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-sm font-semibold text-ink">{t.label}</span>
+                      <span className="block text-xs text-ink-muted">{t.text}</span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+
+          <section className="space-y-2">
+            <h2 className="type-label">Registro profissional (opcional)</h2>
+            <div className="flex flex-wrap gap-2">
+              <button type="button" aria-pressed={!credential} onClick={() => setCredential('')} className={chipClass(!credential)}>
+                Não tenho
+              </button>
+              {CREDENTIALS.map((c) => (
+                <button key={c} type="button" aria-pressed={credential === c} onClick={() => setCredential(c)} className={chipClass(credential === c)}>
+                  {c}
+                </button>
+              ))}
+            </div>
+            {credential && (
+              <Input
+                aria-label={`Número do ${credential}`}
+                value={credentialNumber}
+                onChange={(e) => setCredentialNumber(e.target.value)}
+                placeholder={credential === 'CREF' ? 'Ex: 123456-G/SP' : 'Número do registro'}
+                className={FIELD_CLASS}
+              />
+            )}
+          </section>
+
+          <Field label="Cidade" htmlFor="ob-city" hint="Quem procura atividades na sua cidade encontra você.">
+            <Input id="ob-city" autoComplete="address-level2" value={city} onChange={(e) => setCity(e.target.value)} placeholder="Ex: Porto Alegre" className={FIELD_CLASS} />
+          </Field>
+
+          <Field label="Apresentação" htmlFor="ob-bio" hint={`${bio.trim().length}/500 · o que a pessoa pode esperar das suas atividades`}>
+            <Textarea
+              id="ob-bio"
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              maxLength={500}
+              placeholder="Ex: Organizo jogos de vôlei de praia aos sábados, para todos os níveis. Bola e rede por minha conta."
+              className="bg-elevated border-line rounded-xl resize-none h-28"
+            />
+          </Field>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="flex-1 flex flex-col">
-          {step === 1 && (
-            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex-1 space-y-6">
-              <div>
-                <h2 className="type-title mb-2">Quem é você?</h2>
-                <p className="text-muted-foreground text-sm mb-6">Como os participantes vão encontrar você.</p>
-                
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Área de Atuação</label>
-                    <Select onValueChange={(v) => setValue('professionalType', v)}>
-                      <SelectTrigger className="w-full bg-white/[0.05] border-white/10">
-                        <SelectValue placeholder="Selecione sua profissão" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="personal_trainer">Personal Trainer</SelectItem>
-                        <SelectItem value="physiotherapist">Fisioterapeuta</SelectItem>
-                        <SelectItem value="instructor">Instrutor(a) / Professor(a)</SelectItem>
-                        <SelectItem value="organizer">Organizador(a)</SelectItem>
-                        <SelectItem value="coach">Coach Esportivo</SelectItem>
-                        <SelectItem value="nutritionist">Nutricionista</SelectItem>
-                        <SelectItem value="other">Outro</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {errors.professionalType && <span className="text-destructive text-xs">{errors.professionalType.message}</span>}
-                  </div>
+        <div className="pt-6 space-y-2">
+          <Button size="lg" className="w-full" onClick={() => setStep(2)} disabled={!!step1Missing}>
+            Continuar
+          </Button>
+          {step1Missing && <p className="text-center text-xs text-ink-muted">{step1Missing}</p>}
+        </div>
+      </AuthShell>
+    );
+  }
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Registro (Opcional)</label>
-                      <Select onValueChange={(v) => setValue('credentialType', v)}>
-                        <SelectTrigger className="w-full bg-white/[0.05] border-white/10">
-                          <SelectValue placeholder="Ex: CREF" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="CREF">CREF</SelectItem>
-                          <SelectItem value="CREFITO">CREFITO</SelectItem>
-                          <SelectItem value="CRM">CRM</SelectItem>
-                          <SelectItem value="CRN">CRN</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Número</label>
-                      <Input {...register('credentialNumber')} className="bg-white/[0.05] border-white/10" placeholder="123456-G/SP" />
-                    </div>
-                  </div>
+  const pix = PIX_TYPES.find((p) => p.value === pixType);
 
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Bio (Apresentação)</label>
-                    <Textarea 
-                      {...register('bio')} 
-                      className="bg-white/[0.05] border-white/10 resize-none h-32" 
-                      placeholder="Conte um pouco sobre sua experiência, metodologia e o que os participantes podem esperar das suas atividades..."
-                    />
-                    {errors.bio && <span className="text-destructive text-xs">{errors.bio.message}</span>}
-                  </div>
-                </div>
-              </div>
+  return (
+    <AuthShell
+      product={BRAND.name}
+      progress={{ step: 2, total: 2 }}
+      label="Recebimento"
+      title="Como você recebe?"
+      subtitle="No Riff o dinheiro vai direto para você, por Pix. Sem intermediário no caminho."
+      onBack={() => setStep(1)}
+    >
+      <div className="space-y-6 flex-1">
+        <p className="flex items-start gap-2 rounded-2xl border border-brand/30 bg-brand/5 px-4 py-3 text-sm text-ink-muted">
+          <Info className="w-5 h-5 text-brand shrink-0" />
+          Quem reserva vê o QR do Pix com o valor certo e manda o comprovante no seu WhatsApp.
+        </p>
 
-              <div className="mt-auto pt-6">
-                <Button 
-                  type="button" 
-                  onClick={() => setStep(2)}
-                  className="w-full h-12 bg-brand hover:brightness-105 text-brand-ink font-semibold rounded-xl"
-                  disabled={!professionalType || !bio}
-                >
-                  Continuar
-                </Button>
-              </div>
-            </motion.div>
-          )}
+        <section className="space-y-2">
+          <h2 className="type-label">Tipo da chave Pix</h2>
+          <div className="flex flex-wrap gap-2">
+            {PIX_TYPES.map((t) => (
+              <button key={t.value} type="button" aria-pressed={pixType === t.value} onClick={() => setPixType(t.value)} className={chipClass(pixType === t.value)}>
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </section>
 
-          {step === 2 && (
-            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex-1 space-y-6 flex flex-col">
-              <div>
-                <h2 className="type-title mb-2">Como você recebe?</h2>
-                <p className="text-muted-foreground text-sm mb-6">No Riff o dinheiro vai direto para a sua conta via Pix.</p>
+        <Field label="Chave Pix" htmlFor="ob-pix" hint="Confira com cuidado: é para essa chave que o dinheiro vai.">
+          <Input
+            id="ob-pix"
+            value={pixKey}
+            onChange={(e) => setPixKey(e.target.value)}
+            placeholder={pix?.placeholder ?? 'Escolha o tipo acima'}
+            inputMode={pixType === 'cpf' || pixType === 'phone' ? 'numeric' : pixType === 'email' ? 'email' : undefined}
+            disabled={!pixType}
+            className={FIELD_CLASS}
+          />
+        </Field>
 
-                <div className="p-4 rounded-xl glass-card border-brand/20 bg-brand/5 flex items-start gap-3 mb-6">
-                  <Info className="w-5 h-5 text-brand shrink-0 mt-0.5" />
-                  <p className="text-sm text-ink-muted">O participante reservará a atividade e enviará o Pix diretamente para essa chave. O comprovante será enviado para o seu WhatsApp.</p>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Tipo de Chave Pix</label>
-                    <Select onValueChange={(v) => setValue('pixKeyType', v)}>
-                      <SelectTrigger className="w-full bg-white/[0.05] border-white/10">
-                        <SelectValue placeholder="Selecione o tipo" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="cpf">CPF / CNPJ</SelectItem>
-                        <SelectItem value="phone">Telefone Celular</SelectItem>
-                        <SelectItem value="email">E-mail</SelectItem>
-                        <SelectItem value="random">Chave Aleatória</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {errors.pixKeyType && <span className="text-destructive text-xs">{errors.pixKeyType.message}</span>}
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Sua Chave Pix</label>
-                    <Input {...register('pixKey')} className="bg-white/[0.05] border-white/10" placeholder="Digite sua chave exata" />
-                    {errors.pixKey && <span className="text-destructive text-xs">{errors.pixKey.message}</span>}
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-auto pt-6 flex gap-3">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => setStep(1)}
-                  className="h-12 w-1/3 border-white/10 hover:bg-white/5"
-                >
-                  Voltar
-                </Button>
-                <Button 
-                  type="submit" 
-                  className="h-12 flex-1 bg-brand hover:brightness-105 text-brand-ink font-semibold rounded-xl glow-brand"
-                  disabled={isUpdating}
-                >
-                  {isUpdating ? 'Salvando...' : 'Finalizar Perfil'}
-                </Button>
-              </div>
-            </motion.div>
-          )}
-        </form>
+        <Field label="WhatsApp para reservas (recomendado)" htmlFor="ob-whats" hint="Para receber comprovantes e dúvidas de quem reservou.">
+          <Input id="ob-whats" type="tel" autoComplete="tel" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="(11) 99999-9999" className={FIELD_CLASS} />
+        </Field>
       </div>
-    </PageContainer>
+
+      <div className="pt-6 space-y-2">
+        <Button size="lg" className="w-full shadow-[var(--shadow-cta)]" onClick={finish} disabled={!!step2Missing || isUpdating}>
+          {isUpdating ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Concluir e ir para o painel'}
+        </Button>
+        {step2Missing && <p className="text-center text-xs text-ink-muted">{step2Missing}</p>}
+      </div>
+    </AuthShell>
   );
 };
 
