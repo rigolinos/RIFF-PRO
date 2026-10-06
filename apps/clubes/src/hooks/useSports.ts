@@ -43,8 +43,9 @@ export function useSubmitReview() {
         throw new Error(key ? REVIEW_ERRORS[key] : 'Não foi possível enviar a avaliação.');
       }
     },
+    // as pendências só recarregam quando a pessoa sai da tela de avaliação
+    // (senão o jogo some da lista e a tela perde o passo da recompensa)
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pending-reviews'] });
       queryClient.invalidateQueries({ queryKey: ['player-profile'] });
       queryClient.invalidateQueries({ queryKey: ['ranking'] });
     },

@@ -22,7 +22,7 @@ export function ReviewPrompt({ max = 2, className }: { max?: number; className?:
               <Trophy className="w-5 h-5" />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block text-sm font-semibold text-ink truncate">
+              <span className="block text-sm font-semibold text-ink line-clamp-2">
                 Como foi o {p.title} {whenLabel(p.date)}?
               </span>
               <span className="block text-xs text-ink-muted">Leva 20 segundos · vale {POINTS.review} pontos</span>
