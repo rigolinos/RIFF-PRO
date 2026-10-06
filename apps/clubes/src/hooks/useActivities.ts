@@ -34,7 +34,8 @@ type ActivityRow = {
 
 /** Quem confirmou presença: só adultos pelo nome curto; menores só na contagem */
 export type Participants = {
-  people: { id: string; name: string; avatar_url: string | null }[];
+  /** id nulo = pessoa no modo reservado (aparece como "Membro") */
+  people: { id: string | null; name: string; avatar_url: string | null }[];
   count: number;
   dependents: number;
 };
