@@ -44,12 +44,12 @@ export function ModeSwitcher() {
             <button
               onClick={() => handleSelect("professional")}
               className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all ${
-                viewMode === "professional" ? "bg-brand/10 border-brand text-brand-ink" : "bg-surface border-line text-ink"
+                viewMode === "professional" ? "bg-brand/10 border-brand text-ink" : "bg-surface border-line text-ink"
               }`}
             >
               <div className="text-left">
                 <p className="font-semibold">Organizar</p>
-                <p className="text-sm opacity-70">Gerenciar minhas atividades</p>
+                <p className="text-sm text-ink-muted">Gerenciar minhas atividades</p>
               </div>
               {viewMode === "professional" && <div className="w-2 h-2 rounded-full bg-brand" />}
             </button>
@@ -61,7 +61,7 @@ export function ModeSwitcher() {
               <UserPlus className="w-5 h-5 text-brand" />
               <div className="text-left">
                 <p className="font-semibold text-brand">Quero organizar</p>
-                <p className="text-sm text-ink-muted">Crie suas próprias atividades</p>
+                <p className="text-sm text-ink-muted">Cadastro de organizador: publique e receba por Pix</p>
               </div>
             </button>
           )}
@@ -69,12 +69,12 @@ export function ModeSwitcher() {
           <button
             onClick={() => handleSelect("student")}
             className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all ${
-              viewMode === "student" ? "bg-brand/10 border-brand text-brand-ink" : "bg-surface border-line text-ink"
+              viewMode === "student" ? "bg-brand/10 border-brand text-ink" : "bg-surface border-line text-ink"
             }`}
           >
             <div className="text-left">
               <p className="font-semibold">Participar</p>
-              <p className="text-sm opacity-70">Explorar e agendar</p>
+              <p className="text-sm text-ink-muted">Explorar e agendar</p>
             </div>
             {viewMode === "student" && <div className="w-2 h-2 rounded-full bg-brand" />}
           </button>
