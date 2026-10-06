@@ -12,11 +12,12 @@ export const BRAND = {
   /** Frase curta */
   tagline: 'O esporte do seu condomínio ou clube, organizado.',
 
-  /** Domínio base (sem barra no fim). Provisório até o domínio final ser definido. */
-  domain: 'riff-clubes.vercel.app',
+  /** Domínio base (sem barra no fim). Provisório (Vercel) até o domínio final ser definido;
+   *  ao trocar, atualize também as tags og:url e og:image do apps/clubes/index.html. */
+  domain: 'riff-pro-clubes.vercel.app',
 
-  /** Imagem de compartilhamento (1200×630), em public/ */
-  ogImage: '/brand/og-image.jpg',
+  /** Imagem de compartilhamento, em public/. Provisória: o ícone do app, até a arte própria do Clubes. */
+  ogImage: '/brand/app-icon-512.png',
 
   /** Link de contato comercial (WhatsApp ou formulário). Vazio até ser definido. */
   salesContactUrl: '' as string,
