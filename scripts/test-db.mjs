@@ -966,6 +966,61 @@ ok(commIns.length > 0 && commIns.every((x) => x.dependents === '0' || x.dependen
 r = await as('authenticated', GA, 'SELECT * FROM public.admin_community_insights()');
 ok(r.err && /permission denied/.test(r.err), 'retrato é só da equipe Riff (o app não acessa)');
 
+// ── Espaços da comunidade (migration 0022) ──────────────────────────────
+console.log('Espaços da comunidade:');
+const MS = 'c6000000-0000-4000-8000-000000000001'; // morador ativo do condomínio A
+const pMS = await newUser(MS, 'morador.espacos@teste.dev', 'Morador Espaços', 'student');
+await q("INSERT INTO public.organization_members (organization_id, profile_id, role) VALUES ($1, $2, 'member')", [orgA, pMS]);
+const saveSpace = (uid, org, space, name, kind = 'tennis', rules = null) =>
+  as('authenticated', uid, 'SELECT public.save_community_space($1, $2, $3, $4, $5) AS id', [org, space, name, kind, rules]);
+r = await saveSpace(GA, orgA, null, 'Quadra de tênis 1', 'tennis', 'Tênis só com sapato de quadra');
+const quadra1 = r.rows?.[0]?.id;
+ok(!!quadra1 && (await one('SELECT official, visibility FROM public.venues WHERE id = $1', [quadra1])).visibility === 'members', 'gestor cria espaço oficial (visível só para membros)' + (r.err ? ` (${r.err})` : ''));
+r = await saveSpace(MS, orgA, null, 'Piscina', 'pool');
+ok(r.err && /forbidden/.test(r.err), 'morador não cria espaço');
+r = await saveSpace(GB, orgA, null, 'Piscina', 'pool');
+ok(r.err && /forbidden/.test(r.err), 'gestor de outra comunidade não cria espaço');
+r = await saveSpace(GA, orgA, null, 'quadra de TÊNIS 1');
+ok(r.err && /space_name_taken/.test(r.err), 'não repete o nome de um espaço');
+// local digitado à mão antes vira o espaço oficial (o histórico fica)
+await ex("SELECT set_config('request.jwt.claim.sub', '', false)");
+const sOld = (await one(`INSERT INTO public.sessions (professional_id, category_id, organization_id, title, date, start_time, duration_minutes, location_name, max_participants, price_per_slot, status)
+  VALUES ($1, $2, $3, 'Natação antiga', current_date - 10, '08:00', 60, 'Piscina', 10, 0, 'active') RETURNING venue_id`, [pGA, category, orgA])).venue_id;
+r = await saveSpace(GA, orgA, null, 'piscina', 'pool');
+ok(r.rows?.[0]?.id === sOld, 'local já usado com o mesmo nome vira o espaço oficial');
+// conflito de horário
+const inSpace = (title, date, time, minutes) => one(`INSERT INTO public.sessions (professional_id, category_id, organization_id, venue_id, title, date, start_time, duration_minutes, location_name, max_participants, price_per_slot, status)
+  VALUES ($1, $2, $3, $4, $5, current_date + $6::int, $7, $8, 'Quadra de tênis 1', 10, 0, 'active') RETURNING id`, [pGA, category, orgA, quadra1, title, date, time, minutes]);
+const tA = (await inSpace('Aula de tênis', 5, '08:00', 60)).id;
+const conf = (uid, time, minutes, exclude = null) => as('authenticated', uid, 'SELECT * FROM public.space_conflicts($1, current_date + 5, $2, $3, $4)', [quadra1, time, minutes, exclude]);
+r = await conf(MS, '08:30', 60);
+ok(r.rows?.length === 1 && r.rows[0].title === 'Aula de tênis', 'avisa conflito no mesmo espaço e horário');
+r = await conf(GA, '09:00', 60);
+ok(!r.err && r.rows.length === 0, 'começar quando o outro termina não é conflito');
+r = await conf(GA, '07:00', 60);
+ok(!r.err && r.rows.length === 0, 'terminar quando o outro começa não é conflito');
+r = await conf(GA, '08:00', 60, tA);
+ok(!r.err && r.rows.length === 0, 'editando a própria atividade não acusa conflito com ela mesma');
+await q("UPDATE public.sessions SET status = 'cancelled' WHERE id = $1", [tA]);
+r = await conf(GA, '08:30', 60);
+ok(!r.err && r.rows.length === 0, 'atividade cancelada não ocupa o espaço');
+r = await conf(MB, '08:30', 60);
+ok(r.err && /forbidden/.test(r.err), 'quem é de outra comunidade não consulta o espaço');
+// espaço de outra comunidade não pode ser usado
+let crossErr = null;
+try {
+  await one(`INSERT INTO public.sessions (professional_id, category_id, organization_id, venue_id, title, date, start_time, duration_minutes, location_name, max_participants, price_per_slot, status)
+    VALUES ($1, $2, $3, $4, 'Invasão', current_date + 6, '10:00', 60, 'Quadra', 10, 0, 'active')`, [pGA, category, orgB, quadra1]);
+} catch (e) { crossErr = e.message; }
+ok(!!crossErr && crossErr.includes('venue_other_organization'), 'atividade não usa espaço de outra comunidade');
+// arquivar
+r = await as('authenticated', GA, 'SELECT public.archive_community_space($1)', [quadra1]);
+ok(!r.err && (await one('SELECT archived_at FROM public.venues WHERE id = $1', [quadra1])).archived_at !== null, 'gestor arquiva espaço' + (r.err ? ` (${r.err})` : ''));
+r = await as('authenticated', MS, 'SELECT public.archive_community_space($1, false)', [quadra1]);
+ok(r.err && /forbidden/.test(r.err), 'morador não arquiva espaço');
+r = await saveSpace(GA, orgA, null, 'Quadra de tênis 1');
+ok(r.rows?.[0]?.id === quadra1 && (await one('SELECT archived_at FROM public.venues WHERE id = $1', [quadra1])).archived_at === null, 'recriar com o mesmo nome traz o espaço arquivado de volta');
+
 // ── Higiene de segurança (verificador do Supabase) ─────────────────────
 console.log('Higiene de segurança:');
 const noPath = (await q(`SELECT p.proname FROM pg_proc p WHERE p.pronamespace = 'public'::regnamespace

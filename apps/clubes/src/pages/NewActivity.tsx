@@ -3,12 +3,12 @@ import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { addDays, format, nextSaturday, nextSunday, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { ArrowLeft, BookOpen, CalendarDays, MapPin, Minus, Plus, Search, Sparkles, Trophy, Users } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, BookOpen, CalendarDays, Info, MapPin, Minus, Plus, Search, Sparkles, Trophy, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@riff/core/supabase/client';
 import { useProfile } from '@riff/core/hooks/useProfile';
 import { PageContainer } from '@riff/core/layout/PageContainer';
-import { BrandLines, FormStep } from '@riff/core/domain';
+import { BrandLines, ConfirmDialog, FormStep } from '@riff/core/domain';
 import { chipClass } from '@riff/core/lib/chips';
 import { Button } from '@riff/core/ui/button';
 import { Input } from '@riff/core/ui/input';
@@ -18,6 +18,8 @@ import { KINDS, type ActivityKind } from '@riff/core/lib/copy';
 import { cn, errorMessage } from '@riff/core/lib/utils';
 import { useCommunity, todaySP } from '@/hooks/useCommunity';
 import { SportIcon } from '@riff/core/domain/SportIcon';
+import { useSpaceConflicts, useSpaces } from '@/hooks/useSpaces';
+import { spaceKind } from '@/lib/spaces';
 
 const FIELD = 'h-12 bg-surface border-line';
 const KIND_ICONS: Record<ActivityKind, typeof BookOpen> = {
@@ -57,7 +59,7 @@ export default function NewActivity() {
   const { data: venues } = useQuery({
     queryKey: ['community-venues', orgId],
     queryFn: async () => {
-      const { data, error } = await supabase.from('venues').select('id, name').eq('organization_id', orgId!).order('name');
+      const { data, error } = await supabase.from('venues').select('id, name, official').eq('organization_id', orgId!).is('archived_at', null).order('name');
       if (error) throw error;
       return data;
     },
@@ -74,6 +76,10 @@ export default function NewActivity() {
   const [time, setTime] = useState('');
   const [durationChoice, setDurationChoice] = useState<number | null>(null);
   const [place, setPlace] = useState('');
+  // espaço oficial escolhido (null = lugar digitado à mão)
+  const [spaceId, setSpaceId] = useState<string | null>(null);
+  const [otherPlace, setOtherPlace] = useState(false);
+  const [confirmConflict, setConfirmConflict] = useState(false);
   const [spots, setSpots] = useState(10);
   const [description, setDescription] = useState('');
   const [minorsAllowed, setMinorsAllowed] = useState(false);
@@ -82,6 +88,13 @@ export default function NewActivity() {
 
   const kind: ActivityKind = kindChoice ?? (community?.role === 'instructor' ? 'class' : 'match');
   const duration = durationChoice ?? KINDS[kind].defaultDuration;
+
+  const { data: spaces } = useSpaces(orgId);
+  const hasSpaces = !!spaces && spaces.length > 0;
+  const space = spaces?.find((x) => x.id === spaceId) ?? null;
+  // lugares digitados antes (fora a sede e os espaços oficiais)
+  const usedPlaces = (venues ?? []).filter((v) => !v.official && v.id !== community?.main_venue_id);
+  const { data: conflicts } = useSpaceConflicts(spaceId, date, time, duration);
 
   const today = parseISO(todaySP());
   const quickDates = useMemo(() => {
@@ -118,10 +131,15 @@ export default function NewActivity() {
                 ? 'A idade mínima vai de 0 a 17 anos.'
                 : null;
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSave = async (e?: React.FormEvent, confirmed = false) => {
+    e?.preventDefault();
     if (missing) {
       toast.error(missing);
+      return;
+    }
+    // espaço ocupado no mesmo horário: avisa antes de publicar
+    if (!confirmed && conflicts && conflicts.length > 0) {
+      setConfirmConflict(true);
       return;
     }
     if (!profile?.id || !orgId) return;
@@ -141,6 +159,7 @@ export default function NewActivity() {
           start_time: time,
           duration_minutes: duration || KINDS[kind].defaultDuration,
           location_name: place.trim(),
+          venue_id: spaceId,
           max_participants: spots,
           price_per_slot: 0,
           status: 'active',
@@ -319,22 +338,79 @@ export default function NewActivity() {
           </FormStep>
 
           <FormStep n={4} title="Onde?" hint="Um lugar dentro do condomínio ou clube">
-            <div className="relative">
-              <MapPin className="w-4 h-4 text-ink-muted absolute left-3 top-1/2 -translate-y-1/2" />
-              <Input
-                value={place}
-                onChange={(e) => setPlace(e.target.value)}
-                placeholder="Ex: Quadra poliesportiva"
-                aria-label="Local"
-                className={cn(FIELD, 'pl-9')}
-              />
-            </div>
-            {venues && venues.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {venues.map((v) => (
-                  <button key={v.id} type="button" aria-pressed={place === v.name} onClick={() => setPlace(v.name)} className={chipClass(place === v.name)}>
-                    {v.name}
-                  </button>
+            {hasSpaces && (
+              <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Espaços da comunidade">
+                {spaces.map((sp) => {
+                  const k = spaceKind(sp.space_kind);
+                  return (
+                    <button
+                      key={sp.id}
+                      type="button"
+                      role="radio"
+                      aria-checked={spaceId === sp.id}
+                      onClick={() => {
+                        setSpaceId(sp.id);
+                        setPlace(sp.name);
+                        setOtherPlace(false);
+                      }}
+                      className={cn(chipClass(spaceId === sp.id), 'inline-flex items-center gap-1.5')}
+                    >
+                      <k.icon className="w-4 h-4" /> {sp.name}
+                    </button>
+                  );
+                })}
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={otherPlace}
+                  onClick={() => {
+                    setSpaceId(null);
+                    setPlace('');
+                    setOtherPlace(true);
+                  }}
+                  className={chipClass(otherPlace)}
+                >
+                  Outro lugar
+                </button>
+              </div>
+            )}
+            {(!hasSpaces || otherPlace) && (
+              <>
+                <div className="relative">
+                  <MapPin className="w-4 h-4 text-ink-muted absolute left-3 top-1/2 -translate-y-1/2" />
+                  <Input
+                    value={place}
+                    onChange={(e) => setPlace(e.target.value)}
+                    placeholder="Ex: Quadra poliesportiva"
+                    aria-label="Local"
+                    className={cn(FIELD, 'pl-9')}
+                  />
+                </div>
+                {usedPlaces.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {usedPlaces.map((v) => (
+                      <button key={v.id} type="button" aria-pressed={place === v.name} onClick={() => setPlace(v.name)} className={chipClass(place === v.name)}>
+                        {v.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+            {space?.rules && (
+              <p className="flex items-start gap-2 rounded-xl border border-line bg-surface px-3 py-2 text-xs text-ink-muted">
+                <Info className="w-4 h-4 text-brand shrink-0" /> {space.rules}
+              </p>
+            )}
+            {conflicts && conflicts.length > 0 && (
+              <div className="rounded-xl border border-accent/50 bg-accent/10 px-3 py-2 space-y-1" role="alert">
+                <p className="flex items-center gap-2 text-sm font-semibold text-ink">
+                  <AlertTriangle className="w-4 h-4 text-accent shrink-0" /> {space?.name} já tem algo nesse horário
+                </p>
+                {conflicts.map((c) => (
+                  <p key={c.session_id} className="text-xs text-ink-muted pl-6">
+                    {c.title}: {c.start_time.slice(0, 5)} às {c.end_time.slice(0, 5)}
+                  </p>
                 ))}
               </div>
             )}
@@ -404,6 +480,20 @@ export default function NewActivity() {
           <p className="text-xs text-center text-ink-muted min-h-4">{missing ?? 'Tudo certo. Os membros vão ver na agenda.'}</p>
         </div>
       </form>
+
+      <ConfirmDialog
+        open={confirmConflict}
+        onOpenChange={setConfirmConflict}
+        title="Espaço ocupado nesse horário"
+        description={`${space?.name ?? 'O espaço'} já tem ${conflicts?.map((c) => `"${c.title}" (${c.start_time.slice(0, 5)} às ${c.end_time.slice(0, 5)})`).join(', ')}. Publicar mesmo assim?`}
+        cancelLabel="Mudar horário"
+        confirmLabel="Publicar mesmo assim"
+        isLoading={isSaving}
+        onConfirm={() => {
+          setConfirmConflict(false);
+          void handleSave(undefined, true);
+        }}
+      />
     </PageContainer>
   );
 }

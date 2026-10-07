@@ -8,7 +8,8 @@ const ACTIVITY_FIELDS =
   'location_name, max_participants, current_participants, kind, status, cover_image_url, ' +
   'category:categories(name, emoji, slug), ' +
   'professional:profiles!sessions_professional_id_fkey(full_name, avatar_url), ' +
-  'organization:organizations(name, kind)';
+  'organization:organizations(name, kind), ' +
+  'venue:venues(id, name, official, rules, space_kind)';
 
 type ActivityRow = {
   id: string;
@@ -30,6 +31,7 @@ type ActivityRow = {
   category: { name: string; emoji: string | null; slug: string | null } | null;
   professional: { full_name: string | null; avatar_url: string | null } | null;
   organization: { name: string | null; kind: string } | null;
+  venue: { id: string; name: string; official: boolean; rules: string | null; space_kind: string | null } | null;
 };
 
 /** Quem confirmou presença: só adultos pelo nome curto; menores só na contagem */
