@@ -67,3 +67,8 @@ export function sportMatches(c: { name: string; slug: string | null }, query: st
   });
 }
 
+/** O texto é exatamente um esporte da lista (pelo nome ou por um apelido conhecido): não oferecer "usar como esporte novo" */
+export function sportExactMatch(c: { name: string; slug: string | null }, query: string) {
+  const q = plainText(query);
+  return !!q && (plainText(c.name) === q || (ALIASES[c.slug ?? ''] ?? []).some((a) => plainText(a) === q));
+}

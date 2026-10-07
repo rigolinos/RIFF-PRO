@@ -32,7 +32,7 @@ import { KINDS, type ActivityKind } from '@riff/core/lib/copy';
 import { chipClass } from '@riff/core/lib/chips';
 import { cn } from '@riff/core/lib/utils';
 import { formatBRL } from '@riff/core/lib/money';
-import { sportMatches } from '@riff/core/lib/sportSearch';
+import { sportExactMatch, sportMatches } from '@riff/core/lib/sportSearch';
 import { useQuery } from '@tanstack/react-query';
 import { useCategories } from '@/hooks/useCategories';
 import { useMyVenues } from '@/hooks/useMyVenues';
@@ -71,7 +71,6 @@ const DURATIONS = [30, 45, 60, 90, 120];
 const PRICES = [0, 20, 30, 40, 50];
 const durationLabel = (m: number) => (m < 60 ? `${m} min` : m % 60 ? `${Math.floor(m / 60)}h${m % 60}` : `${m / 60}h`);
 const todaySP = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(new Date());
-const plain = (t: string) => t.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '');
 
 interface SessionFormProps {
   initialData?: SessionWithJoins;
@@ -175,7 +174,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
   const visibleSports = sportSearch || showAllSports ? filteredSports : filteredSports.slice(0, 9);
   const newSportName = sportSearch.trim().replace(/\s+/g, ' ');
   const canUseNewSport = newSportName.length >= 2 && newSportName.length <= 40 && !!outrosCategory
-    && !filteredSports.some((c) => plain(c.name) === plain(newSportName));
+    && !filteredSports.some((c) => sportExactMatch(c, newSportName));
   const spots = Number(formData.max_participants) || 1;
   const price = Number(formData.price_per_slot) || 0;
   const duration = Number(formData.duration_minutes) || KINDS[kind].defaultDuration;
@@ -220,6 +219,9 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
     }
     // Cidade da atividade: a do perfil do organizador (usada no filtro do feed).
     if (!isEditMode && !data.city && profile?.city) data.city = profile.city;
+    // o campo do esporte livre só vai quando há um nome novo ("não achei")
+    // (na edição, se antes havia um nome livre, manda NULL para limpar)
+    if (!data.sport_other && !initialData?.sport_other) delete data.sport_other;
     await onSubmit(data);
   };
 

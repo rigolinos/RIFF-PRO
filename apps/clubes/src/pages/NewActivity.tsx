@@ -20,7 +20,7 @@ import { useCommunity, todaySP } from '@/hooks/useCommunity';
 import { SportIcon } from '@riff/core/domain/SportIcon';
 import { useSpaceConflicts, useSpaces } from '@/hooks/useSpaces';
 import { spaceKind } from '@/lib/spaces';
-import { plainText, sportMatches } from '@riff/core/lib/sportSearch';
+import { sportExactMatch, sportMatches } from '@riff/core/lib/sportSearch';
 
 const FIELD = 'h-12 bg-surface border-line';
 const KIND_ICONS: Record<ActivityKind, typeof BookOpen> = {
@@ -115,7 +115,7 @@ export default function NewActivity() {
   const outrosCategory = categories?.find((c) => c.slug === 'outros');
   const newSportName = sportSearch.trim().replace(/\s+/g, ' ');
   const canUseNewSport = newSportName.length >= 2 && newSportName.length <= 40 && !!outrosCategory
-    && !filteredSports.some((c) => plainText(c.name) === plainText(newSportName));
+    && !filteredSports.some((c) => sportExactMatch(c, newSportName));
   const visibleSports = sportSearch || showAllSports ? filteredSports : filteredSports.slice(0, 9);
 
   if (!isLoading && community === null) return <Navigate to="/inicio" replace />;
@@ -157,7 +157,8 @@ export default function NewActivity() {
           professional_id: profile.id,
           organization_id: orgId,
           category_id: categoryId,
-          sport_other: sportOther,
+          // o campo do esporte livre só vai quando há um nome novo ("não achei")
+          ...(sportOther ? { sport_other: sportOther } : {}),
           kind,
           title: title.trim(),
           description: description.trim() || null,
