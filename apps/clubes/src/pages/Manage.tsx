@@ -20,6 +20,7 @@ import { useMembers, useInvites, useManageActions, usePendingClose, type MemberA
 import { useUpcomingActivities } from '@/hooks/useActivities';
 import { InviteMembers } from '@/components/InviteMembers';
 import { SpacesManager } from '@/components/SpacesManager';
+import { JoinRequests } from '@/components/JoinRequests';
 import { formatInviteCode } from '@/lib/invite';
 
 const ROLE_LABEL: Record<string, string> = { owner: 'Responsável', admin: 'Gestor', instructor: 'Instrutor', member: 'Membro' };
@@ -137,6 +138,8 @@ export default function Manage() {
             <ChevronRight className="w-4 h-4 text-ink-muted" />
           </Link>
         )}
+
+        {orgId && <JoinRequests orgId={orgId} />}
 
         {orgId && <SpacesManager orgId={orgId} />}
 

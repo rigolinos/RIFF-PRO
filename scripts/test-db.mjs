@@ -1021,6 +1021,78 @@ ok(r.err && /forbidden/.test(r.err), 'morador não arquiva espaço');
 r = await saveSpace(GA, orgA, null, 'Quadra de tênis 1');
 ok(r.rows?.[0]?.id === quadra1 && (await one('SELECT archived_at FROM public.venues WHERE id = $1', [quadra1])).archived_at === null, 'recriar com o mesmo nome traz o espaço arquivado de volta');
 
+// ── Pedido de comunidade (migration 0023) ───────────────────────────────
+console.log('Pedido de comunidade:');
+const R1 = 'c7000000-0000-4000-8000-000000000001';
+const R2 = 'c7000000-0000-4000-8000-000000000002';
+const pR1 = await newUser(R1, 'morador.pede@teste.dev', 'Rita Pede', 'student');
+await newUser(R2, 'vizinho.quer@teste.dev', 'Vito Quer', 'student');
+const near = (uid, lat, lng) => as('authenticated', uid, 'SELECT * FROM public.communities_near($1, $2)', [lat, lng]);
+const submit = (uid, lat, lng, over = {}) => as('authenticated', uid,
+  'SELECT public.submit_community_request($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, $10, $11) AS id',
+  [over.name ?? 'Residencial Aurora', 'condo', 'Rua Teste, 10', 'Porto Alegre', 'rs', lat, lng,
+   JSON.stringify(over.infra ?? { tennis: 2, pool: 1, bogus: 5, gym: 30 }), 120, over.role ?? 'morador', over.contact ?? 'Síndico João (51) 99999-0000']);
+
+// comunidade que já existe por perto (sede do condomínio A em -30.051, -51.201)
+r = await near(R1, -30.0513, -51.2012);
+ok(r.rows?.[0]?.type === 'community' && r.rows[0].id === orgA && r.rows[0].distance_m < 150, 'acha a comunidade que já existe a menos de 150 m');
+r = await near(R1, -30.06, -51.25);
+ok(!r.err && r.rows.length === 0, 'longe de tudo, não acha nada');
+r = await submit(R1, -30.0513, -51.2012);
+ok(r.err && /community_exists/.test(r.err), 'não cria pedido onde já existe comunidade');
+r = await as('authenticated', R1, 'SELECT public.request_to_join($1)', [orgA]);
+ok(!r.err, 'pede para entrar na comunidade que já existe' + (r.err ? ` (${r.err})` : ''));
+r = await near(R1, -30.0513, -51.2012);
+ok(r.rows?.[0]?.requested === true, 'o app sabe que o pedido para entrar já foi feito');
+const jr = await as('authenticated', GA, "SELECT id FROM public.community_join_requests WHERE organization_id = $1 AND status = 'pending'", [orgA]);
+ok(jr.rows?.length === 1, 'gestor vê o pedido para entrar');
+r = await as('authenticated', MS, "SELECT id FROM public.community_join_requests WHERE organization_id = $1", [orgA]);
+ok(!r.err && r.rows.length === 0, 'morador comum não vê pedidos para entrar');
+r = await as('authenticated', MS, 'SELECT public.answer_join_request($1, true)', [jr.rows[0].id]);
+ok(r.err && /forbidden/.test(r.err), 'morador comum não aceita pedido');
+r = await as('authenticated', GA, 'SELECT public.answer_join_request($1, true)', [jr.rows[0].id]);
+ok(!r.err && (await one('SELECT status, role FROM public.organization_members WHERE organization_id = $1 AND profile_id = $2', [orgA, pR1])).status === 'active',
+  'gestor aceita e a pessoa vira membro' + (r.err ? ` (${r.err})` : ''));
+
+// pedido novo
+r = await submit(R1, -30.10, -51.25);
+const reqId = r.rows?.[0]?.id;
+const reqRow = reqId ? await one('SELECT infrastructure, state, status FROM public.community_requests WHERE id = $1', [reqId]) : null;
+ok(reqRow?.status === 'pending' && JSON.stringify(reqRow.infrastructure) === JSON.stringify({ pool: 1, tennis: 2 }) && reqRow.state === 'RS',
+  'pedido guarda só a infraestrutura válida (tipos conhecidos, de 1 a 20)' + (r.err ? ` (${r.err})` : ''));
+r = await near(R2, -30.1003, -51.2501);
+ok(r.rows?.[0]?.type === 'request' && r.rows[0].id === reqId, 'vizinho vê que o condomínio já foi pedido');
+r = await submit(R2, -30.1003, -51.2501);
+ok(r.err && /request_exists/.test(r.err), 'não cria pedido repetido no mesmo lugar');
+r = await as('authenticated', R2, 'SELECT public.support_community_request($1)', [reqId]);
+ok(!r.err, 'vizinho registra que também quer' + (r.err ? ` (${r.err})` : ''));
+r = await as('authenticated', R2, 'SELECT id, sindico_contact FROM public.community_requests WHERE id = $1', [reqId]);
+ok(!r.err && r.rows.length === 0, 'vizinho não lê o pedido de outra pessoa (nem o contato do síndico)');
+r = await as('anon', '', 'SELECT * FROM public.communities_near(-30.1, -51.25)');
+ok(!!r.err, 'visitante sem login não consulta comunidades por perto');
+r = await submit(R1, -30.20, -51.30, { name: 'Outro 1' });
+r = await submit(R1, -30.30, -51.35, { name: 'Outro 2' });
+const lastReq = r.rows?.[0]?.id;
+r = await submit(R1, -30.40, -51.40, { name: 'Outro 3' });
+ok(r.err && /too_many_requests/.test(r.err), 'no máximo 3 pedidos pendentes por pessoa');
+r = await as('authenticated', R1, 'SELECT public.cancel_community_request($1)', [lastReq]);
+ok(!r.err && (await one('SELECT status FROM public.community_requests WHERE id = $1', [lastReq])).status === 'cancelled', 'quem pediu pode desistir');
+
+// equipe Riff
+const listed = (await q('SELECT * FROM public.admin_list_community_requests()')).rows.find((x) => x.id === reqId);
+ok(listed?.interested === 1 && listed.requester_email === 'morador.pede@teste.dev', 'equipe lista os pedidos com quem pediu e quantos também querem');
+r = await as('authenticated', GA, 'SELECT public.admin_approve_community_request($1)', [reqId]);
+ok(r.err && /permission denied/.test(r.err), 'o app não aprova pedido');
+const newOrg = (await one('SELECT public.admin_approve_community_request($1) AS id', [reqId])).id;
+const spacesNew = (await q('SELECT name FROM public.venues WHERE organization_id = $1 AND official ORDER BY name', [newOrg])).rows.map((x) => x.name);
+ok(JSON.stringify(spacesNew) === JSON.stringify(['Piscina', 'Quadra de tênis 1', 'Quadra de tênis 2']), 'aprovação cria os espaços a partir da infraestrutura (' + spacesNew.join(', ') + ')');
+const newOrgRow = await one('SELECT o.main_venue_id, m.role FROM public.organizations o JOIN public.organization_members m ON m.organization_id = o.id AND m.profile_id = $2 WHERE o.id = $1', [newOrg, pR1]);
+ok(!!newOrgRow.main_venue_id && newOrgRow.role === 'owner', 'comunidade nasce com a sede, e quem pediu vira responsável (sem outro e-mail)');
+ok((await one('SELECT status, organization_id FROM public.community_requests WHERE id = $1', [reqId])).organization_id === newOrg, 'pedido fica aprovado e ligado à comunidade');
+let apprErr = null;
+try { await one('SELECT public.admin_approve_community_request($1)', [reqId]); } catch (e) { apprErr = e.message; }
+ok(!!apprErr, 'pedido aprovado não é aprovado de novo');
+
 // ── Higiene de segurança (verificador do Supabase) ─────────────────────
 console.log('Higiene de segurança:');
 const noPath = (await q(`SELECT p.proname FROM pg_proc p WHERE p.pronamespace = 'public'::regnamespace

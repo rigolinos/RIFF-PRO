@@ -1,4 +1,4 @@
-// Busca de endereços do Riff Pro (Geoapify, dados do OpenStreetMap).
+// Busca de endereços do Riff Pro e do Riff Clubes (Geoapify, dados do OpenStreetMap).
 // O plano permite guardar a coordenada; a chave é pública e travada por domínio
 // no painel do Geoapify (VITE_GEOAPIFY_KEY).
 const KEY = import.meta.env.VITE_GEOAPIFY_KEY as string | undefined;

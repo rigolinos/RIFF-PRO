@@ -100,13 +100,10 @@ const Landing = () => {
               O {BRAND.name} organiza as atividades esportivas do seu condomínio ou clube: agenda, inscrições, presença e instrutores, num
               espaço fechado para os seus moradores e sócios.
             </p>
-            {BRAND.salesContactUrl ? (
-              <Button className="w-full" onClick={() => window.open(BRAND.salesContactUrl, '_blank')}>
-                Quero o {BRAND.name} aqui
-              </Button>
-            ) : (
-              <p className="text-sm text-ink font-medium">Fale com a equipe Riff para levar o {BRAND.name} até você.</p>
-            )}
+            <Button className="w-full" onClick={() => navigate('/signup?redirect=/cadastrar-comunidade')}>
+              Cadastrar meu condomínio ou clube
+            </Button>
+            <p className="text-xs text-ink-muted">Leva 2 minutos. A equipe Riff confirma com o responsável e cria a comunidade.</p>
           </div>
         </div>
       </section>

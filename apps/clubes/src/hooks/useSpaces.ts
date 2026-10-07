@@ -29,7 +29,8 @@ export function useSpaceActions(orgId: string | undefined) {
     mutationFn: async (s: { id?: string | null; name: string; space_kind: string; rules: string }) => {
       const { error } = await supabase.rpc('save_community_space', {
         p_org: orgId!,
-        p_space: s.id ?? null,
+        // NULL = espaço novo (o banco aceita; o tipo gerado não marca como opcional)
+        p_space: (s.id ?? null) as string,
         p_name: s.name,
         p_space_kind: s.space_kind,
         p_rules: s.rules,
@@ -62,7 +63,7 @@ export function useSpaceConflicts(spaceId: string | null, date: string, time: st
         p_date: date,
         p_start: time,
         p_minutes: minutes,
-        p_exclude: exclude ?? null,
+        p_exclude: exclude,
       });
       if (error) throw error;
       return (data ?? []) as SpaceConflict[];
