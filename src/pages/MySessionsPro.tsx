@@ -4,6 +4,7 @@ import { ptBR } from 'date-fns/locale';
 import { Users, Loader2, Edit, XCircle, Copy, Share2, ClipboardCheck, CalendarDays, MoreHorizontal, Lock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { shareActivity } from '@/lib/share';
 import { errorMessage } from '@riff/core/lib/utils';
 import { PageContainer } from '@riff/core/layout/PageContainer';
 import { HeroHeader } from '@riff/core/layout/HeroHeader';
@@ -105,15 +106,8 @@ const MySessionsPro = () => {
   const done = all.filter((s) => isCancelled(s) || isCompleted(s));
   const list = tab === 'upcoming' ? upcoming : tab === 'toClose' ? toClose : done;
 
-  const share = (session: SessionType) => {
-    const url = `${window.location.origin}/session/${session.id}`;
-    if (navigator.share) {
-      navigator.share({ title: session.title, url }).catch(() => undefined);
-    } else {
-      navigator.clipboard.writeText(url);
-      toast.success('Link da atividade copiado.');
-    }
-  };
+  // convite com mensagem (só o link, sem texto, parecia golpe no WhatsApp)
+  const share = (session: SessionType) => void shareActivity(session, { isOwner: true });
 
   const actionsFor = (session: SessionType) => {
     const past = isPast(session);

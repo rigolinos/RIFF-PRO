@@ -40,6 +40,7 @@ import { Textarea } from '@riff/core/ui/textarea';
 import { useProfile } from '@riff/core/hooks/useProfile';
 import { supabase } from '@riff/core/supabase/client';
 import { ModeSwitcher } from '@/components/layout/ModeSwitcher';
+import { BRAND } from '@/brand';
 import { SportsProfileSection } from '@/components/profile/SportsProfileSection';
 import { useViewMode } from '@/contexts/ViewModeContext';
 import { useMySportsProfile } from '@/hooks/useSportsProfile';
@@ -233,7 +234,7 @@ export default function ProfileEdit() {
           </p>
           {isPro && slug && (
             <Link to={`/@${slug}`} className="text-xs font-semibold text-brand underline underline-offset-4">
-              Ver minha vitrine (riff.pro/@{slug})
+              Ver minha vitrine ({BRAND.domain}/@{slug})
             </Link>
           )}
         </div>
@@ -315,7 +316,7 @@ export default function ProfileEdit() {
                     <LinkIcon className="w-3.5 h-3.5" /> Link da bio
                   </span>
                   <div className="flex items-center">
-                    <span className="h-12 bg-bg border border-r-0 border-line px-3 rounded-l-md text-sm text-ink-muted flex items-center">riff.pro/@</span>
+                    <span className="h-12 bg-bg border border-r-0 border-line px-3 rounded-l-md text-sm text-ink-muted flex items-center">@</span>
                     <Input {...register('public_slug')} placeholder="seunome" className={`${FIELD} rounded-l-none lowercase`} />
                   </div>
                   <span className="block text-xs text-ink-muted">Coloque na bio do Instagram: quem abre vê suas atividades e reserva.</span>

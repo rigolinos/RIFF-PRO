@@ -15,8 +15,9 @@ export const BRAND = {
   /** Short tagline */
   tagline: 'Organize. Participe. Jogue junto.',
 
-  /** Base domain (no trailing slash) */
-  domain: 'riff.pro',
+  /** Base domain (no trailing slash). Provisório até o domínio próprio (riff.pro ainda não existe);
+   *  ao trocar, atualize também og:url e og:image do index.html. */
+  domain: 'riff-pro.vercel.app',
 
   /** Twitter / X handle, without @ */
   twitter: 'riffpro',

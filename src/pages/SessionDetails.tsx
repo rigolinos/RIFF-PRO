@@ -4,7 +4,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { CheckCircle2, ChevronRight, ClipboardCheck, Flag, Lock, MapPin, Navigation, Pencil, Share2, Ticket } from 'lucide-react';
-import { toast } from 'sonner';
 
 import { supabase } from '@riff/core/supabase/client';
 import { useAuth } from '@riff/core/hooks/useAuth';
@@ -18,6 +17,7 @@ import { activityPhase, nowSP, PHASE_LABEL } from '@riff/core/lib/activityTime';
 import { googleMapsUrl, hasCoordinates, wazeUrl } from '@riff/core/lib/geo';
 import { CheckoutModal } from '@/components/checkout/CheckoutModal';
 import { useProParticipants } from '@/hooks/useSportsProfile';
+import { shareActivity } from '@/lib/share';
 
 const SessionDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -102,23 +102,9 @@ const SessionDetails = () => {
   const closed = phase === 'open' ? null : PHASE_LABEL[phase];
   const date = parseISO(session.date);
 
-  const handleShare = async () => {
-    const text = `${session.title} com ${pro.full_name?.split(' ')[0] ?? 'o organizador'}: ${format(date, "EEEE, d 'de' MMMM", { locale: ptBR })}, às ${session.start_time.substring(0, 5)}. Bora?`;
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: session.title, text, url: window.location.href });
-      } catch {
-        // a pessoa fechou a janela de compartilhar
-      }
-      return;
-    }
-    try {
-      await navigator.clipboard.writeText(`${text} ${window.location.href}`);
-      toast.success('Link copiado. Cole no WhatsApp ou na bio.');
-    } catch {
-      toast.error('Não foi possível copiar o link.');
-    }
-  };
+  const handleShare = () =>
+    void shareActivity(session, { isOwner: isOrganizer, organizerFirstName: pro.full_name?.split(' ')[0] });
+
 
   const handleBook = () => {
     if (!user) {
@@ -312,7 +298,7 @@ const SessionDetails = () => {
             </Button>
           </div>
         ) : myBooking ? (
-          <Button size="lg" variant="secondary" className="w-full" onClick={() => navigate('/my-bookings')}>
+          <Button size="lg" variant="secondary" className="w-full" onClick={() => navigate(`/my-bookings?ingresso=${myBooking.id}`)}>
             <Ticket className="w-4 h-4 mr-2" /> Ver minha reserva
           </Button>
         ) : closed ? (
