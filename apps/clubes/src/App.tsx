@@ -25,6 +25,7 @@ const GameReview = lazy(() => import('@/pages/GameReview'));
 const PlayerProfile = lazy(() => import('@/pages/PlayerProfile'));
 const Ranking = lazy(() => import('@/pages/Ranking'));
 const Community = lazy(() => import('@/pages/Community'));
+const RequestCommunity = lazy(() => import('@/pages/RequestCommunity'));
 const NewActivity = lazy(() => import('@/pages/NewActivity'));
 const Manage = lazy(() => import('@/pages/Manage'));
 const ActivityRoster = lazy(() => import('@/pages/ActivityRoster'));
@@ -61,6 +62,7 @@ export default function App() {
                 <Route path="/aceite" element={<ProtectedRoute skipLegal><AcceptTerms /></ProtectedRoute>} />
                 <Route path="/inicio" element={<ProtectedRoute><Home /></ProtectedRoute>} />
                 <Route path="/comunidades" element={<ProtectedRoute><Communities /></ProtectedRoute>} />
+                <Route path="/cadastrar-comunidade" element={<ProtectedRoute><RequestCommunity /></ProtectedRoute>} />
                 <Route path="/criar" element={<ProtectedRoute><Create /></ProtectedRoute>} />
                 <Route path="/agenda" element={<ProtectedRoute><MyAgenda /></ProtectedRoute>} />
                 <Route path="/perfil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />

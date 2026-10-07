@@ -34,7 +34,7 @@ import { cn } from '@riff/core/lib/utils';
 import { formatBRL } from '@riff/core/lib/money';
 import { useCategories } from '@/hooks/useCategories';
 import { useMyVenues } from '@/hooks/useMyVenues';
-import { PlaceSearch } from '@/components/forms/PlaceSearch';
+import { PlaceSearch } from '@riff/core/domain/PlaceSearch';
 import type { SessionWithJoins } from '@/types/session';
 import type { TablesInsert } from '@riff/core/supabase/types';
 

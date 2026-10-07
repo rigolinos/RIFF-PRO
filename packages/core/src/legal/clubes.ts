@@ -97,6 +97,7 @@ export const CLUBES_LEGAL_DOCUMENTS: Record<ClubesLegalDocumentId, LegalDocument
           'Uso do app: inscrições, presença e resultados das atividades. Dados técnicos: registros de acesso e informações do dispositivo e navegador.',
           'Perfil esportista: a partir das suas presenças, calculamos jogos, frequência, esportes e locais preferidos, conquistas e pontos do ranking mensal da comunidade. Depois de cada jogo você pode dizer como foi (avaliação do evento) e dar elogios a quem jogou com você.',
           'Dependentes menores de idade: apenas nome, data de nascimento e parentesco, informados pelo responsável. Não pedimos dados de saúde nem documentos de menores.',
+          'Pedido de comunidade: quando você pede o cadastro do seu condomínio ou clube, guardamos o nome, o endereço, a infraestrutura informada, o número aproximado de unidades ou sócios, o seu papel e, se você informar, o contato do síndico, da administradora ou da diretoria. Esses dados servem só para a equipe Riff falar com o lugar sobre o app e criar a comunidade.',
         ],
       },
       {
@@ -106,6 +107,7 @@ export const CLUBES_LEGAL_DOCUMENTS: Record<ClubesLegalDocumentId, LegalDocument
           'Dados de menores são tratados no melhor interesse deles, com o consentimento específico do responsável (LGPD art. 14, §1º), só para inscrevê-los em atividades da comunidade.',
           'Para segurança, prevenção de fraudes e melhoria do app (legítimo interesse, art. 7º, IX) e para cumprir obrigações legais (art. 7º, II).',
           'Para estatísticas agregadas e anônimas sobre as atividades das comunidades, por bairro ou cidade (legítimo interesse, art. 7º, IX). Números pequenos não são mostrados, para que ninguém, em especial um menor, possa ser identificado.',
+          'Para analisar pedidos de comunidade e falar com o responsável pelo condomínio ou clube (legítimo interesse, art. 7º, IX). Quem pede só informa o contato do responsável se ele for de conhecimento dos moradores ou sócios; usamos esse contato uma vez para apresentar o Riff e o apagamos se o lugar não tiver interesse.',
         ],
       },
       {

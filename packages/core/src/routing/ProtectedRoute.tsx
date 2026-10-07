@@ -19,7 +19,9 @@ export function ProtectedRoute({ children, skipLegal = false }: { children: Reac
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    // depois de entrar, volta para onde a pessoa queria ir (ex.: link de cadastro de comunidade)
+    const back = location.pathname + location.search;
+    return <Navigate to={back && back !== '/' ? `/login?redirect=${encodeURIComponent(back)}` : '/login'} replace />;
   }
 
   // Se a consulta falhar, não trava o app inteiro; a tela de aceite volta a ser cobrada no próximo acesso.

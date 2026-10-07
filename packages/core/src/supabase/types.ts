@@ -266,6 +266,114 @@ export type Database = {
           },
         ]
       }
+      community_join_requests: {
+        Row: {
+          answered_at: string | null
+          answered_by: string | null
+          created_at: string
+          id: string
+          organization_id: string
+          profile_id: string
+          status: string
+        }
+        Insert: {
+          answered_at?: string | null
+          answered_by?: string | null
+          created_at?: string
+          id?: string
+          organization_id: string
+          profile_id: string
+          status?: string
+        }
+        Update: {
+          answered_at?: string | null
+          answered_by?: string | null
+          created_at?: string
+          id?: string
+          organization_id?: string
+          profile_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_join_requests_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_join_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_requests: {
+        Row: {
+          address: string
+          city: string | null
+          created_at: string
+          id: string
+          infrastructure: Json
+          kind: string
+          latitude: number
+          longitude: number
+          name: string
+          organization_id: string | null
+          requester_id: string
+          requester_role: string
+          review_note: string | null
+          reviewed_at: string | null
+          sindico_contact: string | null
+          state: string | null
+          status: string
+          units: number | null
+        }
+        Insert: {
+          address: string
+          city?: string | null
+          created_at?: string
+          id?: string
+          infrastructure?: Json
+          kind: string
+          latitude: number
+          longitude: number
+          name: string
+          organization_id?: string | null
+          requester_id: string
+          requester_role: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          sindico_contact?: string | null
+          state?: string | null
+          status?: string
+          units?: number | null
+        }
+        Update: {
+          address?: string
+          city?: string | null
+          created_at?: string
+          id?: string
+          infrastructure?: Json
+          kind?: string
+          latitude?: number
+          longitude?: number
+          name?: string
+          organization_id?: string | null
+          requester_id?: string
+          requester_role?: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          sindico_contact?: string | null
+          state?: string | null
+          status?: string
+          units?: number | null
+        }
+        Relationships: []
+      }
       dependents: {
         Row: {
           birth_date: string | null
@@ -1166,6 +1274,10 @@ export type Database = {
         }
         Returns: string
       }
+      answer_join_request: {
+        Args: { p_accept: boolean; p_request: string }
+        Returns: undefined
+      }
       archive_community_space: {
         Args: { p_archive?: boolean; p_space: string }
         Returns: undefined
@@ -1195,6 +1307,7 @@ export type Database = {
         Args: { p_reason?: string; p_session_id: string }
         Returns: undefined
       }
+      cancel_community_request: { Args: { p_request: string }; Returns: undefined }
       close_community_session: {
         Args: {
           p_attendance?: Json
@@ -1212,6 +1325,18 @@ export type Database = {
           p_session_id: string
         }
         Returns: undefined
+      }
+      communities_near: {
+        Args: { p_lat: number; p_lng: number }
+        Returns: {
+          distance_m: number
+          id: string
+          is_member: boolean
+          kind: string
+          name: string
+          requested: boolean
+          type: string
+        }[]
       }
       community_ranking: {
         Args: { p_month?: string; p_org: string }
@@ -1309,6 +1434,7 @@ export type Database = {
       }
       pro_session_participants: { Args: { p_session: string }; Returns: Json }
       remove_dependent: { Args: { p_dependent: string }; Returns: undefined }
+      request_to_join: { Args: { p_org: string }; Returns: undefined }
       resolve_venue: {
         Args: {
           p_address: string
@@ -1355,6 +1481,23 @@ export type Database = {
           title: string
         }[]
       }
+      submit_community_request: {
+        Args: {
+          p_address: string
+          p_city: string
+          p_infrastructure: Json
+          p_kind: string
+          p_lat: number
+          p_lng: number
+          p_name: string
+          p_requester_role: string
+          p_sindico_contact: string
+          p_state: string
+          p_units: number | null
+        }
+        Returns: string
+      }
+      support_community_request: { Args: { p_request: string }; Returns: undefined }
       submit_game_review: {
         Args: { p_kudos?: Json; p_session: string; p_vibe: number }
         Returns: Json

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { CheckCircle2, Loader2, MapPin } from 'lucide-react';
 import { Input } from '@riff/core/ui/input';
 import { cn } from '@riff/core/lib/utils';
-import { geoSearchEnabled, searchPlaces, type FoundPlace } from '@/lib/geoapify';
+import { geoSearchEnabled, searchPlaces, type FoundPlace } from '@riff/core/lib/geoapify';
 
 interface PlaceSearchProps {
   /** Nome do local (location_name) */
@@ -13,10 +13,11 @@ interface PlaceSearchProps {
   onTextChange: (text: string) => void;
   onPick: (place: FoundPlace) => void;
   near?: { latitude: number; longitude: number } | null;
+  placeholder?: string;
 }
 
-/** Campo "Onde?": digita o lugar, escolhe da lista e a coordenada é gravada. Texto livre continua valendo. */
-export function PlaceSearch({ value, pinned, onTextChange, onPick, near }: PlaceSearchProps) {
+/** Campo de local: digita o lugar, escolhe da lista e a coordenada é gravada. Texto livre continua valendo. Usado no Pro e no Clubes. */
+export function PlaceSearch({ value, pinned, onTextChange, onPick, near, placeholder = 'Busque o parque, praia, quadra ou endereço' }: PlaceSearchProps) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<FoundPlace[]>([]);
   const [loading, setLoading] = useState(false);
@@ -71,7 +72,7 @@ export function PlaceSearch({ value, pinned, onTextChange, onPick, near }: Place
           onChange={(e) => handleChange(e.target.value)}
           onFocus={() => results.length > 0 && setOpen(true)}
           onBlur={() => setTimeout(() => setOpen(false), 150)}
-          placeholder="Busque o parque, praia, quadra ou endereço"
+          placeholder={placeholder}
           aria-label="Local"
           aria-autocomplete="list"
           aria-expanded={open}
