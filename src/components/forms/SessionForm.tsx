@@ -11,7 +11,6 @@ import {
   GraduationCap,
   ImagePlus,
   Loader2,
-  MapPin,
   MessageCircle,
   Minus,
   Plus,
@@ -35,6 +34,7 @@ import { cn } from '@riff/core/lib/utils';
 import { formatBRL } from '@riff/core/lib/money';
 import { useCategories } from '@/hooks/useCategories';
 import { useMyVenues } from '@/hooks/useMyVenues';
+import { PlaceSearch } from '@/components/forms/PlaceSearch';
 import type { SessionWithJoins } from '@/types/session';
 import type { TablesInsert } from '@riff/core/supabase/types';
 
@@ -90,6 +90,11 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
   const { data: categories } = useCategories();
   const { profile } = useProfile();
   const { data: myVenues } = useMyVenues();
+  // Busca de endereço puxa para perto dos locais que o organizador já usa
+  const nearVenue = useMemo(() => {
+    const v = myVenues?.find((x) => x.latitude != null && x.longitude != null);
+    return v ? { latitude: Number(v.latitude), longitude: Number(v.longitude) } : null;
+  }, [myVenues]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [sportSearch, setSportSearch] = useState('');
@@ -113,6 +118,10 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
           duration_minutes: initialData?.duration_minutes || (initialData?.kind ? KINDS[initialData.kind as ActivityKind]?.defaultDuration : 60),
           location_name: initialData?.location_name || '',
           location_address: initialData?.location_address || null,
+          latitude: initialData?.latitude ?? null,
+          longitude: initialData?.longitude ?? null,
+          meeting_point: initialData?.meeting_point || '',
+          city: initialData?.city || null,
           price_per_slot: initialData?.price_per_slot || 0,
           what_to_bring: initialData?.what_to_bring || '',
           cover_image_url: initialData?.cover_image_url || '',
@@ -376,10 +385,25 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
         </FormStep>
 
         <FormStep n={5} title="Onde?">
-          <div className="relative">
-            <MapPin className="w-4 h-4 text-ink-muted absolute left-3 top-1/2 -translate-y-1/2" />
-            <Input {...register('location_name')} placeholder="Ex: Parque Ibirapuera - Portão 7" aria-label="Local" className="h-12 pl-9 bg-elevated border-line" />
-          </div>
+          <PlaceSearch
+            value={formData.location_name ?? ''}
+            pinned={formData.latitude != null && formData.longitude != null}
+            near={nearVenue}
+            onTextChange={(text) => {
+              setValue('location_name', text, { shouldDirty: true });
+              // escreveu outro lugar: o endereço e o ponto anteriores deixam de valer
+              setValue('location_address', null, { shouldDirty: true });
+              setValue('latitude', null, { shouldDirty: true });
+              setValue('longitude', null, { shouldDirty: true });
+            }}
+            onPick={(place) => {
+              setValue('location_name', place.name, { shouldDirty: true });
+              setValue('location_address', place.address || null, { shouldDirty: true });
+              setValue('latitude', place.latitude, { shouldDirty: true });
+              setValue('longitude', place.longitude, { shouldDirty: true });
+              if (place.city) setValue('city', place.city, { shouldDirty: true });
+            }}
+          />
           {myVenues && myVenues.length > 0 && (
             <div className="flex flex-wrap gap-2" aria-label="Seus locais">
               {myVenues.map((venue) => (
@@ -390,6 +414,9 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
                   onClick={() => {
                     setValue('location_name', venue.name, { shouldDirty: true });
                     setValue('location_address', venue.address ?? null, { shouldDirty: true });
+                    setValue('latitude', venue.latitude ?? null, { shouldDirty: true });
+                    setValue('longitude', venue.longitude ?? null, { shouldDirty: true });
+                    if (venue.city) setValue('city', venue.city, { shouldDirty: true });
                   }}
                   className={chipClass(formData.location_name === venue.name)}
                 >
@@ -398,6 +425,13 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
               ))}
             </div>
           )}
+          <Input
+            {...register('meeting_point')}
+            maxLength={120}
+            placeholder="Ponto de encontro (opcional). Ex: perto do chafariz"
+            aria-label="Ponto de encontro"
+            className="h-12 bg-elevated border-line"
+          />
         </FormStep>
 
         <FormStep n={6} title={KINDS[kind].capacityLabel}>

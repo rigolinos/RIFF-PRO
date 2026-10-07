@@ -17,7 +17,7 @@ export type LegalDocumentId = ProLegalDocumentId | ClubesLegalDocumentId;
 
 export const LEGAL_VERSIONS: Record<LegalDocumentId, string> = {
   terms: '2026-10-01',
-  privacy: '2026-10-06.2',
+  privacy: '2026-10-07',
   organizer_terms: '2026-10-06',
   clubes_terms: '2026-10-06',
   clubes_privacy: '2026-10-06',
@@ -173,6 +173,7 @@ export const LEGAL_DOCUMENTS: Record<ProLegalDocumentId, LegalDocument> = {
           'Com o organizador da atividade que você reserva, na medida necessária (por exemplo, seu nome). Com o participante que reserva sua atividade, os dados necessários para o pagamento (por exemplo, sua chave Pix e WhatsApp).',
           'Com quem também reservou a mesma atividade: sua foto e seu primeiro nome com a inicial do sobrenome (por exemplo, "Marina L."), na lista de quem vai. Quem não reservou vê só a quantidade de confirmados. Com o modo reservado, no seu perfil, você aparece só como "Participante".',
           'Com prestadores de serviço que operam a infraestrutura do app (hospedagem e banco de dados), que podem armazenar dados fora do Brasil com as garantias exigidas pela LGPD (art. 33). Com autoridades, quando a lei exigir.',
+          'Busca de endereços: quando quem organiza digita o local da atividade, o texto é enviado ao Geoapify (serviço de mapas com dados do OpenStreetMap, servidores na Europa) para encontrar o endereço e a coordenada. O "Como chegar" abre o Google Maps ou o Waze, que seguem as políticas deles.',
           'CPF, CNPJ e data de nascimento não são mostrados a outros usuários. Podem ser informados a autoridades quando a lei exigir ou para apurar fraude em atividade do organizador.',
           'Não vendemos seus dados.',
         ],

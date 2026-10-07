@@ -20,7 +20,7 @@ export function useBookings() {
           checked_in, attendance_status, created_at, updated_at,
           review:reviews(id),
           session:sessions(
-            id, title, date, start_time, status, location_name, location_address,
+            id, title, date, start_time, status, location_name, location_address, latitude, longitude, meeting_point,
             price_per_slot, category_id, duration_minutes,
             category:categories(name, emoji, slug)
           ),

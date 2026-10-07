@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CheckCircle2, ChevronRight, ClipboardCheck, Lock, MapPin, Pencil, Share2, Ticket } from 'lucide-react';
+import { CheckCircle2, ChevronRight, ClipboardCheck, Flag, Lock, MapPin, Navigation, Pencil, Share2, Ticket } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { supabase } from '@riff/core/supabase/client';
@@ -15,6 +15,7 @@ import { Avatar, PriceTag, RatingBadge, SportIcon, SpotsMeter, StatusPill, Ticke
 import { Button } from '@riff/core/ui/button';
 import { KINDS, type ActivityKind } from '@riff/core/lib/copy';
 import { activityPhase, nowSP, PHASE_LABEL } from '@riff/core/lib/activityTime';
+import { googleMapsUrl, hasCoordinates, wazeUrl } from '@riff/core/lib/geo';
 import { CheckoutModal } from '@/components/checkout/CheckoutModal';
 import { useProParticipants } from '@/hooks/useSportsProfile';
 
@@ -97,6 +98,7 @@ const SessionDetails = () => {
   const isOrganizer = !!profile?.id && profile.id === session.professional_id;
   // Inscrição só antes do início e com a atividade ativa (mesma regra do create_booking)
   const phase = activityPhase(session, now);
+  const place = { latitude: session.latitude, longitude: session.longitude, name: session.location_name, address: session.location_address };
   const closed = phase === 'open' ? null : PHASE_LABEL[phase];
   const date = parseISO(session.date);
 
@@ -221,6 +223,43 @@ const SessionDetails = () => {
           </div>
           <ChevronRight className="w-5 h-5 text-ink-muted" />
         </Link>
+
+        {/* Onde é: endereço, ponto de encontro e como chegar */}
+        {session.location_name && (
+          <section className="space-y-2">
+            <h2 className="type-subtitle">Onde é</h2>
+            <div className="bg-surface border border-line rounded-2xl overflow-hidden">
+              <div className="p-4 space-y-1.5">
+                <p className="flex items-start gap-2 text-sm font-semibold text-ink">
+                  <MapPin className="w-4 h-4 text-brand shrink-0 mt-0.5" /> {session.location_name}
+                </p>
+                {session.location_address && <p className="text-xs text-ink-muted pl-6">{session.location_address}</p>}
+                {session.meeting_point && (
+                  <p className="flex items-start gap-2 text-sm text-ink pt-1">
+                    <Flag className="w-4 h-4 text-accent shrink-0 mt-0.5" /> {session.meeting_point}
+                  </p>
+                )}
+              </div>
+              <div className="grid grid-cols-2 border-t border-line divide-x divide-line">
+                {[
+                  { label: 'Google Maps', href: googleMapsUrl(place) },
+                  { label: 'Waze', href: wazeUrl(place) },
+                ].map((a) => (
+                  <a
+                    key={a.label}
+                    href={a.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="h-11 flex items-center justify-center gap-1.5 text-sm font-semibold text-brand active:bg-elevated"
+                  >
+                    <Navigation className="w-4 h-4" /> {a.label}
+                  </a>
+                ))}
+              </div>
+            </div>
+            {!hasCoordinates(place) && <p className="text-xs text-ink-muted px-1">O "Como chegar" usa o endereço escrito pelo organizador.</p>}
+          </section>
+        )}
 
         {session.description && (
           <section className="space-y-2">

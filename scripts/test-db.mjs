@@ -897,6 +897,32 @@ ok(okCode(r, 'organizer_profile_incomplete'), 'organizador antigo sem os dados n
 r = await as('anon', '', "SELECT public.become_organizer('A B', '52998224725', '1990-01-01', '51999990000', 'organizer', null, null, 'X', 'xxxxxxxxxxxx', 'email', 'a@b.cd') AS r");
 ok(!!r.err, 'visitante sem login não chama a função');
 
+// ── Coordenadas dos locais (migration 0020) ─────────────────────────────
+console.log('Coordenadas dos locais:');
+await ex("SELECT set_config('request.jwt.claim.sub', '', false)");
+const geoSession = async (name, address, lat, lng, extra = {}) => one(
+  `INSERT INTO public.sessions (professional_id, category_id, title, date, start_time, duration_minutes, location_name, location_address,
+     latitude, longitude, meeting_point, max_participants, price_per_slot, status)
+   VALUES ($1, $2, 'Treino', current_date + 2, '07:00', 60, $3, $4, $5, $6, $7, 10, 0, 'active') RETURNING id, venue_id, latitude, longitude`,
+  [pPO, category, name, address, lat, lng, extra.meeting ?? null]);
+const g1 = await geoSession('Parque Farroupilha', 'Av. José Bonifácio, Porto Alegre', -30.03703, -51.21559, { meeting: 'Perto do chafariz' });
+const v1 = await one('SELECT latitude, longitude FROM public.venues WHERE id = $1', [g1.venue_id]);
+ok(Number(v1.latitude) === -30.03703 && Number(v1.longitude) === -51.21559, 'local novo guarda a coordenada escolhida');
+const g2 = await geoSession('Parque Farroupilha', 'Av. José Bonifácio, Porto Alegre', null, null);
+ok(g2.venue_id === g1.venue_id && Number(g2.latitude) === -30.03703, 'atividade no mesmo local herda a coordenada');
+const g3 = await geoSession('Praça da Encol', 'Rua Bagé, Porto Alegre', null, null);
+ok(g3.latitude === null, 'local sem coordenada continua sem (o texto segue valendo)');
+const g4 = await geoSession('Praça da Encol', 'Rua Bagé, Porto Alegre', -30.0248, -51.1846);
+ok(Number((await one('SELECT latitude FROM public.venues WHERE id = $1', [g3.venue_id])).latitude) === -30.0248 && g4.venue_id === g3.venue_id,
+  'local antigo sem coordenada aproveita a primeira que chegar');
+ok((await one('SELECT meeting_point FROM public.sessions WHERE id = $1', [g1.id])).meeting_point === 'Perto do chafariz', 'ponto de encontro fica na atividade');
+let geoErr = null;
+try { await geoSession('Lugar estranho', 'X', 200, 10); } catch (e) { geoErr = e.message; }
+ok(!!geoErr && geoErr.includes('coordinates_valid'), 'coordenada impossível é recusada');
+geoErr = null;
+try { await geoSession('Meio ponto', 'Y', -30, null); } catch (e) { geoErr = e.message; }
+ok(!!geoErr, 'latitude sem longitude é recusada');
+
 // ── Higiene de segurança (verificador do Supabase) ─────────────────────
 console.log('Higiene de segurança:');
 const noPath = (await q(`SELECT p.proname FROM pg_proc p WHERE p.pronamespace = 'public'::regnamespace
