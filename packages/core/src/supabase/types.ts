@@ -1345,6 +1345,10 @@ export type Database = {
           units: number
         }[]
       }
+      admin_promote_sport: {
+        Args: { p_name: string; p_official_name?: string; p_slug: string }
+        Returns: number
+      }
       admin_reject_community_request: {
         Args: { p_note?: string; p_request: string }
         Returns: undefined
@@ -1359,6 +1363,16 @@ export type Database = {
           p_state: string
         }
         Returns: string
+      }
+      admin_sport_suggestions: {
+        Args: never
+        Returns: {
+          activities: number
+          first_seen: string
+          last_seen: string
+          name: string
+          organizers: number
+        }[]
       }
       answer_join_request: {
         Args: { p_accept: boolean; p_request: string }
@@ -1496,6 +1510,7 @@ export type Database = {
           title: string
         }[]
       }
+      plain_text: { Args: { p: string }; Returns: string }
       played_session: {
         Args: { p_profile: string; p_session: string }
         Returns: boolean
