@@ -45,7 +45,7 @@ export function GettingStarted({ profile, totalSessions, hasSharedLink, onShare 
     { key: 'whatsapp', label: 'Informar seu WhatsApp', done: !!profile?.whatsapp_number, action: () => navigate('/profile/edit#pix') },
     { key: 'photo', label: 'Adicionar uma foto de perfil', done: !!profile?.avatar_url, action: () => navigate('/profile/edit') },
     { key: 'bio', label: 'Escrever sua bio', done: !!profile?.bio?.trim(), action: () => navigate('/profile/edit') },
-    { key: 'slug', label: 'Escolher seu link (riff.pro/@seu-nome)', done: !!profile?.public_slug, action: () => navigate('/profile/edit') },
+    { key: 'slug', label: 'Escolher seu link (@seu-nome)', done: !!profile?.public_slug, action: () => navigate('/profile/edit') },
     { key: 'first', label: 'Publicar sua primeira atividade', done: totalSessions > 0, action: () => navigate('/create-session') },
     { key: 'share', label: 'Compartilhar seu link no Instagram ou WhatsApp', done: hasSharedLink, action: onShare },
   ];

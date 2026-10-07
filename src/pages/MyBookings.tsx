@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { differenceInHours, format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { MapPin, MessageCircle, XCircle, Loader2, CalendarDays, Star } from 'lucide-react';
@@ -11,6 +11,7 @@ import { EmptyState, SportIcon, StatusPill, TicketGrid } from '@riff/core/domain
 import { ConfirmDialog } from '@riff/core/domain/ConfirmDialog';
 import { formatBRL } from '@riff/core/lib/money';
 import { googleMapsUrl } from '@riff/core/lib/geo';
+import { TicketSheet, type TicketBooking } from '@/components/bookings/TicketSheet';
 import { useBookings } from '@/hooks/useBookings';
 import { buildWhatsAppUrl } from '@/lib/whatsapp';
 import { useProfile } from '@riff/core/hooks/useProfile';
@@ -27,6 +28,13 @@ const MyBookings = () => {
   const [cancelingId, setCancelingId] = useState<string | null>(null);
   const [bookingToCancel, setBookingToCancel] = useState<BookingType | null>(null);
   const [now] = useState(() => Date.now());
+  // ingresso aberto (vindo de "Ver minha reserva" ou do toque no ingresso)
+  const [params, setParams] = useSearchParams();
+  const [ticketId, setTicketId] = useState<string | null>(() => params.get('ingresso'));
+  const closeTicket = () => {
+    setTicketId(null);
+    if (params.get('ingresso')) setParams({}, { replace: true });
+  };
   const [tab, setTab] = useState<'upcoming' | 'history'>('upcoming');
   const navigate = useNavigate();
 
@@ -154,8 +162,21 @@ const MyBookings = () => {
           <p className="text-xs text-ink-muted">com {booking.professional?.full_name ?? 'organizador'}</p>
         </Link>
 
-        {/* Ingresso: dia, horário e QR de check-in */}
-        <div className="grid grid-cols-[1fr_1fr_auto] items-center divide-x divide-line border-t border-dashed border-line">
+        {/* Ingresso: dia, horário e QR de check-in (toque abre o ingresso grande) */}
+        <div
+          className={`grid grid-cols-[1fr_1fr_auto] items-center divide-x divide-line border-t border-dashed border-line ${!isHistory && !cancelled ? 'cursor-pointer active:bg-elevated' : ''}`}
+          {...(!isHistory && !cancelled
+            ? {
+                role: 'button',
+                tabIndex: 0,
+                'aria-label': `Abrir o ingresso de ${booking.session.title}`,
+                onClick: () => setTicketId(booking.id),
+                onKeyDown: (e: React.KeyboardEvent) => {
+                  if (e.key === 'Enter' || e.key === ' ') setTicketId(booking.id);
+                },
+              }
+            : {})}
+        >
           <div className="p-3 text-center">
             <p className="type-label">{format(sessionDate, 'EEEEEE', { locale: ptBR })}</p>
             <p className="type-title leading-tight">{format(sessionDate, 'd')}</p>
@@ -168,9 +189,10 @@ const MyBookings = () => {
           </div>
           {!isHistory && !cancelled ? (
             <div className="p-3">
-              <div className="p-1.5 bg-white rounded-xl" aria-label="QR code de check-in">
+              <div className="p-1.5 bg-white rounded-xl" aria-hidden="true">
                 <QRCode value={`checkin:${booking.id}`} size={56} level="L" />
               </div>
+              <p className="text-xs text-brand font-semibold text-center pt-1">Abrir</p>
             </div>
           ) : (
             <div className="p-3 text-center min-w-[80px]">
@@ -274,6 +296,8 @@ const MyBookings = () => {
           <div className="space-y-3">{list.map((b) => renderBookingCard(b, tab === 'history'))}</div>
         )}
       </div>
+
+      <TicketSheet booking={(bookings?.find((b) => b.id === ticketId) as TicketBooking | undefined) ?? null} onClose={closeTicket} />
 
       <ConfirmDialog
         open={!!bookingToCancel}

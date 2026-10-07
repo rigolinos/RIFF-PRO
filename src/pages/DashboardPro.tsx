@@ -6,6 +6,7 @@ import { Link2, Share2, Calendar, Loader2, CheckCircle2, RefreshCw, ClipboardChe
 import { toast } from 'sonner';
 import { PageContainer } from '@riff/core/layout/PageContainer';
 import { HeroHeader } from '@riff/core/layout/HeroHeader';
+import { BRAND } from '@/brand';
 import { useProfile } from '@riff/core/hooks/useProfile';
 import { Button } from '@riff/core/ui/button';
 import { BrandLines, EmptyState, TicketGrid } from '@riff/core/domain';
@@ -95,7 +96,7 @@ export default function DashboardPro() {
     markShared();
     if (navigator.share) {
       navigator
-        .share({ title: `Atividades com ${profile?.full_name}`, text: 'Garanta sua vaga nas minhas próximas atividades!', url: publicUrl })
+        .share({ title: `Atividades com ${profile?.full_name}`, text: `Oi! Estas são as minhas próximas atividades no Riff Sports. Escolha uma e garanta sua vaga:`, url: publicUrl })
         .catch(() => undefined);
     } else {
       handleCopyLink();
@@ -188,7 +189,7 @@ export default function DashboardPro() {
             <p className="text-sm text-ink-muted mt-1 max-w-[260px]">Quem abre vê suas próximas atividades e reserva direto.</p>
             <div className="flex gap-2 mt-4">
               <div className="h-12 bg-elevated rounded-xl px-4 flex items-center flex-1 font-mono text-sm border border-line truncate select-all text-ink">
-                riff.pro/@{publicSlug}
+                {BRAND.domain}/@{publicSlug}
               </div>
               <Button variant="primary" onClick={handleCopyLink} className="shrink-0 w-12 p-0" aria-label="Copiar link">
                 {copied ? <CheckCircle2 className="w-5 h-5" /> : <Link2 className="w-5 h-5" />}
