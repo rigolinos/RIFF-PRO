@@ -10,7 +10,7 @@ export function useMyVenues() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('venues')
-        .select('id, name, address, kind')
+        .select('id, name, address, kind, city, latitude, longitude')
         .eq('created_by', profile!.id)
         .order('updated_at', { ascending: false })
         .limit(8);

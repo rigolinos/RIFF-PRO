@@ -884,6 +884,7 @@ export type Database = {
           location_type: string | null
           longitude: number | null
           max_participants: number | null
+          meeting_point: string | null
           min_age: number | null
           minors_allowed: boolean
           organization_id: string | null
@@ -920,6 +921,7 @@ export type Database = {
           location_type?: string | null
           longitude?: number | null
           max_participants?: number | null
+          meeting_point?: string | null
           min_age?: number | null
           minors_allowed?: boolean
           organization_id?: string | null
@@ -956,6 +958,7 @@ export type Database = {
           location_type?: string | null
           longitude?: number | null
           max_participants?: number | null
+          meeting_point?: string | null
           min_age?: number | null
           minors_allowed?: boolean
           organization_id?: string | null

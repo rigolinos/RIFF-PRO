@@ -10,6 +10,7 @@ import { HeroHeader } from '@riff/core/layout/HeroHeader';
 import { EmptyState, SportIcon, StatusPill, TicketGrid } from '@riff/core/domain';
 import { ConfirmDialog } from '@riff/core/domain/ConfirmDialog';
 import { formatBRL } from '@riff/core/lib/money';
+import { googleMapsUrl } from '@riff/core/lib/geo';
 import { useBookings } from '@/hooks/useBookings';
 import { buildWhatsAppUrl } from '@/lib/whatsapp';
 import { useProfile } from '@riff/core/hooks/useProfile';
@@ -88,10 +89,10 @@ const MyBookings = () => {
     }
   };
 
+  // Como chegar: ponto exato quando o organizador marcou, senão o endereço escrito
   const handleOpenMap = (booking: BookingType) => {
-    const address = booking.session.location_address || booking.session.location_name;
-    const url = `https://maps.google.com/?q=${encodeURIComponent(address)}`;
-    window.open(url, '_blank');
+    const s = booking.session;
+    window.open(googleMapsUrl({ latitude: s.latitude, longitude: s.longitude, name: s.location_name, address: s.location_address }), '_blank');
   };
 
   const handleCancel = async (booking: BookingType) => {
@@ -185,8 +186,11 @@ const MyBookings = () => {
           className="w-full flex items-center gap-2 border-t border-line px-4 py-2.5 text-left text-xs text-ink-muted active:bg-elevated"
         >
           <MapPin className="w-4 h-4 shrink-0 text-brand" />
-          <span className="truncate flex-1">{booking.session.location_name}</span>
-          <span className="text-brand font-semibold">Mapa</span>
+          <span className="truncate flex-1">
+            {booking.session.location_name}
+            {booking.session.meeting_point ? ` · ${booking.session.meeting_point}` : ''}
+          </span>
+          <span className="text-brand font-semibold">Como chegar</span>
         </button>
 
         {!isHistory ? (
