@@ -601,6 +601,7 @@ export type Database = {
           created_by: string
           id: string
           kind: string
+          main_venue_id: string | null
           name: string | null
           slug: string | null
           updated_at: string
@@ -610,6 +611,7 @@ export type Database = {
           created_by: string
           id?: string
           kind: string
+          main_venue_id?: string | null
           name?: string | null
           slug?: string | null
           updated_at?: string
@@ -619,6 +621,7 @@ export type Database = {
           created_by?: string
           id?: string
           kind?: string
+          main_venue_id?: string | null
           name?: string | null
           slug?: string | null
           updated_at?: string
@@ -629,6 +632,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organizations_main_venue_id_fkey"
+            columns: ["main_venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
             referencedColumns: ["id"]
           },
         ]
@@ -1101,8 +1111,47 @@ export type Database = {
         }
         Returns: string
       }
+      admin_community_insights: {
+        Args: { p_days?: number }
+        Returns: {
+          activities: number
+          address: string
+          city: string
+          dependents: string
+          kind: string
+          kinds: Json
+          latitude: number
+          longitude: number
+          members: number
+          name: string
+          organization_id: string
+          players: number
+          sports: Json
+          state: string
+        }[]
+      }
       admin_create_community: {
-        Args: { p_kind: string; p_name: string; p_owner_email: string }
+        Args: {
+          p_address?: string
+          p_city?: string
+          p_kind: string
+          p_lat?: number
+          p_lng?: number
+          p_name: string
+          p_owner_email: string
+          p_state?: string
+        }
+        Returns: string
+      }
+      admin_set_community_location: {
+        Args: {
+          p_address: string
+          p_city: string
+          p_lat: number
+          p_lng: number
+          p_org: string
+          p_state: string
+        }
         Returns: string
       }
       become_organizer: {

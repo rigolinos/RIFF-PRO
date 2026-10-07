@@ -43,6 +43,7 @@ export const CLUBES_LEGAL_DOCUMENTS: Record<ClubesLegalDocumentId, LegalDocument
         paragraphs: [
           'A inscrição pelo app não tem custo. Eventuais valores cobrados pelo condomínio ou clube são combinados fora do app, diretamente com eles.',
           'Regras de uso do espaço, horários, cancelamentos e presença são definidos pela comunidade. Cancelamentos pelo app só são aceitos até 4 horas antes do início; depois disso, avise quem conduz a atividade.',
+          'O Riff guarda o endereço da comunidade (a sede), que só os membros dela veem no app. Com esse endereço e com as atividades registradas, o Riff pode produzir estatísticas agregadas e anônimas (por exemplo, quais esportes são mais praticados num bairro ou cidade) para melhorar o serviço e aproximar comunidades de instrutores. Essas estatísticas nunca identificam pessoas, menores ou a comunidade.',
         ],
       },
       {
@@ -92,7 +93,7 @@ export const CLUBES_LEGAL_DOCUMENTS: Record<ClubesLegalDocumentId, LegalDocument
       {
         heading: '2. Quais dados usamos',
         paragraphs: [
-          'Cadastro: nome, e-mail, telefone e foto. Comunidade: de quais condomínios ou clubes você participa e seu papel em cada um.',
+          'Cadastro: nome, e-mail, telefone e foto. Comunidade: de quais condomínios ou clubes você participa e seu papel em cada um, e o endereço da comunidade (a sede).',
           'Uso do app: inscrições, presença e resultados das atividades. Dados técnicos: registros de acesso e informações do dispositivo e navegador.',
           'Perfil esportista: a partir das suas presenças, calculamos jogos, frequência, esportes e locais preferidos, conquistas e pontos do ranking mensal da comunidade. Depois de cada jogo você pode dizer como foi (avaliação do evento) e dar elogios a quem jogou com você.',
           'Dependentes menores de idade: apenas nome, data de nascimento e parentesco, informados pelo responsável. Não pedimos dados de saúde nem documentos de menores.',
@@ -104,6 +105,7 @@ export const CLUBES_LEGAL_DOCUMENTS: Record<ClubesLegalDocumentId, LegalDocument
           'Para prestar o serviço: criar a conta, mostrar a agenda da comunidade, fazer e cancelar inscrições e registrar presença (execução de contrato, LGPD art. 7º, V).',
           'Dados de menores são tratados no melhor interesse deles, com o consentimento específico do responsável (LGPD art. 14, §1º), só para inscrevê-los em atividades da comunidade.',
           'Para segurança, prevenção de fraudes e melhoria do app (legítimo interesse, art. 7º, IX) e para cumprir obrigações legais (art. 7º, II).',
+          'Para estatísticas agregadas e anônimas sobre as atividades das comunidades, por bairro ou cidade (legítimo interesse, art. 7º, IX). Números pequenos não são mostrados, para que ninguém, em especial um menor, possa ser identificado.',
         ],
       },
       {
@@ -114,6 +116,7 @@ export const CLUBES_LEGAL_DOCUMENTS: Record<ClubesLegalDocumentId, LegalDocument
           'Os membros da mesma comunidade também veem o seu perfil esportista daquela comunidade (jogos, frequência, esportes, elogios recebidos e conquistas) e a sua posição no ranking do mês. Ninguém vê quem deu cada elogio. A avaliação do evento (como foi) só é vista por quem o organizou e pelo gestor.',
           'Modo reservado: no seu perfil você pode ligar o modo reservado. Com ele, você sai do ranking, ninguém abre o seu perfil esportista, você não recebe elogios e aparece como "Membro" na lista de quem vai. Seus dados continuam guardados e só você os vê. Dá para desligar a qualquer momento.',
           'O nome e a idade de um dependente só aparecem para quem conduz e para o gestor da atividade em que ele está inscrito. Para os outros membros, os menores entram apenas na contagem (por exemplo, "+2 crianças"), nunca pelo nome. Menores não têm perfil esportista, não recebem elogios e não entram no ranking.',
+          'O endereço da comunidade só aparece para os membros dela. O "Como chegar" abre o Google Maps ou o Waze, que seguem as políticas deles.',
           'Prestadores de serviço que operam a infraestrutura do app (hospedagem e banco de dados) podem armazenar dados fora do Brasil, com as garantias exigidas pela LGPD (art. 33). Também compartilhamos com autoridades quando a lei exigir. Não vendemos dados.',
         ],
       },

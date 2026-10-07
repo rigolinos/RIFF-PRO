@@ -19,8 +19,8 @@ export const LEGAL_VERSIONS: Record<LegalDocumentId, string> = {
   terms: '2026-10-01',
   privacy: '2026-10-07',
   organizer_terms: '2026-10-06',
-  clubes_terms: '2026-10-06',
-  clubes_privacy: '2026-10-06',
+  clubes_terms: '2026-10-07',
+  clubes_privacy: '2026-10-07',
   guardian_consent: '2026-10-03',
 };
 

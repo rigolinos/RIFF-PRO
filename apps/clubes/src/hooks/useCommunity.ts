@@ -14,7 +14,7 @@ export function useCommunity(orgId: string | undefined) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('organization_members')
-        .select('role, organization:organizations(id, name, kind)')
+        .select('role, organization:organizations(id, name, kind, main_venue_id)')
         .eq('organization_id', orgId!)
         .eq('profile_id', profile!.id)
         .eq('status', 'active')

@@ -923,6 +923,49 @@ geoErr = null;
 try { await geoSession('Meio ponto', 'Y', -30, null); } catch (e) { geoErr = e.message; }
 ok(!!geoErr, 'latitude sem longitude é recusada');
 
+// ── Localização da comunidade (migration 0021) ──────────────────────────
+console.log('Sede da comunidade:');
+await ex("SELECT set_config('request.jwt.claim.sub', '', false)");
+const sedeA = (await one("SELECT public.admin_set_community_location($1, 'Rua das Flores, 100', 'Porto Alegre', 'rs', -30.05, -51.2) AS id", [orgA])).id;
+const sedeRow = await one('SELECT v.visibility, v.kind, v.state, v.latitude, o.main_venue_id FROM public.venues v JOIN public.organizations o ON o.id = v.organization_id WHERE v.id = $1', [sedeA]);
+ok(sedeRow.main_venue_id === sedeA && sedeRow.visibility === 'members' && sedeRow.kind === 'condo' && sedeRow.state === 'RS',
+  'equipe Riff grava a sede do condomínio (visível só para membros)');
+await one("SELECT public.admin_set_community_location($1, 'Rua das Flores, 120', 'Porto Alegre', 'RS', -30.051, -51.201) AS id", [orgA]);
+ok((await count('SELECT count(*)::int AS n FROM public.venues WHERE organization_id = $1 AND name = $2', [orgA, 'Residencial Jardins'])) === 1,
+  'corrigir o endereço atualiza a mesma sede, sem duplicar');
+r = await as('authenticated', GA, 'SELECT id, address FROM public.venues WHERE id = $1', [sedeA]);
+ok(r.rows?.length === 1 && r.rows[0].address === 'Rua das Flores, 120', 'membro da comunidade vê a sede');
+r = await as('authenticated', MB, 'SELECT id FROM public.venues WHERE id = $1', [sedeA]);
+ok(!r.err && r.rows.length === 0, 'quem é de outra comunidade não vê a sede');
+r = await as('authenticated', PO, 'SELECT id FROM public.venues WHERE id = $1', [sedeA]);
+ok(!r.err && r.rows.length === 0, 'organizador do Pro não vê a sede');
+r = await as('anon', '', 'SELECT id FROM public.venues WHERE id = $1', [sedeA]);
+ok(!r.err && r.rows.length === 0, 'visitante sem login não vê a sede');
+r = await as('authenticated', GA, "SELECT public.admin_set_community_location($1, 'X', 'Y', 'RS', 1, 1)", [orgA]);
+ok(r.err && /permission denied/.test(r.err), 'app não grava a localização da comunidade');
+const orgC = (await one(`SELECT public.admin_create_community('Condomínio Bela Vista', 'condo', 'gestor.a@teste.dev',
+  'Av. Ipiranga, 5000', 'Porto Alegre', 'RS', -30.06, -51.17) AS id`)).id;
+ok(!!(await one('SELECT main_venue_id FROM public.organizations WHERE id = $1', [orgC])).main_venue_id, 'comunidade nova já nasce com a sede');
+let sedeErr = null;
+try { await one("SELECT public.admin_set_community_location($1, 'Rua A', 'POA', 'RS', -30, NULL)", [orgC]); } catch (e) { sedeErr = e.message; }
+ok(!!sedeErr, 'latitude sem longitude é recusada');
+// condomínio C: um jogo que já aconteceu, com 2 dependentes que jogaram
+const sPastC = (await one(`INSERT INTO public.sessions (professional_id, category_id, organization_id, title, date, start_time, duration_minutes,
+  location_name, max_participants, price_per_slot, status, minors_allowed) VALUES ($1, $2, $3, 'Natação kids', current_date - 3, '09:00', 60, 'Piscina', 10, 0, 'active', true) RETURNING id`,
+  [pGA, category, orgC])).id;
+for (const nome of ['Ana Kids', 'Bia Kids']) {
+  const dep = (await one(`INSERT INTO public.dependents (guardian_id, full_name, birth_date, relationship, consent_version) VALUES ($1, $2, current_date - 3000, 'child', 'teste') RETURNING id`, [pGA, nome])).id;
+  await q(`INSERT INTO public.bookings (session_id, student_id, dependent_id, professional_id, amount_total, professional_payout, payment_status, status, attendance_status, product)
+    VALUES ($1, $2, $3, $2, 0, 0, 'free', 'confirmed', 'present', 'clubes')`, [sPastC, pGA, dep]);
+}
+const commIns = (await q('SELECT * FROM public.admin_community_insights(3650)')).rows;
+const insA = commIns.find((x) => x.organization_id === orgA);
+ok(insA && insA.city === 'Porto Alegre' && Number(insA.members) >= 1 && Array.isArray(insA.sports), 'retrato da comunidade: cidade, membros e esportes');
+ok(commIns.find((x) => x.organization_id === orgC)?.dependents === 'menos de 5', 'com 2 dependentes que jogaram, o retrato mostra só "menos de 5"');
+ok(commIns.length > 0 && commIns.every((x) => x.dependents === '0' || x.dependents === 'menos de 5' || Number(x.dependents) >= 5), 'dependentes só aparecem em faixa (nunca 1 a 4)');
+r = await as('authenticated', GA, 'SELECT * FROM public.admin_community_insights()');
+ok(r.err && /permission denied/.test(r.err), 'retrato é só da equipe Riff (o app não acessa)');
+
 // ── Higiene de segurança (verificador do Supabase) ─────────────────────
 console.log('Higiene de segurança:');
 const noPath = (await q(`SELECT p.proname FROM pg_proc p WHERE p.pronamespace = 'public'::regnamespace

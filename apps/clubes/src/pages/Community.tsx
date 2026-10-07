@@ -11,6 +11,7 @@ import { usePendingClose } from '@/hooks/useManagement';
 import { ActivityRow } from '@/components/ActivityRow';
 import { ROLE_LABEL } from '@/lib/roles';
 import { RankingPreview } from '@/components/RankingPreview';
+import { CommunityPlace } from '@/components/CommunityPlace';
 
 // Página de uma comunidade: agenda dela e, para o gestor, o atalho da gestão
 export default function Community() {
@@ -30,6 +31,8 @@ export default function Community() {
             {community.kind === 'condo' ? 'Condomínio' : 'Clube'} · {ROLE_LABEL[community.role] ?? community.role}
           </p>
         )}
+
+        {community && <CommunityPlace venueId={community.main_venue_id} />}
 
         <div className="flex gap-2">
           <Button className="flex-1" onClick={() => navigate(`/c/${orgId}/nova`)}>
