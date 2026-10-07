@@ -106,7 +106,7 @@ export default function Explore() {
           <Input
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Ex: Exodia, vôlei de praia, Redenção"
+            placeholder="Ex: vôlei de praia, futevôlei, Redenção"
             aria-label="Buscar atividades e organizadores"
             className="pl-9 h-12 bg-bg/70 border-line rounded-xl"
           />

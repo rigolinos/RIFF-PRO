@@ -12,11 +12,16 @@ type ActivityLike = {
 
 /** Mensagem do convite: quem organiza convida; quem participa chama os amigos */
 export function activityInvite(a: ActivityLike, opts: { isOwner: boolean; organizerFirstName?: string | null }) {
-  const when = `${format(parseISO(a.date), "EEEE, d 'de' MMMM", { locale: ptBR })}, às ${a.start_time.substring(0, 5)}`;
-  const where = a.location_name ? `, em ${a.location_name}` : '';
+  const parts = [
+    format(parseISO(a.date), "EEEE, d 'de' MMMM", { locale: ptBR }),
+    `às ${a.start_time.substring(0, 5)}`,
+    a.location_name,
+  ].filter(Boolean);
+  const joined = parts.join(', ');
+  const details = `${joined.charAt(0).toUpperCase()}${joined.slice(1)}.`;
   return opts.isOwner
-    ? `Estou organizando "${a.title}" pelo Riff Sports: ${when}${where}. Quer participar? Garanta sua vaga aqui:`
-    : `Bora? "${a.title}"${opts.organizerFirstName ? ` com ${opts.organizerFirstName}` : ''}: ${when}${where}. Dá para garantir a vaga pelo Riff Sports:`;
+    ? `Estou organizando "${a.title}" pela Riff Sports. ${details} Quer participar?`
+    : `"${a.title}"${opts.organizerFirstName ? `, com ${opts.organizerFirstName},` : ''} pela Riff Sports. ${details} Quer participar?`;
 }
 
 /** Abre o compartilhar do celular com a mensagem e o link; sem ele, copia os dois */
