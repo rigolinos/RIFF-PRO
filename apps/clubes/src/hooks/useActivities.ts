@@ -5,7 +5,7 @@ import { todaySP } from '@/hooks/useCommunity';
 
 const ACTIVITY_FIELDS =
   'id, professional_id, organization_id, minors_allowed, min_age, title, description, date, start_time, duration_minutes, ' +
-  'location_name, max_participants, current_participants, kind, status, cover_image_url, ' +
+  'location_name, max_participants, current_participants, kind, status, cover_image_url, sport_other, ' +
   'category:categories(name, emoji, slug), ' +
   'professional:profiles!sessions_professional_id_fkey(full_name, avatar_url), ' +
   'organization:organizations(name, kind), ' +
@@ -28,6 +28,7 @@ type ActivityRow = {
   kind: string;
   status: string | null;
   cover_image_url: string | null;
+  sport_other: string | null;
   category: { name: string; emoji: string | null; slug: string | null } | null;
   professional: { full_name: string | null; avatar_url: string | null } | null;
   organization: { name: string | null; kind: string } | null;

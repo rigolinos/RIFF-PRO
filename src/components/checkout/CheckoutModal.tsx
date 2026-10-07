@@ -163,7 +163,7 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess, screen }: C
     const proName = paymentInfo?.pro_name?.split(' ')[0];
     const text = encodeURIComponent(
       `${proName ? `Olá ${proName}!` : 'Olá!'} Aqui é o(a) ${studentName}. ` +
-      `Acabei de reservar a atividade "${session.category?.name || session.title}" pelo ${BRAND.name}. ` +
+      `Acabei de reservar a atividade "${session.title}" pelo ${BRAND.name}. ` +
       `Segue o comprovante do Pix!`
     );
 

@@ -1093,6 +1093,40 @@ let apprErr = null;
 try { await one('SELECT public.admin_approve_community_request($1)', [reqId]); } catch (e) { apprErr = e.message; }
 ok(!!apprErr, 'pedido aprovado não é aprovado de novo');
 
+// ── Esportes: lista e "não achei" (migration 0024) ──────────────────────
+console.log('Esportes:');
+await ex("SELECT set_config('request.jwt.claim.sub', '', false)");
+ok((await count("SELECT count(*)::int AS n FROM public.categories WHERE slug IN ('volei-quadra', 'tenis-mesa', 'pickleball', 'escalada', 'capoeira', 'ultimate')")) === 6,
+  'esportes que faltavam entram na lista oficial');
+const outros = (await one("SELECT id FROM public.categories WHERE slug = 'outros'")).id;
+const otherSport = (name) => one(`INSERT INTO public.sessions (professional_id, category_id, sport_other, title, date, start_time, duration_minutes, location_name, max_participants, price_per_slot, status)
+  VALUES ($1, $2, $3, 'Treino livre', current_date + 4, '19:00', 60, 'Ginásio', 10, 0, 'active') RETURNING id`, [pPO, outros, name]);
+const h1 = (await otherSport('Hóquei')).id;
+const h2 = (await otherSport('  hoquei ')).id;
+await otherSport('Tennis');
+let spErr = null;
+try { await otherSport('x'); } catch (e) { spErr = e.message; }
+ok(!!spErr, 'nome de esporte com menos de 2 letras é recusado');
+const sugg = (await q('SELECT * FROM public.admin_sport_suggestions()')).rows;
+const hoquei = sugg.find((x) => x.name.trim().toLowerCase().startsWith('h'));
+ok(hoquei?.activities === 2 && hoquei.organizers === 1, 'sugestões juntam o mesmo nome com e sem acento ("Hóquei" e "hoquei")');
+const moved = (await one("SELECT public.admin_promote_sport('hoquei', 'hoquei', 'Hóquei') AS n")).n;
+const hq = await one("SELECT id, name FROM public.categories WHERE slug = 'hoquei'");
+const movedRows = (await q('SELECT category_id, sport_other FROM public.sessions WHERE id IN ($1, $2)', [h1, h2])).rows;
+ok(moved === 2 && hq?.name === 'Hóquei' && movedRows.every((x) => x.category_id === hq.id && x.sport_other === null),
+  'promover cria o esporte oficial e move as atividades que usaram o nome');
+// em produção o Tênis já existe (veio da base inicial); aqui criamos para o teste
+await q("INSERT INTO public.categories (name, slug, sort_order) VALUES ('Tênis', 'tenis', 17) ON CONFLICT DO NOTHING");
+const tenisCount = await count("SELECT count(*)::int AS n FROM public.categories WHERE slug = 'tenis'");
+ok((await one("SELECT public.admin_promote_sport('Tennis', 'tenis') AS n")).n === 1 && tenisCount === 1
+  && (await count("SELECT count(*)::int AS n FROM public.categories WHERE slug = 'tenis'")) === 1,
+  'nome escrito de outro jeito ("Tennis") é juntado ao esporte que já existe (Tênis), sem duplicar');
+let slugErr = null;
+try { await one("SELECT public.admin_promote_sport('Algo', 'Slug Ruim')"); } catch (e) { slugErr = e.message; }
+ok(!!slugErr, 'slug inválido é recusado');
+r = await as('authenticated', PO, 'SELECT * FROM public.admin_sport_suggestions()');
+ok(r.err && /permission denied/.test(r.err), 'o app não lê as sugestões nem promove esportes');
+
 // ── Higiene de segurança (verificador do Supabase) ─────────────────────
 console.log('Higiene de segurança:');
 const noPath = (await q(`SELECT p.proname FROM pg_proc p WHERE p.pronamespace = 'public'::regnamespace

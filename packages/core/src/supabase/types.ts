@@ -1068,6 +1068,7 @@ export type Database = {
           recurrence_rule: string | null
           session_type: string
           skill_level: string | null
+          sport_other: string | null
           start_time: string
           status: string | null
           title: string
@@ -1105,6 +1106,7 @@ export type Database = {
           recurrence_rule?: string | null
           session_type?: string
           skill_level?: string | null
+          sport_other?: string | null
           start_time: string
           status?: string | null
           title: string
@@ -1142,6 +1144,7 @@ export type Database = {
           recurrence_rule?: string | null
           session_type?: string
           skill_level?: string | null
+          sport_other?: string | null
           start_time?: string
           status?: string | null
           title?: string

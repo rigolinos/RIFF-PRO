@@ -124,9 +124,9 @@ export default function ActivityDetail() {
           </div>
           <h1 className="type-display leading-tight mt-3">{activity.title}</h1>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-sm text-ink-muted">
-            {activity.category?.name && (
+            {(activity.sport_other || activity.category?.name) && (
               <span className="flex items-center gap-1.5">
-                <SportIcon slug={activity.category?.slug} className="w-4 h-4 text-brand" /> {activity.category.name}
+                <SportIcon slug={activity.sport_other ? 'outros' : activity.category?.slug} className="w-4 h-4 text-brand" /> {activity.sport_other || activity.category?.name}
               </span>
             )}
             {activity.organization?.name && orgId && (

@@ -11,6 +11,7 @@ import { HeroHeader } from '@riff/core/layout/HeroHeader';
 import { chipClass } from '@riff/core/lib/chips';
 import { cn } from '@riff/core/lib/utils';
 import { activityPhase, nowSP } from '@riff/core/lib/activityTime';
+import { sportMatches } from '@riff/core/lib/sportSearch';
 import { useCategories } from '@/hooks/useCategories';
 import { SessionRow } from '@/components/cards/SessionRow';
 import type { SessionWithJoins } from '@/types/session';
@@ -45,17 +46,19 @@ export default function Explore() {
   const debounced = clean(useDebounce(searchTerm, 400));
   const { data: categories } = useCategories();
 
+  // esportes que batem com o texto ("tennis" acha Tênis): as atividades deles entram no resultado
+  const matchedSports = debounced ? (categories ?? []).filter((c) => sportMatches(c, debounced)).map((c) => c.id) : [];
   const wantActivities = filter !== 'organizers';
   const wantOrganizers = filter !== 'activities' && !sport;
 
   const activities = useQuery({
-    queryKey: ['explore', 'activities', debounced, sport],
+    queryKey: ['explore', 'activities', debounced, sport, matchedSports.join(',')],
     queryFn: async () => {
       let query = supabase
         .from('sessions')
         .select(
           `id, title, description, date, start_time, duration_minutes, location_name, location_address, max_participants,
-           current_participants, price_per_slot, status, session_type, skill_level, category_id, kind, city,
+           current_participants, price_per_slot, status, session_type, skill_level, category_id, kind, city, sport_other,
            professional:profiles(id, full_name, avatar_url, rating_avg, total_reviews, public_slug),
            category:categories(name, icon, emoji, slug)`,
         )
@@ -65,7 +68,10 @@ export default function Explore() {
         .order('date', { ascending: true })
         .order('start_time', { ascending: true })
         .limit(30);
-      if (debounced) query = query.or(`title.ilike.%${debounced}%,location_name.ilike.%${debounced}%,city.ilike.%${debounced}%`);
+      if (debounced) {
+        const bySport = matchedSports.length ? `,category_id.in.(${matchedSports.join(',')})` : '';
+        query = query.or(`title.ilike.%${debounced}%,location_name.ilike.%${debounced}%,city.ilike.%${debounced}%,sport_other.ilike.%${debounced}%${bySport}`);
+      }
       if (sport) query = query.eq('category_id', sport);
       const { data, error } = await query;
       if (error) throw error;

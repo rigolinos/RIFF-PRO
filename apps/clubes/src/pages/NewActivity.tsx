@@ -20,6 +20,7 @@ import { useCommunity, todaySP } from '@/hooks/useCommunity';
 import { SportIcon } from '@riff/core/domain/SportIcon';
 import { useSpaceConflicts, useSpaces } from '@/hooks/useSpaces';
 import { spaceKind } from '@/lib/spaces';
+import { plainText, sportMatches } from '@riff/core/lib/sportSearch';
 
 const FIELD = 'h-12 bg-surface border-line';
 const KIND_ICONS: Record<ActivityKind, typeof BookOpen> = {
@@ -72,6 +73,7 @@ export default function NewActivity() {
   const [categoryId, setCategoryId] = useState('');
   const [sportSearch, setSportSearch] = useState('');
   const [showAllSports, setShowAllSports] = useState(false);
+  const [sportOther, setSportOther] = useState<string | null>(null);
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [durationChoice, setDurationChoice] = useState<number | null>(null);
@@ -108,9 +110,12 @@ export default function NewActivity() {
   }, [today]);
 
   const category = categories?.find((c) => c.id === categoryId);
-  const filteredSports = (categories ?? []).filter((c) =>
-    c.name.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '').includes(sportSearch.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '')),
-  );
+  const filteredSports = (categories ?? []).filter((c) => sportMatches(c, sportSearch));
+  // "não achei": o nome escrito vai com a categoria Outros e vira sugestão para a equipe Riff
+  const outrosCategory = categories?.find((c) => c.slug === 'outros');
+  const newSportName = sportSearch.trim().replace(/\s+/g, ' ');
+  const canUseNewSport = newSportName.length >= 2 && newSportName.length <= 40 && !!outrosCategory
+    && !filteredSports.some((c) => plainText(c.name) === plainText(newSportName));
   const visibleSports = sportSearch || showAllSports ? filteredSports : filteredSports.slice(0, 9);
 
   if (!isLoading && community === null) return <Navigate to="/inicio" replace />;
@@ -152,6 +157,7 @@ export default function NewActivity() {
           professional_id: profile.id,
           organization_id: orgId,
           category_id: categoryId,
+          sport_other: sportOther,
           kind,
           title: title.trim(),
           description: description.trim() || null,
@@ -275,14 +281,23 @@ export default function NewActivity() {
                 className={cn(FIELD, 'pl-9')}
               />
             </div>
+            {sportOther && (
+              <p className="flex items-center gap-2 rounded-xl border border-brand/50 bg-brand/10 px-3 py-2 text-sm text-ink">
+                <SportIcon slug="outros" className="w-4 h-4 text-brand" /> Esporte: <span className="font-semibold">{sportOther}</span>
+                <span className="text-xs text-ink-muted">(novo)</span>
+              </p>
+            )}
             <div className="flex flex-wrap gap-2">
               {visibleSports.map((c) => (
                 <button
                   key={c.id}
                   type="button"
-                  aria-pressed={categoryId === c.id}
-                  onClick={() => setCategoryId(c.id)}
-                  className={cn(chipClass(categoryId === c.id), 'flex items-center gap-1.5')}
+                  aria-pressed={categoryId === c.id && !sportOther}
+                  onClick={() => {
+                    setCategoryId(c.id);
+                    setSportOther(null);
+                  }}
+                  className={cn(chipClass(categoryId === c.id && !sportOther), 'flex items-center gap-1.5')}
                 >
                   <SportIcon slug={c.slug} className="w-4 h-4" /> {c.name}
                 </button>
@@ -292,8 +307,23 @@ export default function NewActivity() {
                   Ver todos ({filteredSports.length})
                 </button>
               )}
-              {sportSearch && filteredSports.length === 0 && <p className="text-xs text-ink-muted">Nenhum esporte com esse nome. Tente "Outros".</p>}
             </div>
+            {canUseNewSport && (
+              <div className="rounded-xl border border-dashed border-brand/60 p-3 space-y-1.5">
+                <p className="text-xs text-ink-muted">{filteredSports.length === 0 ? 'Não achamos esse esporte na lista.' : 'Não é nenhum desses?'}</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCategoryId(outrosCategory!.id);
+                    setSportOther(newSportName.charAt(0).toUpperCase() + newSportName.slice(1));
+                    setSportSearch('');
+                  }}
+                  className="w-full h-10 rounded-lg bg-brand/15 text-brand text-sm font-semibold"
+                >
+                  Usar "{newSportName}" como esporte
+                </button>
+              </div>
+            )}
           </FormStep>
 
           <FormStep n={3} title="Quando?">
