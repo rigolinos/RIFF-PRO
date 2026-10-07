@@ -107,7 +107,8 @@ export function useCommunityRequestActions() {
         p_lat: r.latitude,
         p_lng: r.longitude,
         p_infrastructure: r.infrastructure,
-        p_units: r.units,
+        // NULL = não informado (o banco aceita; o tipo gerado não marca como opcional)
+        p_units: r.units as number,
         p_requester_role: r.requesterRole,
         p_sindico_contact: r.sindicoContact,
       });

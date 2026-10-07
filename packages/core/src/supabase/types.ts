@@ -296,8 +296,8 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "community_join_requests_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: "community_join_requests_answered_by_fkey"
+            columns: ["answered_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -307,6 +307,46 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_join_requests_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_request_interest: {
+        Row: {
+          created_at: string
+          profile_id: string
+          request_id: string
+        }
+        Insert: {
+          created_at?: string
+          profile_id: string
+          request_id: string
+        }
+        Update: {
+          created_at?: string
+          profile_id?: string
+          request_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_request_interest_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_request_interest_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "community_requests"
             referencedColumns: ["id"]
           },
         ]
@@ -372,7 +412,22 @@ export type Database = {
           status?: string
           units?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "community_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_requests_requester_id_fkey"
+            columns: ["requester_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       dependents: {
         Row: {
@@ -1134,8 +1189,8 @@ export type Database = {
       }
       venues: {
         Row: {
-          archived_at: string | null
           address: string | null
+          archived_at: string | null
           city: string | null
           created_at: string
           created_by: string | null
@@ -1153,8 +1208,8 @@ export type Database = {
           visibility: string
         }
         Insert: {
-          archived_at?: string | null
           address?: string | null
+          archived_at?: string | null
           city?: string | null
           created_at?: string
           created_by?: string | null
@@ -1172,8 +1227,8 @@ export type Database = {
           visibility?: string
         }
         Update: {
-          archived_at?: string | null
           address?: string | null
+          archived_at?: string | null
           city?: string | null
           created_at?: string
           created_by?: string | null
@@ -1231,6 +1286,10 @@ export type Database = {
         }
         Returns: string
       }
+      admin_approve_community_request: {
+        Args: { p_owner_email?: string; p_request: string }
+        Returns: string
+      }
       admin_community_insights: {
         Args: { p_days?: number }
         Returns: {
@@ -1262,6 +1321,30 @@ export type Database = {
           p_state?: string
         }
         Returns: string
+      }
+      admin_list_community_requests: {
+        Args: { p_status?: string }
+        Returns: {
+          address: string
+          city: string
+          created_at: string
+          id: string
+          infrastructure: Json
+          interested: number
+          kind: string
+          name: string
+          requester_email: string
+          requester_name: string
+          requester_role: string
+          sindico_contact: string
+          state: string
+          status: string
+          units: number
+        }[]
+      }
+      admin_reject_community_request: {
+        Args: { p_note?: string; p_request: string }
+        Returns: undefined
       }
       admin_set_community_location: {
         Args: {
@@ -1303,11 +1386,14 @@ export type Database = {
         Returns: number
       }
       can_view_dependent: { Args: { p_dependent: string }; Returns: boolean }
+      cancel_community_request: {
+        Args: { p_request: string }
+        Returns: undefined
+      }
       cancel_session: {
         Args: { p_reason?: string; p_session_id: string }
         Returns: undefined
       }
-      cancel_community_request: { Args: { p_request: string }; Returns: undefined }
       close_community_session: {
         Args: {
           p_attendance?: Json
@@ -1367,6 +1453,10 @@ export type Database = {
         Returns: Json
       }
       delete_user_account: { Args: never; Returns: undefined }
+      distance_m: {
+        Args: { lat1: number; lat2: number; lng1: number; lng2: number }
+        Returns: number
+      }
       ensure_solo_organization: { Args: { p_profile: string }; Returns: string }
       generate_invite_code: { Args: never; Returns: string }
       get_booking_payment_info: {
@@ -1455,7 +1545,7 @@ export type Database = {
           p_name: string
           p_org: string
           p_rules: string
-          p_space: string | null
+          p_space: string
           p_space_kind: string
         }
         Returns: string
@@ -1469,7 +1559,7 @@ export type Database = {
       space_conflicts: {
         Args: {
           p_date: string
-          p_exclude?: string | null
+          p_exclude?: string
           p_minutes: number
           p_space: string
           p_start: string
@@ -1481,6 +1571,7 @@ export type Database = {
           title: string
         }[]
       }
+      space_label: { Args: { p_kind: string }; Returns: string }
       submit_community_request: {
         Args: {
           p_address: string
@@ -1493,14 +1584,17 @@ export type Database = {
           p_requester_role: string
           p_sindico_contact: string
           p_state: string
-          p_units: number | null
+          p_units: number
         }
         Returns: string
       }
-      support_community_request: { Args: { p_request: string }; Returns: undefined }
       submit_game_review: {
         Args: { p_kudos?: Json; p_session: string; p_vibe: number }
         Returns: Json
+      }
+      support_community_request: {
+        Args: { p_request: string }
+        Returns: undefined
       }
       tax_id_kind: { Args: { p_value: string }; Returns: string }
     }
