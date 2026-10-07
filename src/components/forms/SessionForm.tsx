@@ -32,6 +32,8 @@ import { KINDS, type ActivityKind } from '@riff/core/lib/copy';
 import { chipClass } from '@riff/core/lib/chips';
 import { cn } from '@riff/core/lib/utils';
 import { formatBRL } from '@riff/core/lib/money';
+import { sportExactMatch, sportMatches } from '@riff/core/lib/sportSearch';
+import { useQuery } from '@tanstack/react-query';
 import { useCategories } from '@/hooks/useCategories';
 import { useMyVenues } from '@/hooks/useMyVenues';
 import { PlaceSearch } from '@riff/core/domain/PlaceSearch';
@@ -69,7 +71,6 @@ const DURATIONS = [30, 45, 60, 90, 120];
 const PRICES = [0, 20, 30, 40, 50];
 const durationLabel = (m: number) => (m < 60 ? `${m} min` : m % 60 ? `${Math.floor(m / 60)}h${m % 60}` : `${m / 60}h`);
 const todaySP = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(new Date());
-const plain = (t: string) => t.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '');
 
 interface SessionFormProps {
   initialData?: SessionWithJoins;
@@ -110,6 +111,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
       : {
           kind: initialData?.kind || 'class',
           category_id: initialData?.category_id || '',
+          sport_other: initialData?.sport_other || null,
           title: initialData?.title || '',
           description: initialData?.description || '',
           max_participants: initialData?.max_participants || 10,
@@ -146,8 +148,33 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
   const kind = (formData.kind || 'class') as ActivityKind;
   const category = categories?.find((c) => c.id === formData.category_id);
   const activeTemplates = category?.slug && kind === 'class' ? (TEMPLATES[category.slug] ?? []) : [];
-  const filteredSports = (categories ?? []).filter((c) => plain(c.name).includes(plain(sportSearch)));
+  // esportes que o organizador já usou vêm primeiro
+  const { data: usedCategories } = useQuery({
+    queryKey: ['sessions', 'pro', 'used-categories', profile?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('sessions')
+        .select('category_id')
+        .eq('professional_id', profile!.id)
+        .order('created_at', { ascending: false })
+        .limit(40);
+      if (error) throw error;
+      return [...new Set(data.map((x) => x.category_id))];
+    },
+    enabled: !!profile?.id,
+    staleTime: 5 * 60 * 1000,
+  });
+  const outrosCategory = categories?.find((c) => c.slug === 'outros');
+  const orderedSports = useMemo(() => {
+    const used = usedCategories ?? [];
+    const rank = (id: string) => (used.includes(id) ? used.indexOf(id) : used.length + 1);
+    return [...(categories ?? [])].sort((a, b) => rank(a.id) - rank(b.id));
+  }, [categories, usedCategories]);
+  const filteredSports = orderedSports.filter((c) => sportMatches(c, sportSearch));
   const visibleSports = sportSearch || showAllSports ? filteredSports : filteredSports.slice(0, 9);
+  const newSportName = sportSearch.trim().replace(/\s+/g, ' ');
+  const canUseNewSport = newSportName.length >= 2 && newSportName.length <= 40 && !!outrosCategory
+    && !filteredSports.some((c) => sportExactMatch(c, newSportName));
   const spots = Number(formData.max_participants) || 1;
   const price = Number(formData.price_per_slot) || 0;
   const duration = Number(formData.duration_minutes) || KINDS[kind].defaultDuration;
@@ -192,6 +219,9 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
     }
     // Cidade da atividade: a do perfil do organizador (usada no filtro do feed).
     if (!isEditMode && !data.city && profile?.city) data.city = profile.city;
+    // o campo do esporte livre só vai quando há um nome novo ("não achei")
+    // (na edição, se antes havia um nome livre, manda NULL para limpar)
+    if (!data.sport_other && !initialData?.sport_other) delete data.sport_other;
     await onSubmit(data);
   };
 
@@ -236,7 +266,7 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
       {/* Prévia ao vivo, no formato do ingresso */}
       <div className="relative z-10 -mt-10 mx-4 bg-elevated border border-line rounded-2xl shadow-[var(--shadow-2)] overflow-hidden" aria-live="polite">
         <div className="px-4 pt-3 pb-2 flex items-center gap-2 min-w-0">
-          <SportIcon slug={category?.slug} className="w-5 h-5 text-brand shrink-0" />
+          <SportIcon slug={formData.sport_other ? 'outros' : category?.slug} className="w-5 h-5 text-brand shrink-0" />
           <p className={cn('type-subtitle truncate flex-1', !formData.title?.trim() && 'text-ink-muted')}>{formData.title?.trim() || 'Nome da atividade'}</p>
           <span className={cn('text-sm font-bold font-display shrink-0', price > 0 ? 'text-accent' : 'text-success')}>
             {price > 0 ? formatBRL(price) : 'Grátis'}
@@ -293,14 +323,23 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
             <Search className="w-4 h-4 text-ink-muted absolute left-3 top-1/2 -translate-y-1/2" />
             <Input value={sportSearch} onChange={(e) => setSportSearch(e.target.value)} placeholder="Buscar esporte" aria-label="Buscar esporte" className="h-12 pl-9 bg-elevated border-line" />
           </div>
+          {formData.sport_other && (
+            <p className="flex items-center gap-2 rounded-xl border border-brand/50 bg-brand/10 px-3 py-2 text-sm text-ink">
+              <SportIcon slug="outros" className="w-4 h-4 text-brand" /> Esporte: <span className="font-semibold">{formData.sport_other}</span>
+              <span className="text-xs text-ink-muted">(novo)</span>
+            </p>
+          )}
           <div className="flex flex-wrap gap-2">
             {visibleSports.map((c) => (
               <button
                 key={c.id}
                 type="button"
-                aria-pressed={formData.category_id === c.id}
-                onClick={() => setValue('category_id', c.id)}
-                className={cn(chipClass(formData.category_id === c.id), 'flex items-center gap-1.5')}
+                aria-pressed={formData.category_id === c.id && !formData.sport_other}
+                onClick={() => {
+                  setValue('category_id', c.id);
+                  setValue('sport_other', null);
+                }}
+                className={cn(chipClass(formData.category_id === c.id && !formData.sport_other), 'flex items-center gap-1.5')}
               >
                 <SportIcon slug={c.slug} className="w-4 h-4" /> {c.name}
               </button>
@@ -311,6 +350,23 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
               </button>
             )}
           </div>
+          {canUseNewSport && (
+            <div className="rounded-xl border border-dashed border-brand/60 p-3 space-y-1.5">
+              <p className="text-xs text-ink-muted">{filteredSports.length === 0 ? 'Não achamos esse esporte na lista.' : 'Não é nenhum desses?'}</p>
+              <button
+                type="button"
+                onClick={() => {
+                  setValue('category_id', outrosCategory!.id);
+                  setValue('sport_other', newSportName.charAt(0).toUpperCase() + newSportName.slice(1));
+                  setSportSearch('');
+                }}
+                className="w-full h-10 rounded-lg bg-brand/15 text-brand text-sm font-semibold"
+              >
+                Usar "{newSportName}" como esporte
+              </button>
+              <p className="text-xs text-ink-muted">A atividade sai com esse nome. A equipe Riff avalia e pode colocar o esporte na lista oficial.</p>
+            </div>
+          )}
         </FormStep>
 
         <FormStep n={3} title="Nome e foto" hint="Nomes com o benefício final atraem mais gente.">

@@ -135,9 +135,9 @@ const SessionDetails = () => {
           )}
         </div>
         <h1 className="type-display leading-tight mt-3">{session.title}</h1>
-        {category?.name && (
+        {(session.sport_other || category?.name) && (
           <p className="flex items-center gap-1.5 text-sm text-ink-muted mt-2">
-            <SportIcon slug={category.slug} className="w-4 h-4 text-brand" /> {category.name}
+            <SportIcon slug={session.sport_other ? 'outros' : category?.slug} className="w-4 h-4 text-brand" /> {session.sport_other || category?.name}
           </p>
         )}
       </HeroHeader>
