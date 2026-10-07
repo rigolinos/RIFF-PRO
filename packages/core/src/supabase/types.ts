@@ -601,6 +601,7 @@ export type Database = {
           created_by: string
           id: string
           kind: string
+          main_venue_id: string | null
           name: string | null
           slug: string | null
           updated_at: string
@@ -610,6 +611,7 @@ export type Database = {
           created_by: string
           id?: string
           kind: string
+          main_venue_id?: string | null
           name?: string | null
           slug?: string | null
           updated_at?: string
@@ -619,6 +621,7 @@ export type Database = {
           created_by?: string
           id?: string
           kind?: string
+          main_venue_id?: string | null
           name?: string | null
           slug?: string | null
           updated_at?: string
