@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { ArrowLeft, Baby, ClipboardCheck, MapPin, Share2, Users } from 'lucide-react';
+import { ArrowLeft, Baby, ClipboardCheck, Info, MapPin, Share2, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { useProfile } from '@riff/core/hooks/useProfile';
 import { PageContainer } from '@riff/core/layout/PageContainer';
@@ -157,6 +157,11 @@ export default function ActivityDetail() {
             <p className="text-xs text-ink line-clamp-2">{activity.location_name || 'A confirmar'}</p>
           </div>
         </div>
+        {activity.venue?.official && activity.venue.rules && (
+          <p className="flex items-start gap-2 border-t border-dashed border-line px-4 py-2 text-xs text-ink-muted">
+            <Info className="w-4 h-4 text-brand shrink-0" /> <span><span className="font-semibold text-ink">Regras do espaço:</span> {activity.venue.rules}</span>
+          </p>
+        )}
         {activity.minors_allowed && (
           <p className="flex items-center justify-center gap-2 border-t border-dashed border-line px-4 py-2 text-xs text-accent">
             <Users className="w-4 h-4 shrink-0" /> Aceita menores{activity.min_age ? ` a partir de ${activity.min_age} anos` : ''}

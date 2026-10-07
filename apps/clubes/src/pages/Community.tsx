@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link, useParams, useNavigate, Navigate } from 'react-router-dom';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -12,6 +13,10 @@ import { ActivityRow } from '@/components/ActivityRow';
 import { ROLE_LABEL } from '@/lib/roles';
 import { RankingPreview } from '@/components/RankingPreview';
 import { CommunityPlace } from '@/components/CommunityPlace';
+import { useSpaces } from '@/hooks/useSpaces';
+import { spaceKind } from '@/lib/spaces';
+import { chipClass } from '@riff/core/lib/chips';
+import { cn } from '@riff/core/lib/utils';
 
 // Página de uma comunidade: agenda dela e, para o gestor, o atalho da gestão
 export default function Community() {
@@ -20,6 +25,10 @@ export default function Community() {
   const { data: community, isLoading } = useCommunity(orgId);
   const { data: agenda, isLoading: isLoadingAgenda, isError } = useUpcomingActivities(orgId ? [orgId] : undefined);
   const { data: pendingClose } = usePendingClose(community ? orgId : undefined, !!community?.isAdmin);
+  const { data: spaces } = useSpaces(community ? orgId : undefined);
+  // agenda por espaço ("o que tem na quadra esta semana?")
+  const [spaceFilter, setSpaceFilter] = useState<string | null>(null);
+  const shown = spaceFilter ? (agenda ?? []).filter((a) => a.venue?.id === spaceFilter) : agenda;
 
   if (!isLoading && community === null) return <Navigate to="/comunidades" replace />;
 
@@ -74,21 +83,42 @@ export default function Community() {
 
         <section className="space-y-3">
           <h2 className="type-subtitle">Agenda</h2>
+          {spaces && spaces.length > 0 && (
+            <div className="flex overflow-x-auto hide-scrollbar gap-2 -mx-6 px-6" aria-label="Filtrar por espaço">
+              <button type="button" aria-pressed={!spaceFilter} onClick={() => setSpaceFilter(null)} className={cn(chipClass(!spaceFilter), 'shrink-0')}>
+                Todos
+              </button>
+              {spaces.map((sp) => {
+                const k = spaceKind(sp.space_kind);
+                return (
+                  <button
+                    key={sp.id}
+                    type="button"
+                    aria-pressed={spaceFilter === sp.id}
+                    onClick={() => setSpaceFilter(spaceFilter === sp.id ? null : sp.id)}
+                    className={cn(chipClass(spaceFilter === sp.id), 'shrink-0 inline-flex items-center gap-1.5')}
+                  >
+                    <k.icon className="w-4 h-4" /> {sp.name}
+                  </button>
+                );
+              })}
+            </div>
+          )}
           {isLoadingAgenda || isLoading ? (
             <div className="flex justify-center py-10">
               <div className="w-8 h-8 border-2 border-brand border-t-transparent rounded-full animate-spin" />
             </div>
           ) : isError ? (
             <EmptyState title="Não foi possível carregar a agenda" description="Tente novamente em instantes." />
-          ) : !agenda || agenda.length === 0 ? (
+          ) : !shown || shown.length === 0 ? (
             <EmptyState
               icon={CalendarDays}
-              title="Nenhuma atividade marcada"
-              description="Crie a primeira atividade da comunidade: um jogo, uma aula ou um evento."
+              title={spaceFilter ? 'Nada marcado neste espaço' : 'Nenhuma atividade marcada'}
+              description={spaceFilter ? 'O espaço está livre nos próximos dias.' : 'Crie a primeira atividade da comunidade: um jogo, uma aula ou um evento.'}
             />
           ) : (
             <div className="-mx-2 bg-surface border border-line rounded-2xl divide-y divide-line overflow-hidden">
-              {agenda.map((a) => (
+              {shown.map((a) => (
                 <ActivityRow key={a.id} activity={a} showDay />
               ))}
             </div>

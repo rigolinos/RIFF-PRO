@@ -1026,6 +1026,7 @@ export type Database = {
       }
       venues: {
         Row: {
+          archived_at: string | null
           address: string | null
           city: string | null
           created_at: string
@@ -1035,12 +1036,16 @@ export type Database = {
           latitude: number | null
           longitude: number | null
           name: string
+          official: boolean
           organization_id: string | null
+          rules: string | null
+          space_kind: string | null
           state: string | null
           updated_at: string
           visibility: string
         }
         Insert: {
+          archived_at?: string | null
           address?: string | null
           city?: string | null
           created_at?: string
@@ -1050,12 +1055,16 @@ export type Database = {
           latitude?: number | null
           longitude?: number | null
           name: string
+          official?: boolean
           organization_id?: string | null
+          rules?: string | null
+          space_kind?: string | null
           state?: string | null
           updated_at?: string
           visibility?: string
         }
         Update: {
+          archived_at?: string | null
           address?: string | null
           city?: string | null
           created_at?: string
@@ -1065,7 +1074,10 @@ export type Database = {
           latitude?: number | null
           longitude?: number | null
           name?: string
+          official?: boolean
           organization_id?: string | null
+          rules?: string | null
+          space_kind?: string | null
           state?: string | null
           updated_at?: string
           visibility?: string
@@ -1153,6 +1165,10 @@ export type Database = {
           p_state: string
         }
         Returns: string
+      }
+      archive_community_space: {
+        Args: { p_archive?: boolean; p_space: string }
+        Returns: undefined
       }
       become_organizer: {
         Args: {
@@ -1308,12 +1324,37 @@ export type Database = {
       }
       revoke_invite: { Args: { p_invite: string }; Returns: undefined }
       sanitize_attribution: { Args: { p: Json }; Returns: Json }
+      save_community_space: {
+        Args: {
+          p_name: string
+          p_org: string
+          p_rules: string
+          p_space: string | null
+          p_space_kind: string
+        }
+        Returns: string
+      }
       session_community: { Args: { p_session: string }; Returns: string }
       session_end_local: {
         Args: { p_date: string; p_minutes: number; p_time: string }
         Returns: string
       }
       short_name: { Args: { p_full: string }; Returns: string }
+      space_conflicts: {
+        Args: {
+          p_date: string
+          p_exclude?: string | null
+          p_minutes: number
+          p_space: string
+          p_start: string
+        }
+        Returns: {
+          end_time: string
+          session_id: string
+          start_time: string
+          title: string
+        }[]
+      }
       submit_game_review: {
         Args: { p_kudos?: Json; p_session: string; p_vibe: number }
         Returns: Json
