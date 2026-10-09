@@ -7,6 +7,7 @@ import { AuthShell } from '@riff/core/layout/AuthShell';
 import { Field, PasswordInput } from '@riff/core/domain/Field';
 import { Button } from '@riff/core/ui/button';
 import { authErrorMessage } from '@riff/core/lib/authErrors';
+import { PASSWORD_HINT, PASSWORD_MIN, passwordProblem } from '@riff/core/lib/password';
 
 /** Nova senha, aberta pelo link do e-mail de recuperação (igual nos dois apps). */
 export function ResetPasswordScreen({ product }: { product: string }) {
@@ -29,7 +30,8 @@ export function ResetPasswordScreen({ product }: { product: string }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password.length < 6) return toast.error('A nova senha precisa ter pelo menos 6 caracteres.');
+    const problem = passwordProblem(password);
+    if (problem) return toast.error(`Nova senha: ${problem.toLowerCase()}.`);
     if (password !== confirm) return toast.error('As senhas não são iguais.');
     setIsLoading(true);
     const { error } = await supabase.auth.updateUser({ password });
@@ -43,17 +45,17 @@ export function ResetPasswordScreen({ product }: { product: string }) {
   };
 
   return (
-    <AuthShell product={product} label="Senha" title="Crie uma nova senha" subtitle="Use pelo menos 6 caracteres. Depois é só entrar com ela.">
+    <AuthShell product={product} label="Senha" title="Crie uma nova senha" subtitle="Use pelo menos 8 caracteres, com letras e números. Depois é só entrar com ela.">
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <Field label="Nova senha" htmlFor="reset-password" hint={password && password.length < 6 ? `Faltam ${6 - password.length} caracteres` : undefined}>
+        <Field label="Nova senha" htmlFor="reset-password" hint={password ? (passwordProblem(password) ?? undefined) : PASSWORD_HINT}>
           <PasswordInput
             id="reset-password"
             autoComplete="new-password"
-            placeholder="Mínimo 6 caracteres"
+            placeholder="Mínimo 8 caracteres"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            minLength={6}
+            minLength={PASSWORD_MIN}
           />
         </Field>
         <Field label="Repita a nova senha" htmlFor="reset-confirm" error={mismatch ? 'As senhas não são iguais.' : undefined}>
@@ -64,7 +66,7 @@ export function ResetPasswordScreen({ product }: { product: string }) {
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
             required
-            minLength={6}
+            minLength={PASSWORD_MIN}
           />
         </Field>
         <Button type="submit" size="lg" className="w-full mt-2" disabled={isLoading || !password || !confirm || mismatch}>

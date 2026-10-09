@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@riff/core/supabase/client';
+import { passwordProblem } from '@riff/core/lib/password';
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -40,8 +41,9 @@ export function useAuth() {
       return { error: { message: 'Todos os campos são obrigatórios' } };
     }
 
-    if (password.length < 6) {
-      return { error: { message: 'A senha deve ter pelo menos 6 caracteres' } };
+    const problem = passwordProblem(password);
+    if (problem) {
+      return { error: { message: `Senha: ${problem.toLowerCase()}.` } };
     }
 
     const redirectUrl = `${window.location.origin}/login?confirmed=true`;
