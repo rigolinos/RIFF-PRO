@@ -101,14 +101,25 @@ Criar comunidade é tarefa da equipe Riff, pelo terminal, já com o endereço: `
 - **Presença e resultados:** `bookings.attendance_status` (`present`, `absent`, `late`, `excused`) acompanha o check-in do `close_session`; `activity_results` guarda placar/posição. Só o organizador da atividade e o próprio participante leem.
 - Variáveis de ambiente em `.env.local` (fora do git): `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`.
 
-## 8. Rumo à união (acompanhar, sem generalizar antes da hora)
+## 8. Segurança (auditoria de 09/10/2026)
+
+A chave do Supabase vai dentro do app (é pública): tudo o que o papel `anon` alcança pelo banco é público. Regras:
+- **Toda tabela nova com RLS** e política explícita. O `test:db` tem a seção "Superfície do visitante": falha se uma tabela ficar sem RLS, se o visitante puder ler uma tabela fora da lista (`categories`, `sessions`, `venues`, `organizations`, `profiles`) ou executar uma função fora da lista. Abrir algo para o visitante é decisão do dono do produto: atualize a lista no teste e explique no PR.
+- **Perfis:** organizador (`role = 'professional'`, não excluído) é vitrine pública, mas o visitante só lê as colunas da vitrine (sem `user_id`, datas, exclusão, modo reservado). Participante só é visto por quem tem relação (`can_see_profile`: a própria pessoa, organizador ↔ quem reservou, mesma comunidade, gestor que recebeu o pedido de entrada). Nome de participante para terceiros sai por funções (`short_name`).
+- **Avaliações:** a tabela `reviews` só é lida por quem avaliou e por quem foi avaliado; a vitrine usa `public_reviews()` (sem quem avaliou nem a reserva).
+- **Locais:** o visitante só vê local com atividade aberta do Pro; quem cadastrou e membros da comunidade veem os seus.
+- **Fotos (bucket `avatars`):** público pelo link, mas listar/baixar pela API só o dono; só imagens (sem SVG), até 5 MB. Envio sempre por `uploadImage`/`uploadAvatar` (`@riff/core/lib/avatar`).
+- **Cabeçalhos:** os dois `vercel.json` têm CSP e Permissions-Policy. O app só fala com o próprio domínio, o Supabase e o Geoapify; **serviço externo novo (fetch, imagem, script) precisa entrar na CSP**, senão é bloqueado.
+- **Login (painel do Supabase, fora do código):** senha mínima, proteção contra senha vazada, confirmação de e-mail e CAPTCHA são configurados em Authentication.
+
+## 9. Rumo à união (acompanhar, sem generalizar antes da hora)
 
 Pro e Clubes vão se unir no Riff Sports. A base já está pronta (mesma conta, mesmo banco, núcleo e design system comuns, `product` em atividades e reservas, tudo registrado). Pontos que vão precisar de um modelo só na união; até lá, cada produto segue o seu, mas sem divergir de propósito:
 - **Avaliações:** no Pro, estrelas e destaques sobre o organizador (`reviews`); no Clubes, "como foi" e elogios entre jogadores (`game_reviews`, `game_kudos`).
 - **Perfil esportista:** funções separadas (`my_pro_sports_profile` e `player_profile`). A definição de "jogou" (inscrito sem dependente, não ausente nem justificado, atividade terminada) tem de continuar a mesma nos dois, para os números somarem.
 - **Documentos legais:** hoje um conjunto por produto; na união, um termo-base do Riff Sports com anexos por produto.
 
-## 9. Perguntas em aberto
+## 10. Perguntas em aberto
 
 - Quem paga no Riff Clubes: **ainda em aberto**, provavelmente contrato com o condomínio ou clube. A primeira versão do Clubes **não tem pagamento no app**.
 - Público do Clubes: **só condomínios e clubes** na primeira versão (academias e arenas depois).
