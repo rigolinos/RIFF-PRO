@@ -1402,6 +1402,7 @@ export type Database = {
         Args: { pro_id: string }
         Returns: number
       }
+      can_see_profile: { Args: { p_profile: string }; Returns: boolean }
       can_view_dependent: { Args: { p_dependent: string }; Returns: boolean }
       cancel_community_request: {
         Args: { p_request: string }
@@ -1529,18 +1530,6 @@ export type Database = {
         Args: { p_org?: string; p_profile: string }
         Returns: Json
       }
-      public_reviews: {
-        Args: { p_limit?: number; p_professional: string }
-        Returns: {
-          comment: string
-          created_at: string
-          id: string
-          rating: number
-          reviewer_avatar: string
-          reviewer_name: string
-          tags: string[]
-        }[]
-      }
       pro_player_games: {
         Args: { p_profile: string }
         Returns: {
@@ -1553,6 +1542,18 @@ export type Database = {
         }[]
       }
       pro_session_participants: { Args: { p_session: string }; Returns: Json }
+      public_reviews: {
+        Args: { p_limit?: number; p_professional: string }
+        Returns: {
+          comment: string
+          created_at: string
+          id: string
+          rating: number
+          reviewer_avatar: string
+          reviewer_name: string
+          tags: string[]
+        }[]
+      }
       remove_dependent: { Args: { p_dependent: string }; Returns: undefined }
       request_to_join: { Args: { p_org: string }; Returns: undefined }
       resolve_venue: {

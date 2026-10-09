@@ -1217,6 +1217,36 @@ ok(!r.err && r.rows.length === 0, 'visitante não lista os arquivos de fotos');
 r = await as('authenticated', PA, "DELETE FROM storage.objects WHERE bucket_id = 'avatars' RETURNING id");
 ok(!r.err && r.rows.length === 0, 'ninguém apaga a foto de outra pessoa');
 
+// ── Superfície do visitante sem login (auditoria de 09/10/2026) ─────────
+// Se uma migration nova abrir algo para quem não está logado, estes testes falham.
+// Para abrir de propósito, atualize a lista aqui e explique no PR.
+console.log('Superfície do visitante:');
+const noRls = (await q(`SELECT c.relname FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+  WHERE n.nspname = 'public' AND c.relkind = 'r' AND NOT c.relrowsecurity`)).rows.map((x) => x.relname);
+ok(noRls.length === 0, 'toda tabela tem RLS ligada' + (noRls.length ? ` (sem RLS: ${noRls.join(', ')})` : ''));
+const ANON_FUNCTIONS = ['_profile_id', 'can_see_profile', 'distance_m', 'is_org_member', 'now_sp', 'plain_text', 'pro_session_participants',
+  'public_reviews', 'session_community', 'session_end_local', 'short_name', 'space_label', 'tax_id_kind'];
+const anonFns = (await q(`SELECT DISTINCT p.proname FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+  WHERE n.nspname = 'public' AND p.prorettype <> 'trigger'::regtype AND has_function_privilege('anon', p.oid, 'EXECUTE') ORDER BY 1`)).rows.map((x) => x.proname);
+const extraFns = anonFns.filter((f) => !ANON_FUNCTIONS.includes(f));
+ok(extraFns.length === 0, 'visitante só executa as funções liberadas' + (extraFns.length ? ` (a mais: ${extraFns.join(', ')})` : ''));
+// tabelas de que o visitante consegue ler alguma linha (com todos os dados de teste acima)
+const ANON_TABLES = ['categories', 'organizations', 'sessions', 'venues', 'profiles'];
+const readable = [];
+for (const { relname } of (await q(`SELECT c.relname FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'public' AND c.relkind = 'r' ORDER BY 1`)).rows) {
+  const cols = relname === 'profiles' ? 'id' : '*';
+  const res = await as('anon', '', `SELECT ${cols} FROM public."${relname}" LIMIT 1`);
+  if (!res.err && res.rows.length > 0) readable.push(relname);
+}
+const extraTables = readable.filter((t) => !ANON_TABLES.includes(t));
+ok(extraTables.length === 0, 'visitante só lê as tabelas públicas (esportes, atividades, vitrine, locais, organizações)' + (extraTables.length ? ` (a mais: ${extraTables.join(', ')})` : ''));
+const writes = [];
+for (const t of ['profiles', 'sessions', 'bookings', 'reviews', 'venues', 'organizations', 'profile_private']) {
+  const res = await as('anon', '', `WITH x AS (UPDATE public."${t}" SET id = id RETURNING 1) SELECT count(*)::int AS n FROM x`);
+  if (!res.err && res.rows[0].n > 0) writes.push(t);
+}
+ok(writes.length === 0, 'visitante não altera nenhuma linha' + (writes.length ? ` (altera: ${writes.join(', ')})` : ''));
+
 // ── Higiene de segurança (verificador do Supabase) ─────────────────────
 console.log('Higiene de segurança:');
 const noPath = (await q(`SELECT p.proname FROM pg_proc p WHERE p.pronamespace = 'public'::regnamespace
