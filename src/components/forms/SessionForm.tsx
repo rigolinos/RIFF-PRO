@@ -1,5 +1,4 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 import { Link } from 'react-router-dom';
 import { addDays, format, nextSaturday, nextSunday, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -37,6 +36,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useCategories } from '@/hooks/useCategories';
 import { useMyVenues } from '@/hooks/useMyVenues';
 import { PlaceSearch } from '@riff/core/domain/PlaceSearch';
+import { uploadImage } from '@riff/core/lib/avatar';
 import type { SessionWithJoins } from '@/types/session';
 import type { TablesInsert } from '@riff/core/supabase/types';
 
@@ -236,13 +236,9 @@ export function SessionForm({ initialData, onSubmit, isSubmitting }: SessionForm
     try {
       const file = event.target.files?.[0];
       if (!file) return;
-      const fileExt = file.name.split('.').pop();
-      const filePath = `sessions/${profile?.id}-${uuidv4()}.${fileExt}`;
       setIsUploading(true);
-      const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file);
-      if (uploadError) throw uploadError;
-      const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
-      setValue('cover_image_url', data.publicUrl, { shouldValidate: true });
+      const url = await uploadImage(`sessions/${profile?.id}`, file);
+      setValue('cover_image_url', url, { shouldValidate: true });
       toast.success('Foto da atividade atualizada.');
     } catch (error: unknown) {
       const err = error as Error;

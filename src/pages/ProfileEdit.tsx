@@ -18,7 +18,6 @@ import {
   Trash2,
   Wallet,
 } from 'lucide-react';
-import { v4 as uuidv4 } from 'uuid';
 import { PageContainer } from '@riff/core/layout/PageContainer';
 import { HeroHeader } from '@riff/core/layout/HeroHeader';
 import { Avatar, TicketGrid } from '@riff/core/domain';
@@ -40,6 +39,7 @@ import { Textarea } from '@riff/core/ui/textarea';
 import { useProfile } from '@riff/core/hooks/useProfile';
 import { supabase } from '@riff/core/supabase/client';
 import { ModeSwitcher } from '@/components/layout/ModeSwitcher';
+import { uploadAvatar } from '@riff/core/lib/avatar';
 import { BRAND } from '@/brand';
 import { SportsProfileSection } from '@/components/profile/SportsProfileSection';
 import { useViewMode } from '@/contexts/ViewModeContext';
@@ -116,24 +116,10 @@ export default function ProfileEdit() {
         return;
       }
       const file = event.target.files[0];
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${profile.id}-${uuidv4()}.${fileExt}`;
-      const filePath = `${fileName}`;
-
       setIsUploading(true);
-
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file);
-
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
-
-      setValue('avatar_url', data.publicUrl);
-      await updateProfile({ avatar_url: data.publicUrl });
+      const publicUrl = await uploadAvatar(profile.id, file);
+      setValue('avatar_url', publicUrl);
+      await updateProfile({ avatar_url: publicUrl });
       toast.success('Foto de perfil atualizada!');
     } catch (error: Error | unknown) {
       toast.error(errorMessage(error, 'Erro ao fazer upload da imagem.'));

@@ -42,13 +42,14 @@ await ex(`
   CREATE TABLE auth.users (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), email text, raw_user_meta_data jsonb DEFAULT '{}');
   CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE
     AS $f$ SELECT nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $f$;
-  CREATE TABLE storage.buckets (id text PRIMARY KEY, name text, public boolean);
+  CREATE TABLE storage.buckets (id text PRIMARY KEY, name text, public boolean, file_size_limit bigint, allowed_mime_types text[]);
   CREATE TABLE storage.objects (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), bucket_id text, name text, owner uuid);
   ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
   CREATE TABLE cron.job (jobname text);
   CREATE FUNCTION cron.schedule(text, text, text) RETURNS bigint LANGUAGE sql AS 'SELECT 1::bigint';
   CREATE FUNCTION cron.unschedule(text) RETURNS boolean LANGUAGE sql AS 'SELECT true';
   GRANT USAGE ON SCHEMA public, auth, storage TO anon, authenticated;
+  GRANT ALL ON storage.objects TO anon, authenticated; -- como no Supabase (a RLS é que filtra)
   GRANT EXECUTE ON FUNCTION auth.uid() TO anon, authenticated;
   ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated;
 `);
@@ -233,8 +234,12 @@ ok(r.err, 'participante não registra resultado');
 console.log('Organizações e locais:');
 r = await as('anon', '', 'SELECT id FROM public.organizations WHERE id = $1', [org?.id]);
 ok(r.rows?.length === 1, 'organização solo é pública');
+// (migration 0026) local só aparece para o visitante enquanto tiver atividade aberta do Pro
+const openVenue = (await one('SELECT venue_id FROM public.sessions WHERE id = $1', [sFuture])).venue_id;
+r = await as('anon', '', 'SELECT id FROM public.venues WHERE id = $1', [openVenue]);
+ok(r.rows?.length === 1, 'local com atividade aberta é visível sem login');
 r = await as('anon', '', 'SELECT id FROM public.venues WHERE id = $1', [s1.venue_id]);
-ok(r.rows?.length === 1, 'local público é visível sem login');
+ok(!r.err && r.rows.length === 0, 'local só com atividade passada não aparece para o visitante');
 await q("UPDATE public.venues SET visibility = 'members' WHERE id = $1", [s1.venue_id]);
 r = await as('authenticated', PART, 'SELECT id FROM public.venues WHERE id = $1', [s1.venue_id]);
 ok(r.rows?.length === 0, 'local só para membros fica escondido de quem não é membro');
@@ -1184,6 +1189,33 @@ ok(r.rows?.[0]?.reviewer_name === 'Participante' && r.rows[0].reviewer_avatar ==
 await q('UPDATE public.profiles SET sports_hidden = false WHERE id = $1', [pPA]);
 r = await as('anon', '', 'SELECT * FROM public.public_reviews($1)', [pPA]);
 ok(!r.err && r.rows.length === 0, 'avaliações só saem para perfil de organizador');
+
+// ── Segurança: locais e fotos (migration 0026) ──────────────────────────
+console.log('Segurança: locais e fotos:');
+await ex("SELECT set_config('request.jwt.claim.sub', '', false)");
+const oldVenue = (await one(`INSERT INTO public.sessions (professional_id, category_id, title, date, start_time, duration_minutes, location_name, location_address, max_participants, price_per_slot, status)
+  VALUES ($1, $2, 'Treino antigo', current_date - 20, '07:00', 60, 'Estúdio Privado', 'Rua Secreta, 1', 10, 0, 'active') RETURNING venue_id`, [pPC, category])).venue_id;
+r = await as('authenticated', PC, 'SELECT id FROM public.venues WHERE id = $1', [oldVenue]);
+ok(r.rows?.length === 1, 'quem cadastrou o local continua vendo, mesmo sem atividade aberta');
+r = await as('authenticated', XS, 'SELECT id FROM public.venues WHERE id = $1', [oldVenue]);
+ok(!r.err && r.rows.length === 0, 'conta sem relação não vê local antigo de outra pessoa');
+r = await as('anon', '', 'SELECT id FROM public.venues WHERE id = $1', [oldVenue]);
+ok(!r.err && r.rows.length === 0, 'visitante não vê endereço de local sem atividade aberta');
+const bucket = await one("SELECT file_size_limit, allowed_mime_types FROM storage.buckets WHERE id = 'avatars'");
+ok(Number(bucket.file_size_limit) === 5242880 && bucket.allowed_mime_types.includes('image/jpeg') && !bucket.allowed_mime_types.includes('image/svg+xml'),
+  'fotos: só imagens (sem SVG), até 5 MB');
+r = await as('authenticated', XS, "INSERT INTO storage.objects (bucket_id, name, owner) VALUES ('avatars', $1, $2) RETURNING id", [`${pXS}-foto.jpg`, XS]);
+ok(!r.err, 'a pessoa envia a própria foto' + (r.err ? ` (${r.err})` : ''));
+r = await as('authenticated', XS, "INSERT INTO storage.objects (bucket_id, name, owner) VALUES ('avatars', 'de-outro.jpg', $1)", [PA]);
+ok(!!r.err, 'ninguém envia foto em nome de outra pessoa');
+r = await as('authenticated', XS, "SELECT name FROM storage.objects WHERE bucket_id = 'avatars'");
+ok(r.rows?.length === 1, 'a pessoa lista só os próprios arquivos (para excluir a conta)');
+r = await as('authenticated', PA, "SELECT name FROM storage.objects WHERE bucket_id = 'avatars'");
+ok(!r.err && r.rows.length === 0, 'outra conta não lista as fotos dos outros');
+r = await as('anon', '', "SELECT name FROM storage.objects WHERE bucket_id = 'avatars'");
+ok(!r.err && r.rows.length === 0, 'visitante não lista os arquivos de fotos');
+r = await as('authenticated', PA, "DELETE FROM storage.objects WHERE bucket_id = 'avatars' RETURNING id");
+ok(!r.err && r.rows.length === 0, 'ninguém apaga a foto de outra pessoa');
 
 // ── Higiene de segurança (verificador do Supabase) ─────────────────────
 console.log('Higiene de segurança:');
