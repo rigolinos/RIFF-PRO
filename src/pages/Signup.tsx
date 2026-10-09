@@ -11,6 +11,7 @@ import { Input } from '@riff/core/ui/input';
 import { cn } from '@riff/core/lib/utils';
 import { authErrorMessage } from '@riff/core/lib/authErrors';
 import { safeRedirect } from '@riff/core/auth/redirect';
+import { PASSWORD_HINT, PASSWORD_MIN, passwordProblem } from '@riff/core/lib/password';
 import { BRAND } from '@/brand';
 
 type Role = 'professional' | 'student';
@@ -32,6 +33,11 @@ const Signup = () => {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    const problem = passwordProblem(password);
+    if (problem) {
+      toast.error(`Senha: ${problem.toLowerCase()}.`);
+      return;
+    }
     setIsLoading(true);
     const { error } = await signUp(email, password, fullName, role);
     setIsLoading(false);
@@ -117,7 +123,7 @@ const Signup = () => {
         <Field
           label="Senha"
           htmlFor="signup-password"
-          hint={password && password.length < 6 ? `Faltam ${6 - password.length} caracteres` : 'Mínimo de 6 caracteres'}
+          hint={(password && passwordProblem(password)) || PASSWORD_HINT}
         >
           <PasswordInput
             id="signup-password"
@@ -126,7 +132,7 @@ const Signup = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            minLength={6}
+            minLength={PASSWORD_MIN}
           />
         </Field>
 
