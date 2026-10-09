@@ -1529,6 +1529,18 @@ export type Database = {
         Args: { p_org?: string; p_profile: string }
         Returns: Json
       }
+      public_reviews: {
+        Args: { p_limit?: number; p_professional: string }
+        Returns: {
+          comment: string
+          created_at: string
+          id: string
+          rating: number
+          reviewer_avatar: string
+          reviewer_name: string
+          tags: string[]
+        }[]
+      }
       pro_player_games: {
         Args: { p_profile: string }
         Returns: {

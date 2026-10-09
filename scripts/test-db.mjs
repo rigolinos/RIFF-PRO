@@ -1127,6 +1127,64 @@ ok(!!slugErr, 'slug inválido é recusado');
 r = await as('authenticated', PO, 'SELECT * FROM public.admin_sport_suggestions()');
 ok(r.err && /permission denied/.test(r.err), 'o app não lê as sugestões nem promove esportes');
 
+// ── Segurança: perfis e avaliações (migration 0025) ─────────────────────
+console.log('Segurança: perfis e avaliações:');
+const XS = 'c8000000-0000-4000-8000-000000000001'; // conta sem nenhuma relação
+const pXS = await newUser(XS, 'estranho@teste.dev', 'Estranho Qualquer', 'student');
+const VIT = 'id, full_name, avatar_url, public_slug, rating_avg';
+const seeProfile = (role, uid, pid, cols = VIT) => as(role, uid, `SELECT ${cols} FROM public.profiles WHERE id = $1`, [pid]);
+r = await seeProfile('anon', '', pPA);
+ok(!r.err && r.rows.length === 0, 'visitante não vê perfil de participante');
+r = await seeProfile('anon', '', pPO);
+ok(r.rows?.length === 1, 'visitante vê a vitrine do organizador');
+r = await seeProfile('anon', '', pPO, 'user_id');
+ok(!!r.err && /permission denied/.test(r.err), 'visitante não lê o id de login do organizador');
+r = await as('anon', '', 'SELECT * FROM public.profiles LIMIT 1');
+ok(!!r.err, 'visitante não consegue "SELECT *" em perfis (só colunas da vitrine)');
+r = await as('anon', '', 'SELECT deleted_at, sports_hidden FROM public.profiles LIMIT 1');
+ok(!!r.err, 'visitante não lê exclusão nem modo reservado');
+r = await as('anon', '', "SELECT count(*)::int AS n FROM public.profiles WHERE role = 'student'");
+ok(r.rows?.[0]?.n === 0, 'visitante não lista participantes');
+r = await seeProfile('authenticated', XS, pPA);
+ok(!r.err && r.rows.length === 0, 'conta sem relação não vê perfil de participante');
+r = await seeProfile('authenticated', XS, pPO);
+ok(r.rows?.length === 1, 'conta logada vê a vitrine do organizador');
+r = await seeProfile('authenticated', XS, pXS, 'id, user_id, sports_hidden');
+ok(r.rows?.length === 1, 'a pessoa vê o próprio perfil completo');
+r = await seeProfile('authenticated', PO, pPA);
+ok(r.rows?.length === 1, 'organizador vê quem reservou com ele');
+r = await as('authenticated', PO, 'SELECT b.id, s.full_name FROM public.bookings b JOIN public.profiles s ON s.id = b.student_id WHERE b.professional_id = $1', [pPO]);
+ok(r.rows?.length >= 1 && r.rows.every((x) => x.full_name), 'lista de inscritos do organizador continua com os nomes');
+r = await seeProfile('authenticated', MS, pGA);
+ok(r.rows?.length === 1, 'membro vê quem é da mesma comunidade');
+r = await seeProfile('authenticated', MB, pMS);
+ok(!r.err && r.rows.length === 0, 'quem é de outra comunidade não vê o perfil');
+r = await as('authenticated', XS, 'SELECT public.request_to_join($1)', [orgA]);
+r = await seeProfile('authenticated', GA, pXS);
+ok(r.rows?.length === 1, 'gestor vê quem pediu para entrar na comunidade');
+r = await as('anon', '', 'SELECT public.can_see_profile($1) AS v', [pPA]);
+ok(r.rows?.[0]?.v === false, 'para o visitante, a regra de visibilidade sempre responde "não"');
+
+// avaliações
+r = await as('anon', '', 'SELECT * FROM public.reviews');
+ok(!r.err && r.rows.length === 0, 'visitante não lê a tabela de avaliações (quem avaliou e qual reserva)');
+r = await as('authenticated', XS, 'SELECT * FROM public.reviews');
+ok(!r.err && r.rows.length === 0, 'conta sem relação não lê avaliações dos outros');
+r = await as('authenticated', PA, 'SELECT id FROM public.reviews WHERE reviewer_id = $1', [pPA]);
+ok(r.rows?.length >= 1, 'quem avaliou vê a própria avaliação');
+r = await as('authenticated', PO, 'SELECT id FROM public.reviews WHERE professional_id = $1', [pPO]);
+ok(r.rows?.length >= 1, 'organizador vê as avaliações que recebeu');
+r = await as('anon', '', 'SELECT * FROM public.public_reviews($1)', [pPO]);
+const pubRev = r.rows?.[0];
+ok(pubRev && pubRev.reviewer_name === 'Ana S.' && !('reviewer_id' in pubRev) && !('booking_id' in pubRev),
+  'vitrine pública mostra a avaliação com primeiro nome e inicial, sem quem avaliou nem a reserva' + (r.err ? ` (${r.err})` : ''));
+await q('UPDATE public.profiles SET sports_hidden = true WHERE id = $1', [pPA]);
+r = await as('anon', '', 'SELECT reviewer_name, reviewer_avatar FROM public.public_reviews($1)', [pPO]);
+ok(r.rows?.[0]?.reviewer_name === 'Participante' && r.rows[0].reviewer_avatar === null, 'modo reservado aparece como "Participante", sem foto, na vitrine');
+await q('UPDATE public.profiles SET sports_hidden = false WHERE id = $1', [pPA]);
+r = await as('anon', '', 'SELECT * FROM public.public_reviews($1)', [pPA]);
+ok(!r.err && r.rows.length === 0, 'avaliações só saem para perfil de organizador');
+
 // ── Higiene de segurança (verificador do Supabase) ─────────────────────
 console.log('Higiene de segurança:');
 const noPath = (await q(`SELECT p.proname FROM pg_proc p WHERE p.pronamespace = 'public'::regnamespace

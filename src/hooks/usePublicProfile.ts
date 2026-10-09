@@ -11,12 +11,11 @@ export function usePublicProfile(slugOrId: string) {
   return useQuery({
     queryKey: ['public-profile', slugOrId],
     queryFn: async () => {
-      // Try by slug first, fallback to ID
+      // Try by slug first, fallback to ID (perfil excluído o banco já esconde)
       let { data: profile } = await supabase
         .from('profiles')
         .select('id, full_name, avatar_url, bio, city, state, role, professional_type, credential_type, credential_number, credential_verified, specialties, experience_years, public_slug, instagram_handle, rating_avg, total_reviews, total_sessions_given, total_students_served')
         .eq('public_slug', slugOrId)
-        .is('deleted_at', null)
         .single();
 
       if (!profile && slugOrId.includes('-')) {
@@ -24,7 +23,6 @@ export function usePublicProfile(slugOrId: string) {
           .from('profiles')
           .select('id, full_name, avatar_url, bio, city, state, role, professional_type, credential_type, credential_number, credential_verified, specialties, experience_years, public_slug, instagram_handle, rating_avg, total_reviews, total_sessions_given, total_students_served')
           .eq('id', slugOrId)
-          .is('deleted_at', null)
           .single();
         profile = profileById;
       }
@@ -48,15 +46,15 @@ export function usePublicProfile(slugOrId: string) {
         .order('date', { ascending: true })
         .order('start_time', { ascending: true });
 
-      // Fetch reviews
-      const { data: reviews } = await supabase
-        .from('reviews')
-        .select(`
-          id, rating, comment, created_at,
-          reviewer:profiles!reviews_reviewer_id_fkey(full_name, avatar_url)
-        `)
-        .eq('professional_id', profile.id)
-        .order('created_at', { ascending: false });
+      // Avaliações da vitrine: sem quem avaliou nem a reserva (só primeiro nome e foto)
+      const { data: publicReviews } = await supabase.rpc('public_reviews', { p_professional: profile.id, p_limit: 20 });
+      const reviews = (publicReviews ?? []).map((r) => ({
+        id: r.id,
+        rating: r.rating,
+        comment: r.comment,
+        created_at: r.created_at,
+        reviewer: { full_name: r.reviewer_name, avatar_url: r.reviewer_avatar },
+      }));
 
       return {
         profile,
