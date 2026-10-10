@@ -10,7 +10,7 @@ import { supabase } from '@riff/core/supabase/client';
 import { Button } from '@riff/core/ui/button';
 import { Input } from '@riff/core/ui/input';
 import { Textarea } from '@riff/core/ui/textarea';
-import { Avatar, ConfirmDialog, EmptyState, TicketGrid } from '@riff/core/domain';
+import { Avatar, ConfirmDialog, EmptyState, ModerationActions, TicketGrid } from '@riff/core/domain';
 import { HeroHeader } from '@riff/core/layout/HeroHeader';
 import { StickyActions } from '@riff/core/layout/StickyActions';
 import { useProSessions } from '@/hooks/useProSessions';
@@ -59,6 +59,7 @@ export default function SessionAttendance() {
           id, title, date, start_time, status, kind,
           bookings(
             id, status, payment_status, attendance_status,
+            student_id,
             student:profiles!bookings_student_id_fkey(full_name, avatar_url)
           )
         `)
@@ -237,6 +238,11 @@ export default function SessionAttendance() {
                         {b.payment_status === 'free' ? 'Gratuito' : b.payment_status === 'paid' ? 'Pago' : 'Pagamento pendente'}
                       </p>
                     </div>
+                    <ModerationActions
+                      className="justify-end shrink-0"
+                      report={{ kind: 'profile', id: b.student_id }}
+                      block={{ profileId: b.student_id, name: name.split(' ')[0] }}
+                    />
                   </div>
 
                   {editable && row && (

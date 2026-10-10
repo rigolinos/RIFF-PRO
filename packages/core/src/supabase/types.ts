@@ -1493,6 +1493,21 @@ export type Database = {
         Args: { p_action: string; p_org: string; p_profile: string }
         Returns: Json
       }
+      block_profile: { Args: { p_profile: string }; Returns: undefined }
+      unblock_profile: { Args: { p_profile: string }; Returns: undefined }
+      report_content: {
+        Args: { p_details?: string; p_kind: string; p_reason: string; p_target: string }
+        Returns: string
+      }
+      my_blocks: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          blocked_at: string
+          name: string
+          profile_id: string
+        }[]
+      }
       my_organizer_missing: { Args: never; Returns: string[] }
       my_pro_sports_profile: { Args: never; Returns: Json }
       now_sp: { Args: never; Returns: string }

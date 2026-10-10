@@ -101,6 +101,12 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess, screen }: C
         p_attribution: attribution,
       });
 
+      // bloqueio entre a pessoa e quem organiza (de qualquer lado): mensagem neutra, sem dizer quem bloqueou
+      if (error?.message.includes('blocked')) {
+        toast.error('Esta atividade não está disponível para você.');
+        onClose();
+        return;
+      }
       if (error) throw error;
 
       const response = data as { success: boolean; code: string; booking_id?: string };

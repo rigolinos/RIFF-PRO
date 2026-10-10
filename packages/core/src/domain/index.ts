@@ -12,3 +12,5 @@ export * from './TicketGrid';
 export * from './FormStep';
 export * from './WeekStrip';
 export * from './AchievementList';
+export * from './ReportDialog';
+export * from './ModerationActions';
