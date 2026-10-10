@@ -429,6 +429,66 @@ export type Database = {
           },
         ]
       }
+      content_reports: {
+        Row: {
+          created_at: string
+          details: string | null
+          id: string
+          product: string
+          reason: string
+          reported_profile_id: string | null
+          reporter_id: string
+          resolution_note: string | null
+          resolved_at: string | null
+          status: string
+          target_id: string
+          target_kind: string
+        }
+        Insert: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          product?: string
+          reason: string
+          reported_profile_id?: string | null
+          reporter_id: string
+          resolution_note?: string | null
+          resolved_at?: string | null
+          status?: string
+          target_id: string
+          target_kind: string
+        }
+        Update: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          product?: string
+          reason?: string
+          reported_profile_id?: string | null
+          reporter_id?: string
+          resolution_note?: string | null
+          resolved_at?: string | null
+          status?: string
+          target_id?: string
+          target_kind?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_reports_reported_profile_id_fkey"
+            columns: ["reported_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_reports_reporter_id_fkey"
+            columns: ["reporter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dependents: {
         Row: {
           birth_date: string | null
@@ -802,6 +862,39 @@ export type Database = {
             columns: ["main_venue_id"]
             isOneToOne: false
             referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profile_blocks: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id: string
+          created_at?: string
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_blocks_blocked_id_fkey"
+            columns: ["blocked_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_blocks_blocker_id_fkey"
+            columns: ["blocker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1345,6 +1438,24 @@ export type Database = {
           units: number
         }[]
       }
+      admin_list_reports: {
+        Args: { p_status?: string }
+        Returns: {
+          content: string
+          created_at: string
+          details: string
+          id: string
+          product: string
+          reason: string
+          reported: string
+          reported_profile_id: string
+          reporter: string
+          reports_on_author: number
+          status: string
+          target_id: string
+          target_kind: string
+        }[]
+      }
       admin_promote_sport: {
         Args: { p_name: string; p_official_name?: string; p_slug: string }
         Returns: number
@@ -1352,6 +1463,10 @@ export type Database = {
       admin_reject_community_request: {
         Args: { p_note?: string; p_request: string }
         Returns: undefined
+      }
+      admin_resolve_report: {
+        Args: { p_action: string; p_note?: string; p_report: string }
+        Returns: string
       }
       admin_set_community_location: {
         Args: {
@@ -1398,6 +1513,7 @@ export type Database = {
         }
         Returns: Json
       }
+      block_profile: { Args: { p_profile: string }; Returns: undefined }
       calculate_professional_rating: {
         Args: { pro_id: string }
         Returns: number
@@ -1493,12 +1609,6 @@ export type Database = {
         Args: { p_action: string; p_org: string; p_profile: string }
         Returns: Json
       }
-      block_profile: { Args: { p_profile: string }; Returns: undefined }
-      unblock_profile: { Args: { p_profile: string }; Returns: undefined }
-      report_content: {
-        Args: { p_details?: string; p_kind: string; p_reason: string; p_target: string }
-        Returns: string
-      }
       my_blocks: {
         Args: never
         Returns: {
@@ -1570,6 +1680,15 @@ export type Database = {
         }[]
       }
       remove_dependent: { Args: { p_dependent: string }; Returns: undefined }
+      report_content: {
+        Args: {
+          p_details?: string
+          p_kind: string
+          p_reason: string
+          p_target: string
+        }
+        Returns: string
+      }
       request_to_join: { Args: { p_org: string }; Returns: undefined }
       resolve_venue: {
         Args: {
@@ -1643,6 +1762,7 @@ export type Database = {
         Returns: undefined
       }
       tax_id_kind: { Args: { p_value: string }; Returns: string }
+      unblock_profile: { Args: { p_profile: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

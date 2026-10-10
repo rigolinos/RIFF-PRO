@@ -12,7 +12,8 @@ import { KINDS, type ActivityKind } from '@riff/core/lib/copy';
 import { chipClass } from '@riff/core/lib/chips';
 import { cn } from '@riff/core/lib/utils';
 import { ModeSwitcher } from '@/components/layout/ModeSwitcher';
-import { useSessions } from '@/hooks/useSessions';
+import { FEED_PAGE, useFeed } from '@/hooks/useSessions';
+import { Button } from '@riff/core/ui/button';
 import { useBlockedIds } from '@riff/core/hooks/useModeration';
 import { useCategories } from '@/hooks/useCategories';
 import { SessionRow } from '@/components/cards/SessionRow';
@@ -62,7 +63,9 @@ function Rows({ items, showDay, showCity, highlight }: { items: SessionWithJoins
 export const Feed = () => {
   const navigate = useNavigate();
   const { profile } = useProfile();
-  const { feed: sessions, isLoadingFeed, isErrorFeed, errorFeed } = useSessions();
+  const [limit, setLimit] = useState(FEED_PAGE);
+  const { data: feed, isLoading: isLoadingFeed, isFetching: isFetchingFeed, isError: isErrorFeed, error: errorFeed } = useFeed(limit);
+  const sessions = feed?.sessions;
   if (isErrorFeed && errorFeed) console.error('Error fetching feed:', errorFeed);
   const { data: categories } = useCategories();
   const blockedIds = useBlockedIds();
@@ -220,6 +223,13 @@ export const Feed = () => {
               </Section>
             )}
           </>
+        )}
+        {!day && feed?.hasMore && (
+          <div className="px-4">
+            <Button variant="secondary" className="w-full" disabled={isFetchingFeed} onClick={() => setLimit((n) => n + FEED_PAGE)}>
+              {isFetchingFeed ? 'Carregando...' : 'Ver mais atividades'}
+            </Button>
+          </div>
         )}
       </div>
     </PageContainer>
