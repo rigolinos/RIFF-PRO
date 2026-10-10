@@ -10,7 +10,7 @@ import { useAuth } from '@riff/core/hooks/useAuth';
 import { useProfile } from '@riff/core/hooks/useProfile';
 import { HeroHeader, HeroIconButton } from '@riff/core/layout/HeroHeader';
 import { StickyActions } from '@riff/core/layout/StickyActions';
-import { Avatar, PriceTag, RatingBadge, SportIcon, SpotsMeter, StatusPill, TicketGrid } from '@riff/core/domain';
+import { Avatar, ModerationActions, PriceTag, RatingBadge, SportIcon, SpotsMeter, StatusPill, TicketGrid } from '@riff/core/domain';
 import { Button } from '@riff/core/ui/button';
 import { KINDS, type ActivityKind } from '@riff/core/lib/copy';
 import { activityPhase, nowSP, PHASE_LABEL } from '@riff/core/lib/activityTime';
@@ -282,6 +282,14 @@ const SessionDetails = () => {
             </Link>
           </p>
         </section>
+
+        {!isOrganizer && (
+          <ModerationActions
+            report={{ kind: 'session', id: session.id }}
+            block={{ profileId: pro.id, name: pro.full_name?.split(' ')[0] ?? 'quem organiza' }}
+            onNeedLogin={user ? undefined : () => navigate(`/login?redirect=/session/${session.id}`)}
+          />
+        )}
       </div>
 
       {/* Ações fixas */}

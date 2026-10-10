@@ -42,6 +42,7 @@ import { ModeSwitcher } from '@/components/layout/ModeSwitcher';
 import { uploadAvatar } from '@riff/core/lib/avatar';
 import { BRAND } from '@/brand';
 import { SportsProfileSection } from '@/components/profile/SportsProfileSection';
+import { BlockedPeople } from '@/components/profile/BlockedPeople';
 import { useViewMode } from '@/contexts/ViewModeContext';
 import { useMySportsProfile } from '@/hooks/useSportsProfile';
 
@@ -346,6 +347,8 @@ export default function ProfileEdit() {
             {isUpdating ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Salvar alterações'}
           </Button>
         </form>
+
+        <BlockedPeople />
 
         <section className="space-y-2">
           <h2 className="type-label px-2">Conta</h2>

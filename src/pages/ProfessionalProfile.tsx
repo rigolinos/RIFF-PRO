@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Star, CheckCircle2, AlertCircle, Share2, AtSign } from 'lucide-react';
+import { Star, CheckCircle2, AlertCircle, Share2, AtSign, Flag } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { toast } from 'sonner';
 import { BRAND } from '@/brand';
@@ -12,7 +12,10 @@ import { CheckoutModal } from '@/components/checkout/CheckoutModal';
 import { Button } from '@riff/core/ui/button';
 import { HeroHeader, HeroIconButton } from '@riff/core/layout/HeroHeader';
 import { StickyActions } from '@riff/core/layout/StickyActions';
-import { Avatar, RatingBadge, EmptyState, TicketGrid } from '@riff/core/domain';
+import { Avatar, RatingBadge, EmptyState, TicketGrid, ModerationActions, ReportDialog } from '@riff/core/domain';
+import { useAuth } from '@riff/core/hooks/useAuth';
+import { useProfile } from '@riff/core/hooks/useProfile';
+import { useBlockedIds } from '@riff/core/hooks/useModeration';
 import type { SessionWithJoins } from '@/types/session';
 
 export default function ProfessionalProfile() {
@@ -23,8 +26,12 @@ export default function ProfessionalProfile() {
   
   const [selectedSession, setSelectedSession] = useState<NonNullable<typeof sessions>[number] | null>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const { user } = useAuth();
+  const { profile: me } = useProfile();
+  const blockedIds = useBlockedIds();
+  const [reportingReview, setReportingReview] = useState<string | null>(null);
 
-  if (handle && !handle.startsWith('@')) return <Navigate to="/404" replace />;
+  if (handle &&!handle.startsWith('@')) return <Navigate to="/404" replace />;
   if (isLoading) {
     return (
       <div className="min-h-screen bg-bg flex items-center justify-center">
@@ -60,6 +67,10 @@ export default function ProfessionalProfile() {
   const { profile, sessions, reviews } = data;
   const specialties = Array.isArray(profile.specialties) ? profile.specialties : [];
   type Review = { id: string; rating: number; comment: string | null; reviewer?: { full_name?: string | null; avatar_url?: string | null } | null };
+
+  const isMine = me?.id === profile.id;
+  const isBlocked = blockedIds.has(profile.id);
+  const needLogin = user ? undefined : () => navigate(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
 
   const handleBookClick = (session: NonNullable<typeof sessions>[number]) => {
     setSelectedSession(session);
@@ -194,7 +205,7 @@ export default function ProfessionalProfile() {
                 <div key={review.id} className="snap-center w-[280px] shrink-0 bg-surface rounded-2xl p-4 border border-line flex flex-col gap-3">
                   <div className="flex items-center gap-3">
                     <Avatar src={review.reviewer?.avatar_url} name={review.reviewer?.full_name} className="w-10 h-10" />
-                    <div>
+                    <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-ink">{review.reviewer?.full_name?.split(' ')[0] || 'Participante'}</p>
                       <div className="flex gap-0.5 mt-0.5">
                         {[1, 2, 3, 4, 5].map((star) => (
@@ -202,16 +213,33 @@ export default function ProfessionalProfile() {
                         ))}
                       </div>
                     </div>
+                    <button
+                      type="button"
+                      aria-label="Denunciar avaliação"
+                      onClick={() => (needLogin ? needLogin() : setReportingReview(review.id))}
+                      className="w-11 h-11 -mr-2 -mt-2 flex items-center justify-center text-ink-muted active:text-ink shrink-0"
+                    >
+                      <Flag className="w-4 h-4" />
+                    </button>
                   </div>
-                  {review.comment && <p className="text-sm text-ink-muted leading-relaxed flex-1">"{review.comment}"</p>}
+                  {review.comment &&<p className="text-sm text-ink-muted leading-relaxed flex-1">"{review.comment}"</p>}
                 </div>
               ))}
             </div>
           </section>
         )}
-      </div>
 
-      {nextSession && (
+        {!isMine && (
+          <ModerationActions
+            report={{ kind: 'profile', id: profile.id }}
+            block={{ profileId: profile.id, name: profile.full_name?.split(' ')[0] ?? 'Esta pessoa' }}
+            onNeedLogin={needLogin}
+          />
+        )}
+      </div>
+      <ReportDialog target={reportingReview ? { kind: 'review', id: reportingReview } : null} onClose={() => setReportingReview(null)} />
+
+      {nextSession && !isBlocked && (
         <StickyActions>
           <Button size="lg" className="w-full shadow-[var(--shadow-cta)]" onClick={() => handleBookClick(nextSession)}>
             Reservar: {nextSession.title}

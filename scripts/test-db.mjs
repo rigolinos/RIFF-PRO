@@ -1217,6 +1217,108 @@ ok(!r.err && r.rows.length === 0, 'visitante não lista os arquivos de fotos');
 r = await as('authenticated', PA, "DELETE FROM storage.objects WHERE bucket_id = 'avatars' RETURNING id");
 ok(!r.err && r.rows.length === 0, 'ninguém apaga a foto de outra pessoa');
 
+// ── Denunciar e bloquear (migration 0027) ───────────────────────────────
+console.log('Denunciar e bloquear:');
+await ex("SELECT set_config('request.jwt.claim.sub', '', false)");
+const MO = 'a1a1a1a1-0000-0000-0000-000000000027';
+const MP = 'a2a2a2a2-0000-0000-0000-000000000027';
+const MX = 'a3a3a3a3-0000-0000-0000-000000000027';
+const pMO = await newUser(MO, 'mod-org@teste.dev', 'Olga Moderada', 'professional');
+const pMP = await newUser(MP, 'mod-part@teste.dev', 'Paulo Moderado', 'student');
+const pMX = await newUser(MX, 'mod-x@teste.dev', 'Xavier Terceiro', 'student');
+const modPast = await newSession(pMO, -2, 'Quadra Mod', null, 'outdoor', 'completed');
+const modNext = await newSession(pMO, 6, 'Quadra Mod');
+const modBooking = await newBooking(modPast, pMP, pMO, 'completed', 'true');
+const modReview = (await one(`INSERT INTO public.reviews (booking_id, session_id, professional_id, reviewer_id, rating, comment, tags)
+  VALUES ($1, $2, $3, $4, 1, 'Texto ofensivo', ARRAY['pontual']) RETURNING id`, [modBooking, modPast, pMO, pMP])).id;
+const sendReport = (uid, kind, target, reason = 'offensive', details = null) =>
+  as('authenticated', uid, 'SELECT public.report_content($1, $2, $3, $4) AS id', [kind, target, reason, details]);
+
+r = await as('anon', '', "SELECT public.report_content('profile', $1, 'spam')", [pMO]);
+ok(!!r.err, 'visitante não denuncia');
+r = await sendReport(MP, 'profile', pMO, 'fraud', '  Pediu Pix e não apareceu  ');
+const rep1 = r.rows?.[0]?.id;
+ok(!!rep1, 'participante denuncia o perfil de um organizador' + (r.err ? ` (${r.err})` : ''));
+const repRow = await one('SELECT reported_profile_id, product, details, status FROM public.content_reports WHERE id = $1', [rep1]);
+ok(repRow?.reported_profile_id === pMO && repRow.details === 'Pediu Pix e não apareceu' && repRow.status === 'open', 'denúncia guarda quem foi denunciado e o texto sem espaços sobrando');
+r = await sendReport(MP, 'profile', pMO, 'spam');
+ok(r.rows?.[0]?.id === rep1, 'denunciar de novo o mesmo conteúdo devolve a mesma denúncia');
+r = await sendReport(MP, 'profile', pMP);
+ok(/own_content/.test(r.err ?? ''), 'ninguém denuncia o próprio conteúdo');
+r = await sendReport(MX, 'profile', pMP);
+ok(/not_found/.test(r.err ?? ''), 'não dá para denunciar perfil que a pessoa não vê');
+r = await sendReport(MX, 'profile', pMO, 'qualquer');
+ok(/invalid_reason/.test(r.err ?? ''), 'motivo fora da lista é recusado');
+r = await sendReport(MX, 'review', modReview, 'offensive');
+const rep2 = r.rows?.[0]?.id;
+ok(!!rep2 && (await one('SELECT reported_profile_id p FROM public.content_reports WHERE id = $1', [rep2])).p === pMP, 'denúncia de avaliação aponta para quem escreveu');
+r = await sendReport(MX, 'session', modNext, 'safety');
+const rep3 = r.rows?.[0]?.id;
+ok(!!rep3 && (await one('SELECT reported_profile_id p FROM public.content_reports WHERE id = $1', [rep3])).p === pMO, 'denúncia de atividade aponta para quem organiza');
+r = await as('authenticated', MP, 'SELECT id FROM public.content_reports');
+ok(r.rows?.length === 1 && r.rows[0].id === rep1, 'quem denunciou vê só a própria denúncia');
+r = await as('authenticated', MO, 'SELECT id FROM public.content_reports');
+ok(!r.err && r.rows.length === 0, 'quem foi denunciado não vê a denúncia nem quem denunciou');
+r = await as('authenticated', MP, "INSERT INTO public.content_reports (reporter_id, target_kind, target_id, reason) VALUES ($1, 'profile', $2, 'spam')", [pMP, pMX]);
+ok(!!r.err, 'denúncia não entra direto na tabela, só pela função');
+await q(`INSERT INTO public.content_reports (reporter_id, target_kind, target_id, reason, status)
+  SELECT $1, 'profile', gen_random_uuid(), 'spam', 'dismissed' FROM generate_series(1, 10)`, [pMP]);
+r = await sendReport(MP, 'session', modNext);
+ok(/too_many/.test(r.err ?? ''), 'limite de 10 denúncias por dia por pessoa');
+
+// bloqueio
+const bookPro = (uid, session) => as('authenticated', uid, 'SELECT public.create_booking($1) AS r', [session]);
+r = await as('authenticated', MO, 'SELECT public.block_profile($1)', [pMX]);
+ok(/not_found/.test(r.err ?? ''), 'não dá para bloquear participante que a pessoa não vê');
+r = await as('authenticated', MO, 'SELECT public.block_profile($1)', [pMO]);
+ok(/own_profile/.test(r.err ?? ''), 'ninguém bloqueia a si mesmo');
+r = await bookPro(MX, modNext);
+const mxBooking = r.rows?.[0]?.r?.booking_id;
+ok(r.rows?.[0]?.r?.success, 'sem bloqueio, a reserva entra' + (r.err ? ` (${r.err})` : ''));
+await q("UPDATE public.bookings SET status = 'cancelled_by_student', cancelled_at = now() WHERE id = $1", [mxBooking]);
+r = await as('authenticated', MO, 'SELECT public.block_profile($1)', [pMX]);
+ok(!r.err, 'organizador bloqueia quem reservou com ele' + (r.err ? ` (${r.err})` : ''));
+r = await as('authenticated', MO, 'SELECT public.block_profile($1)', [pMX]);
+ok(!r.err && (await count('SELECT count(*)::int n FROM public.profile_blocks WHERE blocker_id = $1', [pMO])) === 1, 'bloquear duas vezes não duplica');
+r = await bookPro(MX, modNext);
+ok(/blocked/.test(r.err ?? ''), 'pessoa bloqueada pelo organizador não reserva de novo (nem reativando reserva cancelada)');
+r = await as('authenticated', MX, 'SELECT * FROM public.profile_blocks');
+ok(!r.err && r.rows.length === 0, 'a pessoa bloqueada não fica sabendo do bloqueio');
+r = await as('authenticated', MO, 'SELECT * FROM public.my_blocks()');
+ok(r.rows?.length === 1 && r.rows[0].profile_id === pMX && r.rows[0].name === 'Xavier T.', 'quem bloqueou vê a lista, com o participante só pelo primeiro nome');
+r = await as('authenticated', MO, 'SELECT public.unblock_profile($1)', [pMX]);
+r = await bookPro(MX, modNext);
+ok(r.rows?.[0]?.r?.success, 'depois de desbloquear, a reserva volta a entrar' + (r.err ? ` (${r.err})` : ''));
+r = await as('authenticated', MP, 'SELECT public.block_profile($1)', [pMO]);
+r = await bookPro(MP, modNext);
+ok(/blocked/.test(r.err ?? ''), 'quem bloqueou o organizador também não reserva com ele');
+r = await as('authenticated', MP, "INSERT INTO public.profile_blocks (blocker_id, blocked_id) VALUES ($1, $2)", [pMP, pMX]);
+ok(!!r.err, 'bloqueio não entra direto na tabela, só pela função');
+await q('UPDATE public.profiles SET deleted_at = now() WHERE id = $1', [pMP]);
+ok((await count('SELECT count(*)::int n FROM public.profile_blocks WHERE blocker_id = $1 OR blocked_id = $1', [pMP])) === 0, 'conta excluída: os bloqueios dela saem');
+await q('UPDATE public.profiles SET deleted_at = NULL WHERE id = $1', [pMP]);
+
+// moderação (equipe Riff)
+r = await as('authenticated', MO, 'SELECT * FROM public.admin_list_reports()');
+ok(!!r.err, 'conta comum não lista as denúncias');
+r = await as('authenticated', MO, "SELECT public.admin_resolve_report($1, 'dismiss')", [rep1]);
+ok(!!r.err, 'conta comum não resolve denúncia');
+const openReports = (await q('SELECT * FROM public.admin_list_reports()')).rows;
+ok(openReports.length === 3 && openReports.find((x) => x.id === rep2)?.content === 'Texto ofensivo' && openReports.find((x) => x.id === rep1)?.reporter === 'Paulo Moderado',
+  `equipe Riff lista as denúncias abertas com o conteúdo e quem denunciou (${openReports.length})`);
+await q("SELECT public.admin_resolve_report($1, 'dismiss', 'sem prova')", [rep1]);
+ok((await one('SELECT status s FROM public.content_reports WHERE id = $1', [rep1])).s === 'dismissed', 'arquivar marca a denúncia como não procedente');
+await q("SELECT public.admin_resolve_report($1, 'remove')", [rep2]);
+const modRev = await one('SELECT rating, comment, tags FROM public.reviews WHERE id = $1', [modReview]);
+ok(modRev.comment === null && modRev.tags === null && modRev.rating === 1, 'remover avaliação tira o texto e os destaques (a nota fica)');
+await q("SELECT public.admin_resolve_report($1, 'remove', 'local perigoso')", [rep3]);
+ok((await one('SELECT status s FROM public.sessions WHERE id = $1', [modNext])).s === 'cancelled'
+  && (await count("SELECT count(*)::int n FROM public.bookings WHERE session_id = $1 AND status IN ('pending', 'confirmed')", [modNext])) === 0,
+  'remover atividade cancela a atividade e as reservas dela');
+let resolvedErr = '';
+try { await q("SELECT public.admin_resolve_report($1, 'remove')", [rep3]); } catch (e) { resolvedErr = e.message; }
+ok(/já resolvida/.test(resolvedErr), 'denúncia resolvida não é resolvida de novo');
+
 // ── Superfície do visitante sem login (auditoria de 09/10/2026) ─────────
 // Se uma migration nova abrir algo para quem não está logado, estes testes falham.
 // Para abrir de propósito, atualize a lista aqui e explique no PR.

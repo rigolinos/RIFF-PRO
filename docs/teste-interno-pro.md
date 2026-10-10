@@ -70,6 +70,9 @@ Use duas contas em dois celulares (ou um celular e um computador): uma organiza,
 1. Perfil > Termos e Política abrem e dá para voltar.
 2. Excluir a conta (digitar EXCLUIR). Depois: o login não funciona mais, o perfil público some, as reservas futuras ficam canceladas para o organizador.
 3. `https://riff-pro.vercel.app/excluir-conta` abre sem login.
+4. Denunciar: no perfil de um organizador, numa atividade e numa avaliação (bandeirinha), escolher o motivo e enviar. Aparece "Denúncia enviada".
+5. Bloquear um organizador: as atividades dele somem do Início e do Explorar, e não dá mais para reservar com ele. Em Perfil > Pessoas bloqueadas, desbloquear e conferir que volta.
+6. Como organizador, em "Inscritos e presença", bloquear um participante: ele não consegue reservar de novo (vê "Esta atividade não está disponível para você").
 
 ### E. Coisas de aparelho
 

@@ -12,6 +12,7 @@ import { chipClass } from '@riff/core/lib/chips';
 import { cn } from '@riff/core/lib/utils';
 import { activityPhase, nowSP } from '@riff/core/lib/activityTime';
 import { sportMatches } from '@riff/core/lib/sportSearch';
+import { useBlockedIds } from '@riff/core/hooks/useModeration';
 import { useCategories } from '@/hooks/useCategories';
 import { SessionRow } from '@/components/cards/SessionRow';
 import type { SessionWithJoins } from '@/types/session';
@@ -45,6 +46,7 @@ export default function Explore() {
   const [sport, setSport] = useState<string | null>(null);
   const debounced = clean(useDebounce(searchTerm, 400));
   const { data: categories } = useCategories();
+  const blockedIds = useBlockedIds();
 
   // esportes que batem com o texto ("tennis" acha Tênis): as atividades deles entram no resultado
   const matchedSports = debounced ? (categories ?? []).filter((c) => sportMatches(c, debounced)).map((c) => c.id) : [];
@@ -100,8 +102,9 @@ export default function Explore() {
 
   const isLoading = (wantActivities && activities.isLoading) || (wantOrganizers && organizers.isLoading);
   const isError = (wantActivities && activities.isError) || (wantOrganizers && organizers.isError);
-  const acts = wantActivities ? (activities.data ?? []) : [];
-  const orgs = wantOrganizers ? (organizers.data ?? []) : [];
+  // quem a pessoa bloqueou não aparece nos resultados
+  const acts = (wantActivities ? (activities.data ?? []) : []).filter((s) => !s.professional?.id || !blockedIds.has(s.professional.id));
+  const orgs = (wantOrganizers ? (organizers.data ?? []) : []).filter((o) => !blockedIds.has(o.id));
   const sportName = categories?.find((c) => c.id === sport)?.name;
 
   return (

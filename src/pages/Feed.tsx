@@ -13,6 +13,7 @@ import { chipClass } from '@riff/core/lib/chips';
 import { cn } from '@riff/core/lib/utils';
 import { ModeSwitcher } from '@/components/layout/ModeSwitcher';
 import { useSessions } from '@/hooks/useSessions';
+import { useBlockedIds } from '@riff/core/hooks/useModeration';
 import { useCategories } from '@/hooks/useCategories';
 import { SessionRow } from '@/components/cards/SessionRow';
 import { ReviewPrompt } from '@/components/reviews/ReviewPrompt';
@@ -64,6 +65,7 @@ export const Feed = () => {
   const { feed: sessions, isLoadingFeed, isErrorFeed, errorFeed } = useSessions();
   if (isErrorFeed && errorFeed) console.error('Error fetching feed:', errorFeed);
   const { data: categories } = useCategories();
+  const blockedIds = useBlockedIds();
 
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedKind, setSelectedKind] = useState<ActivityKind | 'all'>('all');
@@ -71,10 +73,12 @@ export const Feed = () => {
 
   const filtered = useMemo(() => {
     let result = (sessions ?? []) as unknown as SessionWithJoins[];
+    // quem a pessoa bloqueou não aparece na lista
+    if (blockedIds.size) result = result.filter((s) => !s.professional?.id || !blockedIds.has(s.professional.id));
     if (selectedCategory !== 'all') result = result.filter((s) => s.category_id === selectedCategory);
     if (selectedKind !== 'all') result = result.filter((s) => s.kind === selectedKind);
     return result;
-  }, [sessions, selectedCategory, selectedKind]);
+  }, [sessions, selectedCategory, selectedKind, blockedIds]);
 
   // Cidade da pessoa primeiro; as outras cidades vêm numa seção abaixo.
   const myCity = normalizeCity(profile?.city);
