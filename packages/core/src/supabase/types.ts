@@ -1618,6 +1618,10 @@ export type Database = {
           profile_id: string
         }[]
       }
+      log_client_error: {
+        Args: { p_app: string; p_message: string; p_route?: string; p_stack?: string; p_user_agent?: string }
+        Returns: undefined
+      }
       my_organizer_missing: { Args: never; Returns: string[] }
       my_pro_sports_profile: { Args: never; Returns: Json }
       now_sp: { Args: never; Returns: string }
