@@ -21,6 +21,7 @@ const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
 const LegalPage = lazy(() => import('@/pages/LegalPage'));
 const AcceptTerms = lazy(() => import('@/pages/AcceptTerms'));
+const DeleteAccountInfo = lazy(() => import('@/pages/DeleteAccountInfo'));
 
 // Pages - App Core
 const OnboardingPro = lazy(() => import('@/pages/OnboardingPro'));
@@ -70,6 +71,7 @@ function App() {
               <Route path="/termos" element={<LegalPage />} />
               <Route path="/termos-organizador" element={<LegalPage />} />
               <Route path="/privacidade" element={<LegalPage />} />
+              <Route path="/excluir-conta" element={<DeleteAccountInfo />} />
               <Route path="/aceite" element={<ProtectedRoute skipLegal><AcceptTerms /></ProtectedRoute>} />
               
               {/* Public Profiles & Sessions */}

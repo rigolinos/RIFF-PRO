@@ -34,6 +34,8 @@ export interface LegalDocument {
 
 const COMPANY = '[Razão social], inscrita no CNPJ sob o nº [CNPJ]';
 const CONTACT = '[E-MAIL DE CONTATO]';
+/** Contato para pedidos sobre dados (usado também na página pública de exclusão de conta) */
+export const LEGAL_CONTACT = CONTACT;
 
 export const LEGAL_DOCUMENTS: Record<ProLegalDocumentId, LegalDocument> = {
   terms: {
