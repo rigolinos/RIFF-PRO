@@ -58,9 +58,9 @@ Ponte entre os dois: condomínios e clubes precisam de instrutores, e os organiz
 - **Branch + PR com preview. Nunca push direto na `main`.** Lotes pequenos.
 - **Nada está "feito" sem o comando e a saída que provam.** Em todo PR, colar a saída de:
   ```bash
-  npm run lint && npm run check:ds && npm run check:encoding && npm run test:db && npm run build
+  npm run lint && npm run check:ds && npm run check:encoding && npm run test:db && npm test && npm run build
   ```
-  O lint usa `--deny-warnings`: qualquer aviso quebra o CI. O `test:db` aplica todas as migrations num Postgres em memória (PGlite, `scripts/test-db.mjs`) e testa as regras críticas; toda migration nova precisa passar nele e, se mexer em regra de negócio, ganhar um teste ali.
+  O lint usa `--deny-warnings`: qualquer aviso quebra o CI. O `npm test` (vitest, `tests/`) cobre as regras do front que espelham o banco (CPF/CNPJ, idade, senha, situação da atividade, busca de esporte, convite); regra nova desse tipo ganha um teste ali. O `test:db` aplica todas as migrations num Postgres em memória (PGlite, `scripts/test-db.mjs`) e testa as regras críticas; toda migration nova precisa passar nele e, se mexer em regra de negócio, ganhar um teste ali.
 - **Migrations:**
   - Nunca aplicar em nenhum banco sem antes dizer qual banco é e esperar o OK do dono do produto.
   - Não apagar coluna de dados pessoais sem confirmação.
