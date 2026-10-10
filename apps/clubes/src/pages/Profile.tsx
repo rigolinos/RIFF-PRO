@@ -8,7 +8,7 @@ import { supabase } from '@riff/core/supabase/client';
 import { useAuth } from '@riff/core/hooks/useAuth';
 import { useProfile } from '@riff/core/hooks/useProfile';
 import { PageContainer } from '@riff/core/layout/PageContainer';
-import { Avatar, BrandLines } from '@riff/core/domain';
+import { Avatar, BlockedPeople, BrandLines } from '@riff/core/domain';
 import { Button } from '@riff/core/ui/button';
 import { Input } from '@riff/core/ui/input';
 import { Switch } from '@riff/core/ui/switch';
@@ -163,6 +163,8 @@ export default function Profile() {
 
       <div className="px-6 py-6 space-y-6">
         {sports && <SportsProfileView p={sports} self />}
+
+        <BlockedPeople />
 
         <section className="space-y-2">
           <h2 className="type-label">Conta</h2>

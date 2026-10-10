@@ -1,8 +1,8 @@
 import { toast } from 'sonner';
-import { Avatar } from '@riff/core/domain';
 import { Button } from '@riff/core/ui/button';
 import { useBlockProfile, useMyBlocks } from '@riff/core/hooks/useModeration';
 import { moderationError } from '@riff/core/lib/moderation';
+import { Avatar } from './Avatar';
 
 /** Pessoas que eu bloqueei, com "Desbloquear". Só aparece quando há alguém na lista. */
 export function BlockedPeople() {

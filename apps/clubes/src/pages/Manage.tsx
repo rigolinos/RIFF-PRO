@@ -53,7 +53,7 @@ export default function Manage() {
   const { manageMember, revokeInvite } = useManageActions(orgId);
   const [toRemove, setToRemove] = useState<{ id: string; name: string } | null>(null);
   const [revokedCodes, setRevokedCodes] = useState<string[]>([]);
-  const { data: upcoming } = useUpcomingActivities(orgId ? [orgId] : undefined);
+  const { data: upcoming } = useUpcomingActivities(orgId ? [orgId] : undefined, { includeBlocked: true });
   const { data: pendingClose } = usePendingClose(orgId, true);
 
   if (!isLoading && community === null) return <Navigate to="/inicio" replace />;

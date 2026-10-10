@@ -15,6 +15,7 @@ const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
 const LegalPage = lazy(() => import('@/pages/LegalPage'));
 const AcceptTerms = lazy(() => import('@/pages/AcceptTerms'));
+const DeleteAccountInfo = lazy(() => import('@/pages/DeleteAccountInfo'));
 const Home = lazy(() => import('@/pages/Home'));
 const Communities = lazy(() => import('@/pages/Communities'));
 const Create = lazy(() => import('@/pages/Create'));
@@ -59,6 +60,7 @@ export default function App() {
                 <Route path="/termos" element={<LegalPage />} />
                 <Route path="/privacidade" element={<LegalPage />} />
                 <Route path="/termo-responsavel" element={<LegalPage />} />
+                <Route path="/excluir-conta" element={<DeleteAccountInfo />} />
                 <Route path="/aceite" element={<ProtectedRoute skipLegal><AcceptTerms /></ProtectedRoute>} />
                 <Route path="/inicio" element={<ProtectedRoute><Home /></ProtectedRoute>} />
                 <Route path="/comunidades" element={<ProtectedRoute><Communities /></ProtectedRoute>} />
