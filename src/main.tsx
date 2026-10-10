@@ -10,6 +10,15 @@ import { captureLanding } from '@riff/core/lib/attribution';
 
 captureLanding();
 
+// Tela "sem conexão" (public/sw.js). Só na versão publicada: em desenvolvimento atrapalharia o recarregamento.
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {
+      // sem service worker o app funciona igual; só não tem a tela "sem conexão"
+    });
+  });
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <HelmetProvider>
