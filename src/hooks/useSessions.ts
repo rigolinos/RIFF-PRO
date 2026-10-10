@@ -1,4 +1,4 @@
-﻿import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+﻿import { keepPreviousData, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@riff/core/supabase/client';
 import { useProfile } from '@riff/core/hooks/useProfile';
 import { activityPhase, nowSP } from '@riff/core/lib/activityTime';
@@ -26,13 +26,13 @@ export function useCities() {
   });
 }
 
-export function useSessions(cityFilter?: string | null) {
-  const queryClient = useQueryClient();
-  const { profile } = useProfile();
+export const FEED_PAGE = 60;
 
-  // Fetch all active sessions (For the Feed) — no PII
-  const feedQuery = useQuery({
-    queryKey: ['sessions', 'feed', cityFilter],
+/** Próximas atividades abertas do Riff Pro (Início), as `limit` mais próximas. Sem dados pessoais. */
+export function useFeed(limit: number = FEED_PAGE) {
+  return useQuery({
+    queryKey: ['sessions', 'feed', limit],
+    placeholderData: keepPreviousData,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('sessions')
@@ -47,14 +47,20 @@ export function useSessions(cityFilter?: string | null) {
         .in('status', ['active', 'full'])
         .gte('date', todaySP())
         .order('date', { ascending: true })
-        .order('start_time', { ascending: true });
+        .order('start_time', { ascending: true })
+        .limit(limit + 1); // uma a mais, só para saber se há mais para carregar
 
       if (error) throw error;
       // as de hoje que já começaram não aceitam mais inscrição
       const now = nowSP();
-      return data.filter((s) => activityPhase(s, now) === 'open');
+      return { sessions: data.slice(0, limit).filter((s) => activityPhase(s, now) === 'open'), hasMore: data.length > limit };
     },
   });
+}
+
+export function useSessions() {
+  const queryClient = useQueryClient();
+  const { profile } = useProfile();
 
   const createSession = useMutation({
     mutationFn: async (sessionData: Omit<TablesInsert<'sessions'>, 'professional_id'>) => {
@@ -90,10 +96,6 @@ export function useSessions(cityFilter?: string | null) {
   });
 
   return {
-    feed: feedQuery.data,
-    isLoadingFeed: feedQuery.isLoading,
-    isErrorFeed: feedQuery.isError,
-    errorFeed: feedQuery.error,
     createSession: createSession.mutateAsync,
     isCreating: createSession.isPending,
     updateSession: updateSession.mutateAsync,
