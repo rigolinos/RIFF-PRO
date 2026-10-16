@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
@@ -262,6 +262,47 @@ export type Database = {
             columns: ["parent_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_errors: {
+        Row: {
+          app: string
+          created_at: string
+          id: string
+          message: string
+          profile_id: string | null
+          route: string | null
+          stack: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          app: string
+          created_at?: string
+          id?: string
+          message: string
+          profile_id?: string | null
+          route?: string | null
+          stack?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          app?: string
+          created_at?: string
+          id?: string
+          message?: string
+          profile_id?: string | null
+          route?: string | null
+          stack?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_errors_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1386,6 +1427,18 @@ export type Database = {
         Args: { p_owner_email?: string; p_request: string }
         Returns: string
       }
+      admin_client_errors: {
+        Args: { p_days?: number }
+        Returns: {
+          app: string
+          last_seen: string
+          message: string
+          people: number
+          routes: string[]
+          sample_stack: string
+          times: number
+        }[]
+      }
       admin_community_insights: {
         Args: { p_days?: number }
         Returns: {
@@ -1605,6 +1658,16 @@ export type Database = {
       }
       job_auto_close_expired_sessions: { Args: never; Returns: undefined }
       join_organization: { Args: { p_code: string }; Returns: Json }
+      log_client_error: {
+        Args: {
+          p_app: string
+          p_message: string
+          p_route?: string
+          p_stack?: string
+          p_user_agent?: string
+        }
+        Returns: undefined
+      }
       manage_member: {
         Args: { p_action: string; p_org: string; p_profile: string }
         Returns: Json

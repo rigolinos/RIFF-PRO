@@ -1,5 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertOctagon, RefreshCw } from 'lucide-react';
+import { reportError } from '@riff/core/lib/errorLog';
 
 interface Props {
   children: ReactNode;
@@ -23,6 +24,7 @@ export class GlobalErrorBoundary extends Component<Props, State> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('Uncaught error in application:', error, errorInfo);
+    reportError(error, errorInfo.componentStack);
   }
 
   public render() {

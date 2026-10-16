@@ -1319,6 +1319,34 @@ let resolvedErr = '';
 try { await q("SELECT public.admin_resolve_report($1, 'remove')", [rep3]); } catch (e) { resolvedErr = e.message; }
 ok(/já resolvida/.test(resolvedErr), 'denúncia resolvida não é resolvida de novo');
 
+// ── Registro de erros das telas (migration 0028) ────────────────────────
+console.log('Registro de erros das telas:');
+const logErr = (role, uid, args) => as(role, uid, 'SELECT public.log_client_error($1, $2, $3, $4, $5)', args);
+r = await logErr('anon', '', ['pro', 'TypeError: x', null, '/feed', 'UA']);
+ok(!!r.err && (await count('SELECT count(*)::int n FROM public.client_errors')) === 0, 'visitante sem login não registra erro');
+r = await logErr('authenticated', MX, ['pro', '  TypeError: x is undefined  ', 'at Feed', '/session/abc?email=a@b.c#topo', 'Mozilla']);
+const errRow = await one('SELECT profile_id, message, route, stack FROM public.client_errors');
+ok(!r.err && errRow?.profile_id === pMX && errRow.message === 'TypeError: x is undefined' && errRow.route === '/session/abc',
+  'conta logada registra o erro, com a rota sem os parâmetros do endereço' + (r.err ? ` (${r.err})` : ''));
+r = await logErr('authenticated', MX, ['outro', 'erro', null, null, null]);
+r = await logErr('authenticated', MX, ['pro', '   ', null, null, null]);
+ok((await count('SELECT count(*)::int n FROM public.client_errors')) === 1, 'app desconhecido ou mensagem vazia são ignorados, sem erro');
+r = await as('authenticated', MX, 'SELECT * FROM public.client_errors');
+ok(!r.err && r.rows.length === 0, 'ninguém lê os erros pelo app, nem os próprios');
+r = await as('authenticated', MX, "INSERT INTO public.client_errors (app, message) VALUES ('pro', 'direto')");
+ok(!!r.err, 'erro não entra direto na tabela, só pela função');
+await q(`INSERT INTO public.client_errors (profile_id, app, message) SELECT $1, 'pro', 'repetido' FROM generate_series(1, 19)`, [pMX]);
+await logErr('authenticated', MX, ['pro', 'passou do limite', null, null, null]);
+ok((await count("SELECT count(*)::int n FROM public.client_errors WHERE message = 'passou do limite'")) === 0, 'limite de 20 erros por hora por pessoa');
+await q(`INSERT INTO public.client_errors (profile_id, app, message, created_at) VALUES ($1, 'clubes', 'antigo', now() - interval '40 days')`, [pMO]);
+await logErr('authenticated', MO, ['clubes', 'novo', null, '/', null]);
+ok((await count("SELECT count(*)::int n FROM public.client_errors WHERE message = 'antigo'")) === 0, 'erros com mais de 30 dias são apagados');
+r = await as('authenticated', MX, 'SELECT * FROM public.admin_client_errors()');
+ok(!!r.err, 'conta comum não consulta o retrato de erros');
+const errSummary = (await q('SELECT * FROM public.admin_client_errors(7)')).rows;
+ok(errSummary[0]?.message === 'repetido' && errSummary[0].times === 19 && errSummary[0].people === 1 && errSummary.length === 3,
+  `equipe Riff vê os erros agrupados pela mensagem (${errSummary.length} grupos)`);
+
 // ── Pagamento: o organizador confirma o Pix antes da atividade (P2 da jornada) ──
 console.log('Confirmar pagamento:');
 await ex("SELECT set_config('request.jwt.claim.sub', '', false)");

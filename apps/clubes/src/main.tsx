@@ -6,10 +6,12 @@ import '@fontsource-variable/chivo';
 import '@fontsource-variable/space-grotesk';
 import './index.css';
 import { captureLanding } from '@riff/core/lib/attribution';
+import { installErrorLog } from '@riff/core/lib/errorLog';
 import { LegalProductContext } from '@riff/core/legal/product';
 import App from './App';
 
 captureLanding();
+installErrorLog('clubes');
 
 // Tela "sem conexão" (public/sw.js). Só na versão publicada: em desenvolvimento atrapalharia o recarregamento.
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
