@@ -218,12 +218,12 @@ export default function Home() {
 
             {pendingClose && pendingClose.length > 0 && selected && (
               <Link
-                to={`/c/${selected.id}`}
+                to={pendingClose.length === 1 ? `/c/${selected.id}/atividade/${pendingClose[0].id}` : `/c/${selected.id}/gestao`}
                 className="mx-4 flex items-center gap-3 rounded-2xl border border-accent/40 bg-surface px-4 py-3"
               >
                 <ClipboardCheck className="w-5 h-5 text-accent shrink-0" />
                 <span className="text-sm text-ink flex-1">
-                  Falta fechar a presença de {pendingClose.length} evento{pendingClose.length > 1 ? 's' : ''}
+                  {pendingClose.length === 1 ? `Fazer a chamada: ${pendingClose[0].title}` : `${pendingClose.length} chamadas para fazer`}
                 </span>
               </Link>
             )}
