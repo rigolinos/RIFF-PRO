@@ -16,6 +16,7 @@ import { StickyActions } from '@riff/core/layout/StickyActions';
 import { useProSessions } from '@/hooks/useProSessions';
 import { useProfile } from '@riff/core/hooks/useProfile';
 import { errorMessage } from '@riff/core/lib/utils';
+import { bookingCode } from '@/lib/ticket';
 
 type AttendanceStatus = 'present' | 'late' | 'absent' | 'excused';
 
@@ -235,7 +236,7 @@ export default function SessionAttendance() {
                     <div className="flex-1 min-w-0">
                       <h3 className="type-subtitle truncate">{name}</h3>
                       <p className="type-label mt-0.5">
-                        {b.payment_status === 'free' ? 'Gratuito' : b.payment_status === 'paid' ? 'Pago' : 'Pagamento pendente'}
+                        {bookingCode(b.id)} · {b.payment_status === 'free' ? 'Gratuito' : b.payment_status === 'paid' ? 'Pago' : 'Pagamento pendente'}
                       </p>
                     </div>
                     <ModerationActions

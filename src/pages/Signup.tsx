@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { CalendarPlus, Loader2, Ticket } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@riff/core/hooks/useAuth';
 import { AuthShell } from '@riff/core/layout/AuthShell';
@@ -8,24 +8,16 @@ import { Field, PasswordInput } from '@riff/core/domain/Field';
 import { FIELD_CLASS } from '@riff/core/lib/fields';
 import { Button } from '@riff/core/ui/button';
 import { Input } from '@riff/core/ui/input';
-import { cn } from '@riff/core/lib/utils';
 import { authErrorMessage } from '@riff/core/lib/authErrors';
 import { safeRedirect } from '@riff/core/auth/redirect';
+import { rememberSignupEmail } from '@riff/core/auth/signupEmail';
 import { PASSWORD_HINT, PASSWORD_MIN, passwordProblem } from '@riff/core/lib/password';
 import { BRAND } from '@/brand';
-
-type Role = 'professional' | 'student';
-
-const ROLES: { value: Role; title: string; text: string; icon: typeof Ticket }[] = [
-  { value: 'student', title: 'Quero participar', text: 'Reserve aulas, jogos e eventos', icon: Ticket },
-  { value: 'professional', title: 'Quero organizar', text: 'Publique atividades e receba por Pix', icon: CalendarPlus },
-];
 
 const Signup = () => {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const { signUp } = useAuth();
-  const [role, setRole] = useState<Role>(params.get('role') === 'professional' ? 'professional' : 'student');
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -39,14 +31,15 @@ const Signup = () => {
       return;
     }
     setIsLoading(true);
-    const { error } = await signUp(email, password, fullName, role);
+    // a conta é uma só; organizar é pelo Criar, com o cadastro de organizador na hora de publicar
+    const { error } = await signUp(email, password, fullName, 'student');
     setIsLoading(false);
     if (error) {
       toast.error(authErrorMessage(error, 'Não foi possível criar a conta. Tente de novo.'));
       return;
     }
-    const redirect = safeRedirect(params.get('redirect'), '');
-    navigate('/login?registered=true' + (redirect ? `&redirect=${encodeURIComponent(redirect)}` : ''));
+    rememberSignupEmail(email);
+    navigate('/confirme-email', { state: { email: email.trim().toLowerCase(), redirect: safeRedirect(params.get('redirect'), '') } });
   };
 
   return (
@@ -54,7 +47,7 @@ const Signup = () => {
       product={BRAND.name}
       label="Criar conta"
       title="Bora jogar junto"
-      subtitle="Uma conta só para participar e organizar. Dá para trocar de modo quando quiser."
+      subtitle="Uma conta só para participar e organizar. Leva um minuto."
       onBack={() => navigate('/')}
       footer={
         <>
@@ -66,36 +59,6 @@ const Signup = () => {
       }
     >
       <form onSubmit={handleSignup} className="flex flex-col gap-4">
-        <div className="grid grid-cols-2 gap-3" role="radiogroup" aria-label="Como você vai usar">
-          {ROLES.map((r) => {
-            const active = role === r.value;
-            return (
-              <button
-                key={r.value}
-                type="button"
-                role="radio"
-                aria-checked={active}
-                onClick={() => setRole(r.value)}
-                className={cn(
-                  'rounded-2xl border p-4 text-left transition-all active:scale-[.98]',
-                  active ? 'bg-brand/10 border-brand' : 'bg-surface border-line',
-                )}
-              >
-                <span
-                  className={cn(
-                    'w-10 h-10 rounded-xl flex items-center justify-center mb-3',
-                    active ? 'bg-brand text-brand-ink' : 'bg-elevated text-ink-muted',
-                  )}
-                >
-                  <r.icon className="w-5 h-5" strokeWidth={1.75} />
-                </span>
-                <span className="block text-sm font-semibold text-ink">{r.title}</span>
-                <span className="block text-xs text-ink-muted mt-0.5">{r.text}</span>
-              </button>
-            );
-          })}
-        </div>
-
         <Field label="Nome completo" htmlFor="signup-name">
           <Input
             id="signup-name"
@@ -137,7 +100,7 @@ const Signup = () => {
         </Field>
 
         <Button type="submit" size="lg" className="w-full mt-2 shadow-[var(--shadow-cta)]" disabled={isLoading}>
-          {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : role === 'professional' ? 'Criar conta de organizador' : 'Criar conta'}
+          {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Criar conta'}
         </Button>
         <p className="text-center text-xs text-ink-muted leading-relaxed">
           Depois de criar a conta, você lê e aceita os{' '}

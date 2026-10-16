@@ -11,6 +11,13 @@ import { moderationError, REPORT_REASONS } from '@riff/core/lib/moderation';
 import { activityInvite } from '@/lib/share';
 import { googleCalendarUrl } from '@riff/core/lib/calendar';
 import { paymentNoticeUrl, waPhone } from '@/lib/whatsapp';
+import { bookingCode } from '@/lib/ticket';
+
+describe('código da reserva no ingresso', () => {
+  it('6 caracteres do id, em maiúsculas, com #', () => {
+    expect(bookingCode('3f9a2c10-77aa-4b1c-9d2e-000000000001')).toBe('#3F9A2C');
+  });
+});
 
 describe('aviso de Pix no WhatsApp', () => {
   it('celular com DDI do Brasil, sem duplicar', () => {

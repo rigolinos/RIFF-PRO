@@ -1,7 +1,8 @@
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import QRCode from 'react-qr-code';
-import { Flag, MapPin, Navigation, Sun } from 'lucide-react';
+import { Flag, MapPin, Navigation, UserCheck } from 'lucide-react';
+import { useProfile } from '@riff/core/hooks/useProfile';
+import { bookingCode, TICKET_HINT } from '@/lib/ticket';
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '@riff/core/ui/drawer';
 import { SportIcon, StatusPill } from '@riff/core/domain';
 import { googleMapsUrl } from '@riff/core/lib/geo';
@@ -25,9 +26,10 @@ export type TicketBooking = {
   };
 };
 
-/** Ingresso em tela cheia: sobe de baixo, com o QR grande para o check-in */
+/** Ingresso em tela cheia: sobe de baixo, com o nome que está na lista e o código da reserva */
 export function TicketSheet({ booking, onClose }: { booking: TicketBooking | null; onClose: () => void }) {
   const s = booking?.session;
+  const { profile } = useProfile();
   const pending = booking?.payment_status === 'pending';
   return (
     <Drawer open={!!booking} onOpenChange={(open) => !open && onClose()}>
@@ -46,13 +48,13 @@ export function TicketSheet({ booking, onClose }: { booking: TicketBooking | nul
               <DrawerDescription className="text-sm text-ink-muted">com {booking.professional?.full_name ?? 'o organizador'}</DrawerDescription>
             </DrawerHeader>
 
-            {/* QR grande sobre fundo branco (leitura de qualquer câmera) */}
-            <div className="mx-auto w-fit rounded-3xl bg-white p-4 shadow-[var(--shadow-2)]" aria-label="QR code de check-in">
-              <QRCode value={`checkin:${booking.id}`} size={220} level="M" />
+            <div className="rounded-3xl border-2 border-dashed border-brand bg-surface px-5 py-6 text-center">
+              <UserCheck className="w-6 h-6 text-brand mx-auto" />
+              <p className="type-label mt-2">Nome na lista</p>
+              <p className="type-display text-ink break-words">{profile?.full_name ?? 'Você'}</p>
+              <p className="text-sm text-ink-muted mt-1">Reserva {bookingCode(booking.id)}</p>
             </div>
-            <p className="flex items-center justify-center gap-1.5 text-xs text-ink-muted pt-3">
-              <Sun className="w-3.5 h-3.5" /> Mostre na entrada. Com o brilho da tela no máximo, lê mais rápido.
-            </p>
+            <p className="text-xs text-center text-ink-muted pt-3 leading-relaxed">{TICKET_HINT}</p>
 
             <div className="mt-5 grid grid-cols-2 divide-x divide-line rounded-2xl border border-dashed border-line">
               <div className="p-3 text-center">

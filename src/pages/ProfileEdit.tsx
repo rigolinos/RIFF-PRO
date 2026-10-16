@@ -43,6 +43,7 @@ import { uploadAvatar } from '@riff/core/lib/avatar';
 import { BRAND } from '@/brand';
 import { SportsProfileSection } from '@/components/profile/SportsProfileSection';
 import { BlockedPeople } from '@/components/profile/BlockedPeople';
+import { ProfileSection } from '@/components/profile/ProfileSection';
 import { useMySportsProfile } from '@/hooks/useSportsProfile';
 
 const PIX_TYPES = [
@@ -95,7 +96,7 @@ export default function ProfileEdit() {
     }
   }, [profile, reset]);
 
-  // Vindo do painel ("Cadastrar Pix"): rola até WhatsApp e Pix depois que o perfil carrega
+  // Vindo do painel ("Cadastrar Pix"): abre e rola até WhatsApp e Pix depois que o perfil carrega
   useEffect(() => {
     if (profile && window.location.hash === '#pix') {
       document.getElementById('pix')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -263,8 +264,7 @@ export default function ProfileEdit() {
         )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <section className="bg-surface border border-line rounded-2xl p-4 space-y-4">
-            <h2 className="type-label">Seus dados</h2>
+          <ProfileSection title="Seus dados" summary={[full_name, profile?.city].filter(Boolean).join(' · ') || 'Nome, celular, Instagram e cidade'}>
             <label className="block space-y-2">
               <span className={LABEL}>Nome completo</span>
               <Input {...register('full_name')} placeholder="Seu nome" className={FIELD} />
@@ -295,21 +295,19 @@ export default function ProfileEdit() {
                 <Input {...register('state')} placeholder="SP" maxLength={2} className={`${FIELD} uppercase`} />
               </label>
             </div>
-          </section>
+          </ProfileSection>
 
           {!isPro ? (
-            <section className="bg-surface border border-line rounded-2xl p-4 space-y-2">
-              <h2 className="type-label">Sobre você (opcional)</h2>
+            <ProfileSection title="Sobre você" summary="Opcional: seus objetivos com o esporte">
               <Textarea
                 {...register('bio')}
                 placeholder="Seus objetivos: Ex: gosto de esportes ao ar livre e quero melhorar o condicionamento."
                 className="bg-elevated border-line h-24 resize-none"
               />
-            </section>
+            </ProfileSection>
           ) : (
             <>
-              <section className="bg-surface border border-line rounded-2xl p-4 space-y-4">
-                <h2 className="type-label">Sua página</h2>
+              <ProfileSection title="Sua página" summary={slug ? `${BRAND.domain}/@${slug}` : 'Endereço e apresentação'}>
                 <label className="block space-y-2">
                   <span className={LABEL}>
                     <LinkIcon className="w-3.5 h-3.5" /> Link da bio
@@ -324,10 +322,9 @@ export default function ProfileEdit() {
                   <span className={LABEL}>Bio e metodologia</span>
                   <Textarea {...register('bio')} placeholder="Como você trabalha? Qual seu diferencial?" className="bg-elevated border-line h-24 resize-none" />
                 </label>
-              </section>
+              </ProfileSection>
 
-              <section id="pix" className="bg-surface border border-line rounded-2xl p-4 space-y-4 scroll-mt-24">
-                <h2 className="type-label">Recebimento</h2>
+              <ProfileSection id="pix" title="Recebimento" summary={profile?.pix_key ? 'Chave Pix e WhatsApp cadastrados' : 'Falta cadastrar a chave Pix'}>
                 <label className="block space-y-2">
                   <span className={LABEL}>
                     <MessageCircle className="w-3.5 h-3.5" /> WhatsApp para reservas
@@ -351,7 +348,7 @@ export default function ProfileEdit() {
                   <Input {...register('pix_key')} placeholder="Sua chave" className={FIELD} />
                   <span className="block text-xs text-ink-muted">Aparece para quem reserva, junto do QR do Pix com o valor certo.</span>
                 </label>
-              </section>
+              </ProfileSection>
             </>
           )}
 
@@ -363,7 +360,7 @@ export default function ProfileEdit() {
         <BlockedPeople />
 
         <section className="space-y-2">
-          <h2 className="type-label px-2">Conta</h2>
+          <h2 className="type-label px-2">Privacidade e conta</h2>
           <div className="bg-surface border border-line rounded-2xl divide-y divide-line">
             {[
               { path: '/termos', title: 'Termos de Uso', icon: FileText },
