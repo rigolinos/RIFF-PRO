@@ -37,7 +37,7 @@ export function SpacesManager({ orgId }: { orgId: string }) {
   const toggleArchive = async (s: Space, archivedNow: boolean) => {
     try {
       await archive.mutateAsync({ id: s.id, archived: archivedNow });
-      toast.success(archivedNow ? `${s.name} arquivado. As atividades antigas continuam ligadas a ele.` : `${s.name} voltou para a lista.`);
+      toast.success(archivedNow ? `${s.name} arquivado. Os eventos antigos continuam ligados a ele.` : `${s.name} voltou para a lista.`);
       setDraft(null);
     } catch (error: unknown) {
       toast.error(spaceErrorMessage(error));

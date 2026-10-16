@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { format, parseISO, addDays } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Users, Loader2, Edit, XCircle, Copy, Share2, ClipboardCheck, CalendarDays, MoreHorizontal, Lock } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { shareActivity } from '@/lib/share';
 import { errorMessage } from '@riff/core/lib/utils';
@@ -18,8 +18,8 @@ import {
   DropdownMenuTrigger,
 } from '@riff/core/ui/dropdown-menu';
 import { useProSessions } from '@/hooks/useProSessions';
-import { useSessions } from '@/hooks/useSessions';
 import { ProSessionRow } from '@/components/cards/ProSessionRow';
+import { AgendaTabs } from '@/components/layout/AgendaTabs';
 
 const MySessionsPro = () => {
   const { sessions, isLoading, isError, error, cancelSession, updateSessionStatus } = useProSessions();
@@ -28,9 +28,9 @@ const MySessionsPro = () => {
   type SessionType = NonNullable<typeof sessions>[0];
   type BookingType = NonNullable<SessionType['bookings']>[0];
 
-  const { createSession } = useSessions();
-  const [isDuplicating, setIsDuplicating] = useState<string | null>(null);
-  const [tab, setTab] = useState<'upcoming' | 'toClose' | 'done'>('upcoming');
+  // ?aba=chamada abre direto nas atividades que esperam a chamada (vem do resumo do Início)
+  const [params] = useSearchParams();
+  const [tab, setTab] = useState<'upcoming' | 'toClose' | 'done'>(() => (params.get('aba') === 'chamada' ? 'toClose' : 'upcoming'));
   const [toCancel, setToCancel] = useState<SessionType | null>(null);
   const navigate = useNavigate();
 
@@ -63,38 +63,8 @@ const MySessionsPro = () => {
     }
   };
 
-  const handleDuplicateSession = async (session: SessionType) => {
-    setIsDuplicating(session.id);
-    try {
-      const nextWeekDate = format(addDays(parseISO(session.date), 7), 'yyyy-MM-dd');
-      await createSession({
-        category_id: session.category_id,
-        kind: session.kind,
-        city: session.city,
-        title: session.title,
-        description: session.description,
-        session_type: session.session_type,
-        date: nextWeekDate,
-        start_time: session.start_time,
-        duration_minutes: session.duration_minutes,
-        location_name: session.location_name,
-        location_address: session.location_address,
-        max_participants: session.max_participants,
-        price_per_slot: session.price_per_slot,
-        status: 'active',
-      });
-      toast.success(`Atividade duplicada para ${format(parseISO(nextWeekDate), "EEE, d 'de' MMM", { locale: ptBR })}!`);
-    } catch (error: unknown) {
-      if (errorMessage(error, '').includes('organizer_profile_incomplete')) {
-        toast.error('Complete seu cadastro de organizador para publicar.');
-        navigate('/onboarding/pro?next=/my-sessions');
-      } else {
-        toast.error(errorMessage(error, 'Erro ao duplicar atividade.'));
-      }
-    } finally {
-      setIsDuplicating(null);
-    }
-  };
+  // Repetir: abre o assistente com a mesma atividade uma semana depois, já na revisão
+  const handleDuplicateSession = (session: SessionType) => navigate(`/create-session?repetir=${session.id}`);
 
   const isPast = (s: SessionType) => parseISO(`${s.date}T${s.start_time}`) < new Date();
   const isCancelled = (s: SessionType) => s.status === 'cancelled';
@@ -116,8 +86,8 @@ const MySessionsPro = () => {
     const isFull = (session.current_participants ?? 0) >= (session.max_participants ?? 1);
     if (cancelled || completed) {
       return (
-        <Button variant="secondary" size="sm" className="w-full" onClick={() => handleDuplicateSession(session)} disabled={isDuplicating === session.id}>
-          {isDuplicating === session.id ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Copy className="w-4 h-4 mr-2" />} Repetir na semana seguinte
+        <Button variant="secondary" size="sm" className="w-full" onClick={() => handleDuplicateSession(session)}>
+          <Copy className="w-4 h-4 mr-2" /> Repetir na semana seguinte
         </Button>
       );
     }
@@ -140,7 +110,7 @@ const MySessionsPro = () => {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="bg-elevated border-line">
             <DropdownMenuItem onSelect={() => navigate(`/session/${session.id}/attendance`)}>
-              <Users className="w-4 h-4 mr-2" /> Inscritos e presença
+              <Users className="w-4 h-4 mr-2" /> Inscritos e chamada
             </DropdownMenuItem>
             <DropdownMenuItem onSelect={() => handleDuplicateSession(session)}>
               <Copy className="w-4 h-4 mr-2" /> Repetir na semana seguinte
@@ -171,18 +141,20 @@ const MySessionsPro = () => {
 
   const TABS = [
     { key: 'upcoming' as const, label: 'Próximas', n: upcoming.length },
-    { key: 'toClose' as const, label: 'Fechar', n: toClose.length },
+    { key: 'toClose' as const, label: 'Chamada', n: toClose.length },
     { key: 'done' as const, label: 'Passadas', n: done.length },
   ];
 
   return (
     <PageContainer withBottomNav>
-      <HeroHeader overlap label="Atividades" title="Suas atividades" subtitle="Compartilhe, faça a chamada e repita as que deram certo." />
+      <HeroHeader overlap label="Agenda" title="O que você organiza" subtitle="Compartilhe, faça a chamada e repita as que deram certo.">
+        <AgendaTabs active="organizo" />
+      </HeroHeader>
 
       <TicketGrid
         items={[
           { label: 'Próximas', value: upcoming.length },
-          { label: 'Fechar presença', value: <span className={toClose.length ? 'text-accent' : ''}>{toClose.length}</span> },
+          { label: 'Chamada a fazer', value: <span className={toClose.length ? 'text-accent' : ''}>{toClose.length}</span> },
           { label: 'Passadas', value: done.length },
         ]}
       />

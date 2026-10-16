@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { addDays, format, isSameDay, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Baby, Building2, CalendarPlus, ChevronDown, ClipboardCheck, KeyRound, Plus, Trophy, UserPlus, Users } from 'lucide-react';
+import { Baby, Building2, ChevronDown, ClipboardCheck, Plus, Trophy, UserPlus } from 'lucide-react';
 import { useProfile } from '@riff/core/hooks/useProfile';
 import { PageContainer } from '@riff/core/layout/PageContainer';
 import { Avatar, BrandLines, WeekStrip } from '@riff/core/domain';
@@ -18,7 +18,8 @@ import { useMyCommunities, useUpcomingActivities, type Activity } from '@/hooks/
 import { usePendingClose } from '@/hooks/useManagement';
 import { todaySP } from '@/hooks/useCommunity';
 import { ActivityRow } from '@/components/ActivityRow';
-import { JoinWithCode } from '@/components/JoinWithCode';
+import { FirstAccess } from '@/components/FirstAccess';
+import { usePendingInvite } from '@/hooks/usePendingInvite';
 import { ReviewPrompt } from '@/components/ReviewPrompt';
 import { useRanking } from '@/hooks/useSports';
 
@@ -70,6 +71,8 @@ export default function Home() {
   const navigate = useNavigate();
   const { profile } = useProfile();
   const { data: communities, isLoading: isLoadingCommunities } = useMyCommunities();
+  // chegou por link de convite: entra no grupo sozinho
+  const joiningInvite = usePendingInvite();
   const [communityId, setCommunityId] = useState<string>('all');
   const [day, setDay] = useState<string | null>(null);
 
@@ -117,7 +120,7 @@ export default function Home() {
     </div>
   );
 
-  const noCommunity = !isLoadingCommunities && (!communities || communities.length === 0);
+  const noCommunity = !isLoadingCommunities && !joiningInvite && (!communities || communities.length === 0);
   const dayItems = day ? all.filter((a) => a.date === day) : [];
   const dayLabel = day ? format(parseISO(day), "EEEE, d 'de' MMMM", { locale: ptBR }) : '';
 
@@ -202,25 +205,10 @@ export default function Home() {
         {isLoadingCommunities ? (
           <Spinner />
         ) : noCommunity ? (
-          // Primeiro acesso: sem comunidade, a tela explica o caminho
-          <section className="px-6 pt-6 space-y-4">
-            <div className="bg-surface border border-line rounded-2xl p-5 space-y-4">
-              <h2 className="type-subtitle">Como funciona</h2>
-              {[
-                { icon: KeyRound, text: 'Peça o código de convite ao síndico, ao gestor do clube ou a um vizinho que já usa.' },
-                { icon: Users, text: 'Entre com o código: você passa a ver os eventos da comunidade.' },
-                { icon: CalendarPlus, text: 'Participe ou crie jogos e eventos para os vizinhos.' },
-              ].map((step, i) => (
-                <div key={step.text} className="flex items-start gap-3">
-                  <div className="w-7 h-7 rounded-full bg-brand text-brand-ink flex items-center justify-center text-xs font-bold shrink-0">
-                    {i + 1}
-                  </div>
-                  <p className="text-sm text-ink pt-1">{step.text}</p>
-                </div>
-              ))}
-            </div>
-            <JoinWithCode defaultOpen />
-          </section>
+          // Primeiro acesso: sem grupo, duas portas (código de convite ou pedir o cadastro)
+          <div className="px-6 pt-6">
+            <FirstAccess />
+          </div>
         ) : (
           <>
             {/* Faixa da semana: ponto dourado nos dias com evento; tocar filtra */}
@@ -230,12 +218,12 @@ export default function Home() {
 
             {pendingClose && pendingClose.length > 0 && selected && (
               <Link
-                to={`/c/${selected.id}`}
+                to={pendingClose.length === 1 ? `/c/${selected.id}/atividade/${pendingClose[0].id}` : `/c/${selected.id}/gestao`}
                 className="mx-4 flex items-center gap-3 rounded-2xl border border-accent/40 bg-surface px-4 py-3"
               >
                 <ClipboardCheck className="w-5 h-5 text-accent shrink-0" />
                 <span className="text-sm text-ink flex-1">
-                  Falta fechar a presença de {pendingClose.length} evento{pendingClose.length > 1 ? 's' : ''}
+                  {pendingClose.length === 1 ? `Fazer a chamada: ${pendingClose[0].title}` : `${pendingClose.length} chamadas para fazer`}
                 </span>
               </Link>
             )}
@@ -276,7 +264,7 @@ export default function Home() {
 
             {/* Atalhos */}
             <div className="flex flex-wrap justify-center gap-2 px-4">
-              <Shortcut to="/criar" icon={Plus} label="Criar jogo" />
+              <Shortcut to="/criar" icon={Plus} label="Criar evento" />
               {selected?.isAdmin && <Shortcut to={`/c/${selected.id}/gestao`} icon={UserPlus} label="Convidar vizinhos" />}
               <Shortcut to="/dependentes" icon={Baby} label="Dependentes" />
             </div>

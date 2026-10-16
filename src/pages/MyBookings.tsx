@@ -2,9 +2,9 @@ import { useState, useMemo } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { differenceInHours, format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { MapPin, MessageCircle, XCircle, Loader2, CalendarDays, Star } from 'lucide-react';
+import { MapPin, MessageCircle, XCircle, Loader2, CalendarDays, Star, QrCode, Ticket } from 'lucide-react';
+import { bookingCode } from '@/lib/ticket';
 import { toast } from 'sonner';
-import QRCode from 'react-qr-code';
 import { PageContainer } from '@riff/core/layout/PageContainer';
 import { HeroHeader } from '@riff/core/layout/HeroHeader';
 import { EmptyState, SportIcon, StatusPill, TicketGrid } from '@riff/core/domain';
@@ -12,10 +12,12 @@ import { ConfirmDialog } from '@riff/core/domain/ConfirmDialog';
 import { formatBRL } from '@riff/core/lib/money';
 import { googleMapsUrl } from '@riff/core/lib/geo';
 import { TicketSheet, type TicketBooking } from '@/components/bookings/TicketSheet';
+import { PaySheet } from '@/components/bookings/PaySheet';
 import { useBookings } from '@/hooks/useBookings';
 import { buildWhatsAppUrl } from '@/lib/whatsapp';
 import { useProfile } from '@riff/core/hooks/useProfile';
 import { ReviewPrompt } from '@/components/reviews/ReviewPrompt';
+import { AgendaTabs } from '@/components/layout/AgendaTabs';
 import { canReview } from '@/lib/reviews';
 import { supabase } from '@riff/core/supabase/client';
 
@@ -36,6 +38,8 @@ const MyBookings = () => {
     if (params.get('ingresso')) setParams({}, { replace: true });
   };
   const [tab, setTab] = useState<'upcoming' | 'history'>('upcoming');
+  // "Pagar agora" de uma reserva que ficou aguardando o Pix
+  const [paying, setPaying] = useState<BookingType | null>(null);
   const navigate = useNavigate();
 
   // Split bookings between upcoming and history
@@ -162,7 +166,7 @@ const MyBookings = () => {
           <p className="text-xs text-ink-muted">com {booking.professional?.full_name ?? 'organizador'}</p>
         </Link>
 
-        {/* Ingresso: dia, horário e QR de check-in (toque abre o ingresso grande) */}
+        {/* Ingresso: dia, horário e código da reserva (toque abre o ingresso grande) */}
         <div
           className={`grid grid-cols-[1fr_1fr_auto] items-center divide-x divide-line border-t border-dashed border-line ${!isHistory && !cancelled ? 'cursor-pointer active:bg-elevated' : ''}`}
           {...(!isHistory && !cancelled
@@ -188,11 +192,10 @@ const MyBookings = () => {
             <p className="text-xs text-ink-muted">{booking.session.duration_minutes ? `${booking.session.duration_minutes} min` : ''}</p>
           </div>
           {!isHistory && !cancelled ? (
-            <div className="p-3">
-              <div className="p-1.5 bg-white rounded-xl" aria-hidden="true">
-                <QRCode value={`checkin:${booking.id}`} size={56} level="L" />
-              </div>
-              <p className="text-xs text-brand font-semibold text-center pt-1">Abrir</p>
+            <div className="p-3 text-center min-w-[80px]">
+              <Ticket className="w-5 h-5 text-brand mx-auto" aria-hidden="true" />
+              <p className="text-xs font-semibold text-ink mt-1">{bookingCode(booking.id)}</p>
+              <p className="text-xs text-brand font-semibold">Ingresso</p>
             </div>
           ) : (
             <div className="p-3 text-center min-w-[80px]">
@@ -214,6 +217,18 @@ const MyBookings = () => {
           </span>
           <span className="text-brand font-semibold">Como chegar</span>
         </button>
+
+        {!isHistory && booking.payment_status === 'pending' && Number(booking.amount_total ?? 0) > 0 && (
+          <div className="border-t border-line p-3 pb-0">
+            <button
+              type="button"
+              onClick={() => setPaying(booking)}
+              className="w-full h-11 rounded-xl bg-brand text-brand-ink font-semibold text-sm flex items-center justify-center gap-2 active:scale-[.98]"
+            >
+              <QrCode className="w-4 h-4" /> Pagar agora · {formatBRL(booking.amount_total)}
+            </button>
+          </div>
+        )}
 
         {!isHistory ? (
           <div className="border-t border-line p-3 flex gap-2">
@@ -254,7 +269,9 @@ const MyBookings = () => {
 
   return (
     <PageContainer withBottomNav>
-      <HeroHeader overlap label="Reservas" title="Sua agenda" subtitle="Suas vagas confirmadas, o check-in e o histórico." />
+      <HeroHeader overlap label="Agenda" title="Onde você vai" subtitle="Suas reservas, o ingresso e o histórico.">
+        <AgendaTabs active="vou" />
+      </HeroHeader>
 
       <TicketGrid
         items={[
@@ -296,6 +313,24 @@ const MyBookings = () => {
           <div className="space-y-3">{list.map((b) => renderBookingCard(b, tab === 'history'))}</div>
         )}
       </div>
+
+      <PaySheet
+        booking={
+          paying
+            ? {
+                id: paying.id,
+                activity: {
+                  title: paying.session.title,
+                  date: paying.session.date,
+                  start_time: paying.session.start_time,
+                  city: paying.session.city,
+                  price: Number(paying.amount_total ?? 0),
+                },
+              }
+            : null
+        }
+        onClose={() => setPaying(null)}
+      />
 
       <TicketSheet booking={(bookings?.find((b) => b.id === ticketId) as TicketBooking | undefined) ?? null} onClose={closeTicket} />
 

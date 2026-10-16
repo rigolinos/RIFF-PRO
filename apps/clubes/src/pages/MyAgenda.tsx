@@ -43,9 +43,9 @@ export default function MyAgenda() {
   const [tab, setTab] = useState<Tab>('upcoming');
 
   const empty = {
-    upcoming: { title: 'Nenhuma inscrição por enquanto', description: 'Veja a agenda das suas comunidades e participe.', label: 'Ver atividades', to: '/inicio' },
-    organizing: { title: 'Você não organiza nada ainda', description: 'Crie um jogo, uma aula ou um evento para a comunidade.', label: 'Criar atividade', to: '/criar' },
-    past: { title: 'Sem histórico ainda', description: 'As atividades de que você participou aparecem aqui.', label: 'Ver atividades', to: '/inicio' },
+    upcoming: { title: 'Nenhuma inscrição por enquanto', description: 'Veja a agenda das suas comunidades e participe.', label: 'Ver eventos', to: '/inicio' },
+    organizing: { title: 'Você não organiza nada ainda', description: 'Crie um jogo, uma aula ou um evento para a comunidade.', label: 'Criar evento', to: '/criar' },
+    past: { title: 'Sem histórico ainda', description: 'Os eventos de que você participou aparecem aqui.', label: 'Ver eventos', to: '/inicio' },
   }[tab];
 
   return (

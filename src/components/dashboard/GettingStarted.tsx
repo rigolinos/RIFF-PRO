@@ -37,17 +37,16 @@ export function PixMissingBanner() {
 }
 
 // Primeiros passos do organizador; some quando tudo estiver feito.
+// (Pix e WhatsApp já são exigidos no cadastro de organizador.)
 export function GettingStarted({ profile, totalSessions, hasSharedLink, onShare }: GettingStartedProps) {
   const navigate = useNavigate();
 
   const steps = [
-    { key: 'pix', label: 'Cadastrar sua chave Pix', done: !!profile?.pix_key, action: () => navigate('/profile/edit#pix') },
-    { key: 'whatsapp', label: 'Informar seu WhatsApp', done: !!profile?.whatsapp_number, action: () => navigate('/profile/edit#pix') },
     { key: 'photo', label: 'Adicionar uma foto de perfil', done: !!profile?.avatar_url, action: () => navigate('/profile/edit') },
     { key: 'bio', label: 'Escrever sua bio', done: !!profile?.bio?.trim(), action: () => navigate('/profile/edit') },
-    { key: 'slug', label: 'Escolher seu link (@seu-nome)', done: !!profile?.public_slug, action: () => navigate('/profile/edit') },
+    { key: 'slug', label: 'Escolher o endereço da sua página', done: !!profile?.public_slug, action: () => navigate('/profile/edit') },
     { key: 'first', label: 'Publicar sua primeira atividade', done: totalSessions > 0, action: () => navigate('/create-session') },
-    { key: 'share', label: 'Compartilhar seu link no Instagram ou WhatsApp', done: hasSharedLink, action: onShare },
+    { key: 'share', label: 'Compartilhar sua página no Instagram ou WhatsApp', done: hasSharedLink, action: onShare },
   ];
 
   const doneCount = steps.filter((s) => s.done).length;

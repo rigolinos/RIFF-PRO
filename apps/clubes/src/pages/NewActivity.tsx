@@ -1,62 +1,52 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { addDays, format, nextSaturday, nextSunday, parseISO } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { AlertTriangle, ArrowLeft, BookOpen, CalendarDays, Info, MapPin, Minus, Plus, Search, Sparkles, Trophy, Users } from 'lucide-react';
 import { toast } from 'sonner';
+import { CalendarPlus, CheckCircle2, Eye, MessageCircle } from 'lucide-react';
 import { supabase } from '@riff/core/supabase/client';
 import { useProfile } from '@riff/core/hooks/useProfile';
-import { PageContainer } from '@riff/core/layout/PageContainer';
-import { BrandLines, ConfirmDialog, FormStep } from '@riff/core/domain';
-import { chipClass } from '@riff/core/lib/chips';
+import { StepFlow } from '@riff/core/layout/StepFlow';
+import { BrandLines, ConfirmDialog } from '@riff/core/domain';
 import { Button } from '@riff/core/ui/button';
-import { Input } from '@riff/core/ui/input';
-import { Textarea } from '@riff/core/ui/textarea';
-import { Switch } from '@riff/core/ui/switch';
-import { KINDS, type ActivityKind } from '@riff/core/lib/copy';
-import { cn, errorMessage } from '@riff/core/lib/utils';
-import { useCommunity, todaySP } from '@/hooks/useCommunity';
-import { SportIcon } from '@riff/core/domain/SportIcon';
+import { nowSP } from '@riff/core/lib/activityTime';
+import { suggestActivityTitle } from '@riff/core/lib/activityTitle';
+import { errorMessage } from '@riff/core/lib/utils';
+import { useCommunity } from '@/hooks/useCommunity';
 import { useSpaceConflicts, useSpaces } from '@/hooks/useSpaces';
-import { spaceKind } from '@/lib/spaces';
-import { sportExactMatch, sportMatches } from '@riff/core/lib/sportSearch';
+import { EVENT_STEPS, emptyEvent, eventInvite, eventStepMissing, firstEventMissing, type EventStep, type EventValues } from '@/lib/eventForm';
+import { EventNameStep, EventReview, EventSportStep, EventSpotsStep, EventWhenStep, EventWhereStep } from '@/components/event/EventSteps';
 
-const FIELD = 'h-12 bg-surface border-line';
-const KIND_ICONS: Record<ActivityKind, typeof BookOpen> = {
-  class: BookOpen,
-  match: Users,
-  tournament: Trophy,
-  event: CalendarDays,
-  other: Sparkles,
+type Screen = EventStep | 'review';
+
+const COPY: Record<EventStep, { title: string; subtitle?: string }> = {
+  sport: { title: 'Qual esporte?', subtitle: 'O tipo já vem escolhido; troque se quiser.' },
+  when: { title: 'Quando vai ser?' },
+  where: { title: 'Onde vai ser?', subtitle: 'Os espaços do grupo aparecem primeiro.' },
+  spots: { title: 'Quantas vagas?' },
+  name: { title: 'Como vai se chamar?', subtitle: 'Sugerimos um nome com o que você escolheu. Ajuste se quiser.' },
 };
-const TIMES = ['07:00', '08:00', '09:00', '18:00', '19:00', '20:00'];
-const DURATIONS = [30, 45, 60, 90, 120];
-const durationLabel = (m: number) => (m < 60 ? `${m} min` : m % 60 ? `${Math.floor(m / 60)}h${m % 60}` : `${m / 60}h`);
 
-// Novo evento: perguntas em blocos, prévia ao vivo e publicação para os membros
+// Novo evento: uma pergunta por tela, revisão e o convite para o grupo do condomínio ou clube
 export default function NewActivity() {
   const { orgId } = useParams<{ orgId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { profile } = useProfile();
   const { data: community, isLoading } = useCommunity(orgId);
+  const [now] = useState(nowSP);
 
   const { data: categories } = useQuery({
     queryKey: ['categories', 'with-slug'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('id, name, slug')
-        .eq('is_active', true)
-        .order('sort_order', { ascending: true });
+      const { data, error } = await supabase.from('categories').select('id, name, slug').eq('is_active', true).order('sort_order', { ascending: true });
       if (error) throw error;
       return data;
     },
     staleTime: 1000 * 60 * 60,
   });
-
-  // Locais já usados pela comunidade (quadra, piscina, salão…)
+  // Locais já usados pelo grupo (fora a sede e os espaços oficiais)
   const { data: venues } = useQuery({
     queryKey: ['community-venues', orgId],
     queryFn: async () => {
@@ -67,79 +57,41 @@ export default function NewActivity() {
     enabled: !!orgId,
   });
 
-  // escolha da pessoa; antes disso, instrutor começa em Aula e morador em Jogo
-  const [kindChoice, setKindChoice] = useState<ActivityKind | null>(null);
-  const [title, setTitle] = useState('');
-  const [categoryId, setCategoryId] = useState('');
-  const [sportSearch, setSportSearch] = useState('');
-  const [showAllSports, setShowAllSports] = useState(false);
-  const [sportOther, setSportOther] = useState<string | null>(null);
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
-  const [durationChoice, setDurationChoice] = useState<number | null>(null);
-  const [place, setPlace] = useState('');
-  // espaço oficial escolhido (null = lugar digitado à mão)
-  const [spaceId, setSpaceId] = useState<string | null>(null);
-  const [otherPlace, setOtherPlace] = useState(false);
+  const [values, setValues] = useState<EventValues | null>(null);
+  const [screen, setScreen] = useState<Screen>('sport');
+  const [backToReview, setBackToReview] = useState(false);
   const [confirmConflict, setConfirmConflict] = useState(false);
-  const [spots, setSpots] = useState(10);
-  const [description, setDescription] = useState('');
-  const [minorsAllowed, setMinorsAllowed] = useState(false);
-  const [minAge, setMinAge] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [published, setPublished] = useState<{ id: string; title: string; date: string; time: string; place: string } | null>(null);
 
-  const kind: ActivityKind = kindChoice ?? (community?.role === 'instructor' ? 'class' : 'match');
-  const duration = durationChoice ?? KINDS[kind].defaultDuration;
-
+  // instrutor começa em Aula; morador, em Jogo
+  const v = values ?? emptyEvent(community?.role === 'instructor' ? 'class' : 'match');
+  const update = (patch: Partial<EventValues>) => setValues({ ...v, ...patch });
   const { data: spaces } = useSpaces(orgId);
-  const hasSpaces = !!spaces && spaces.length > 0;
-  const space = spaces?.find((x) => x.id === spaceId) ?? null;
-  // lugares digitados antes (fora a sede e os espaços oficiais)
-  const usedPlaces = (venues ?? []).filter((v) => !v.official && v.id !== community?.main_venue_id);
-  const { data: conflicts } = useSpaceConflicts(spaceId, date, time, duration);
-
-  const today = parseISO(todaySP());
-  const quickDates = useMemo(() => {
-    const list = [
-      { label: 'Hoje', value: format(today, 'yyyy-MM-dd') },
-      { label: 'Amanhã', value: format(addDays(today, 1), 'yyyy-MM-dd') },
-      { label: 'Sábado', value: format(nextSaturday(today), 'yyyy-MM-dd') },
-      { label: 'Domingo', value: format(nextSunday(today), 'yyyy-MM-dd') },
-    ];
-    return list.filter((d, i) => list.findIndex((x) => x.value === d.value) === i);
-  }, [today]);
-
-  const category = categories?.find((c) => c.id === categoryId);
-  const filteredSports = (categories ?? []).filter((c) => sportMatches(c, sportSearch));
-  // "não achei": o nome escrito vai com a categoria Outros e vira sugestão para a equipe Riff
-  const outrosCategory = categories?.find((c) => c.slug === 'outros');
-  const newSportName = sportSearch.trim().replace(/\s+/g, ' ');
-  const canUseNewSport = newSportName.length >= 2 && newSportName.length <= 40 && !!outrosCategory
-    && !filteredSports.some((c) => sportExactMatch(c, newSportName));
-  const visibleSports = sportSearch || showAllSports ? filteredSports : filteredSports.slice(0, 9);
+  const { data: conflicts } = useSpaceConflicts(v.space_id, v.date, v.time, v.duration);
 
   if (!isLoading && community === null) return <Navigate to="/inicio" replace />;
 
-  const missing = !title.trim()
-    ? 'Dê um nome para o evento.'
-    : !categoryId
-      ? 'Escolha o esporte.'
-      : !date
-        ? 'Escolha o dia.'
-        : !time
-          ? 'Escolha o horário.'
-          : !place.trim()
-            ? 'Informe o local.'
-            : !(spots >= 1)
-              ? 'Informe quantas vagas o evento tem.'
-              : minorsAllowed && minAge !== '' && !(Number(minAge) >= 0 && Number(minAge) <= 17)
-                ? 'A idade mínima vai de 0 a 17 anos.'
-                : null;
+  const category = categories?.find((c) => c.id === v.category_id);
+  const sportName = v.sport_other ?? category?.name ?? '';
+  const usedPlaces = (venues ?? []).filter((x) => !x.official && x.id !== community?.main_venue_id);
+  const communityName = community?.name ?? 'seu grupo';
 
-  const handleSave = async (e?: React.FormEvent, confirmed = false) => {
-    e?.preventDefault();
+  const go = (next: Screen) => {
+    if (next === 'name' && !v.title.trim()) {
+      const suggestion = suggestActivityTitle({ kind: v.kind, sport: sportName, date: v.date, time: v.time });
+      if (suggestion) update({ title: suggestion });
+    }
+    setScreen(next);
+    window.scrollTo({ top: 0 });
+  };
+
+  const publish = async (confirmed = false) => {
+    const missing = firstEventMissing(v, now);
     if (missing) {
-      toast.error(missing);
+      toast.error(eventStepMissing(missing, v, now) ?? 'Falta um dado.');
+      setBackToReview(true);
+      go(missing);
       return;
     }
     // espaço ocupado no mesmo horário: avisa antes de publicar
@@ -156,30 +108,28 @@ export default function NewActivity() {
         .insert({
           professional_id: profile.id,
           organization_id: orgId,
-          category_id: categoryId,
-          // o campo do esporte livre só vai quando há um nome novo ("não achei")
-          ...(sportOther ? { sport_other: sportOther } : {}),
-          kind,
-          title: title.trim(),
-          description: description.trim() || null,
-          date,
-          start_time: time,
-          duration_minutes: duration || KINDS[kind].defaultDuration,
-          location_name: place.trim(),
-          venue_id: spaceId,
-          max_participants: spots,
+          category_id: v.category_id,
+          ...(v.sport_other ? { sport_other: v.sport_other } : {}),
+          kind: v.kind,
+          title: v.title.trim(),
+          description: v.description.trim() || null,
+          date: v.date,
+          start_time: v.time,
+          duration_minutes: v.duration,
+          location_name: v.place.trim(),
+          venue_id: v.space_id,
+          max_participants: v.spots,
           price_per_slot: 0,
           status: 'active',
-          minors_allowed: minorsAllowed,
-          min_age: minorsAllowed && minAge !== '' ? Number(minAge) : null,
+          minors_allowed: !!v.minors_allowed,
+          min_age: v.minors_allowed && v.min_age !== '' ? Number(v.min_age) : null,
         })
         .select('id')
         .single();
       if (error) throw error;
-      toast.success('Evento publicado para a comunidade!');
-      queryClient.invalidateQueries({ queryKey: ['community-agenda'] });
-      queryClient.invalidateQueries({ queryKey: ['community-venues', orgId] });
-      navigate(`/atividade/${created.id}`, { replace: true });
+      void queryClient.invalidateQueries({ queryKey: ['community-agenda'] });
+      void queryClient.invalidateQueries({ queryKey: ['community-venues', orgId] });
+      setPublished({ id: created.id, title: v.title.trim(), date: v.date, time: v.time, place: v.place.trim() });
     } catch (error: unknown) {
       toast.error(errorMessage(error, 'Não foi possível publicar o evento.'));
     } finally {
@@ -187,344 +137,123 @@ export default function NewActivity() {
     }
   };
 
-  return (
-    <PageContainer withBottomNav={false}>
-      <form onSubmit={handleSave}>
-        {/* Cabeçalho de destaque */}
-        <section className="relative overflow-hidden bg-surface border-b border-line pb-16">
+  if (published) {
+    const when = `${format(parseISO(published.date), "EEEE, d 'de' MMM", { locale: ptBR })} às ${published.time}`;
+    const share = () =>
+      window.open(
+        `https://wa.me/?text=${encodeURIComponent(eventInvite({ title: published.title, when, place: published.place, community: communityName, url: `${window.location.origin}/atividade/${published.id}` }))}`,
+        '_blank',
+      );
+    return (
+      <div className="min-h-[100dvh] bg-bg text-ink w-full max-w-[480px] mx-auto overflow-x-hidden flex flex-col">
+        <section className="relative overflow-hidden bg-surface border-b border-line px-6 pt-safe pb-10">
           <BrandLines className="absolute inset-y-0 right-0 h-full w-3/4" />
-          <div className="absolute -top-24 -right-20 w-72 h-72 rounded-full bg-brand/10 blur-3xl" aria-hidden="true" />
-          <div className="relative px-6 pt-safe">
-            <div className="h-16 flex items-center">
-              <button
-                type="button"
-                onClick={() => navigate(-1)}
-                aria-label="Voltar"
-                className="w-10 h-10 -ml-2 rounded-full bg-bg/50 backdrop-blur-sm flex items-center justify-center text-ink active:scale-95"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </button>
-            </div>
-            <p className="type-label">Novo evento</p>
-            <h1 className="type-display mt-1">Chame os vizinhos</h1>
-            <p className="text-sm text-ink-muted mt-1">{community ? `Para os membros de ${community.name}` : ''}</p>
+          <div className="relative pt-16 space-y-3">
+            <span className="w-14 h-14 rounded-2xl bg-success/15 text-success flex items-center justify-center">
+              <CheckCircle2 className="w-7 h-7" />
+            </span>
+            <p className="type-label text-success">Evento publicado</p>
+            <h1 className="type-display">Agora chame os vizinhos</h1>
+            <p className="text-sm text-ink-muted leading-relaxed">
+              <span className="text-ink font-semibold">{published.title}</span> · <span className="first-letter:uppercase">{when}</span>. Já aparece na agenda de{' '}
+              {communityName}.
+            </p>
           </div>
         </section>
-
-        {/* Prévia ao vivo, no formato do ingresso */}
-        <div className="relative z-10 -mt-10 mx-4 bg-elevated border border-line rounded-2xl shadow-[var(--shadow-2)] overflow-hidden" aria-live="polite">
-          <div className="px-4 pt-3 pb-2 flex items-center gap-2 min-w-0">
-            <SportIcon slug={category?.slug} className="w-5 h-5 text-brand shrink-0" />
-            <p className={cn('type-subtitle truncate', !title.trim() && 'text-ink-muted')}>{title.trim() || 'Nome do evento'}</p>
-          </div>
-          <div className="grid grid-cols-3 divide-x divide-line border-t border-dashed border-line">
-            <div className="p-2.5 text-center">
-              <p className="type-label">Dia</p>
-              <p className="text-sm font-semibold text-ink first-letter:uppercase">
-                {date ? format(parseISO(date), 'EEEEEE, d MMM', { locale: ptBR }) : '—'}
-              </p>
-            </div>
-            <div className="p-2.5 text-center">
-              <p className="type-label">Horário</p>
-              <p className="text-sm font-semibold text-ink">{time ? `${time} · ${durationLabel(duration)}` : '—'}</p>
-            </div>
-            <div className="p-2.5 text-center">
-              <p className="type-label">Vagas</p>
-              <p className="text-sm font-semibold text-ink">{spots}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="px-4 py-6 space-y-4 pb-36">
-          <FormStep n={1} title="O que você vai organizar?">
-            <div className="grid grid-cols-3 gap-2">
-              {(Object.keys(KINDS) as ActivityKind[]).map((k) => {
-                const Icon = KIND_ICONS[k];
-                const active = kind === k;
-                return (
-                  <button
-                    key={k}
-                    type="button"
-                    aria-pressed={active}
-                    onClick={() => {
-                      setKindChoice(k);
-                      setDurationChoice(null);
-                    }}
-                    className={cn(
-                      'flex flex-col items-center gap-1 rounded-xl border py-3 text-xs font-semibold transition-colors',
-                      active ? 'bg-brand text-brand-ink border-brand' : 'bg-elevated border-line text-ink-muted',
-                    )}
-                  >
-                    <Icon className="w-5 h-5" strokeWidth={1.75} />
-                    {KINDS[k].chip}
-                  </button>
-                );
-              })}
-            </div>
-            <Input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder={KINDS[kind].titlePlaceholder}
-              maxLength={80}
-              aria-label="Nome do evento"
-              className={FIELD}
-            />
-          </FormStep>
-
-          <FormStep n={2} title="Qual esporte?">
-            <div className="relative">
-              <Search className="w-4 h-4 text-ink-muted absolute left-3 top-1/2 -translate-y-1/2" />
-              <Input
-                value={sportSearch}
-                onChange={(e) => setSportSearch(e.target.value)}
-                placeholder="Buscar esporte"
-                aria-label="Buscar esporte"
-                className={cn(FIELD, 'pl-9')}
-              />
-            </div>
-            {sportOther && (
-              <p className="flex items-center gap-2 rounded-xl border border-brand/50 bg-brand/10 px-3 py-2 text-sm text-ink">
-                <SportIcon slug="outros" className="w-4 h-4 text-brand" /> Esporte: <span className="font-semibold">{sportOther}</span>
-                <span className="text-xs text-ink-muted">(novo)</span>
-              </p>
-            )}
-            <div className="flex flex-wrap gap-2">
-              {visibleSports.map((c) => (
-                <button
-                  key={c.id}
-                  type="button"
-                  aria-pressed={categoryId === c.id && !sportOther}
-                  onClick={() => {
-                    setCategoryId(c.id);
-                    setSportOther(null);
-                  }}
-                  className={cn(chipClass(categoryId === c.id && !sportOther), 'flex items-center gap-1.5')}
-                >
-                  <SportIcon slug={c.slug} className="w-4 h-4" /> {c.name}
-                </button>
-              ))}
-              {!sportSearch && !showAllSports && filteredSports.length > 9 && (
-                <button type="button" onClick={() => setShowAllSports(true)} className="h-9 px-3 text-sm font-semibold text-brand">
-                  Ver todos ({filteredSports.length})
-                </button>
-              )}
-            </div>
-            {canUseNewSport && (
-              <div className="rounded-xl border border-dashed border-brand/60 p-3 space-y-1.5">
-                <p className="text-xs text-ink-muted">{filteredSports.length === 0 ? 'Não achamos esse esporte na lista.' : 'Não é nenhum desses?'}</p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCategoryId(outrosCategory!.id);
-                    setSportOther(newSportName.charAt(0).toUpperCase() + newSportName.slice(1));
-                    setSportSearch('');
-                  }}
-                  className="w-full h-10 rounded-lg bg-brand/15 text-brand text-sm font-semibold"
-                >
-                  Usar "{newSportName}" como esporte
-                </button>
-              </div>
-            )}
-          </FormStep>
-
-          <FormStep n={3} title="Quando?">
-            <div className="flex flex-wrap gap-2">
-              {quickDates.map((d) => (
-                <button key={d.value} type="button" aria-pressed={date === d.value} onClick={() => setDate(d.value)} className={chipClass(date === d.value)}>
-                  {d.label}
-                </button>
-              ))}
-            </div>
-            <Input
-              type="date"
-              min={todaySP()}
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              aria-label="Outra data"
-              className={FIELD}
-            />
-            <p className="text-xs text-ink-muted pt-1">Horário</p>
-            <div className="flex flex-wrap gap-2">
-              {TIMES.map((t) => (
-                <button key={t} type="button" aria-pressed={time === t} onClick={() => setTime(t)} className={chipClass(time === t)}>
-                  {t}
-                </button>
-              ))}
-              <Input
-                type="time"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-                aria-label="Outro horário"
-                className="h-9 w-28 bg-surface border-line"
-              />
-            </div>
-            <p className="text-xs text-ink-muted pt-1">Duração</p>
-            <div className="flex flex-wrap gap-2">
-              {DURATIONS.map((m) => (
-                <button key={m} type="button" aria-pressed={duration === m} onClick={() => setDurationChoice(m)} className={chipClass(duration === m)}>
-                  {durationLabel(m)}
-                </button>
-              ))}
-            </div>
-          </FormStep>
-
-          <FormStep n={4} title="Onde?" hint="Um lugar dentro do condomínio ou clube">
-            {hasSpaces && (
-              <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Espaços da comunidade">
-                {spaces.map((sp) => {
-                  const k = spaceKind(sp.space_kind);
-                  return (
-                    <button
-                      key={sp.id}
-                      type="button"
-                      role="radio"
-                      aria-checked={spaceId === sp.id}
-                      onClick={() => {
-                        setSpaceId(sp.id);
-                        setPlace(sp.name);
-                        setOtherPlace(false);
-                      }}
-                      className={cn(chipClass(spaceId === sp.id), 'inline-flex items-center gap-1.5')}
-                    >
-                      <k.icon className="w-4 h-4" /> {sp.name}
-                    </button>
-                  );
-                })}
-                <button
-                  type="button"
-                  role="radio"
-                  aria-checked={otherPlace}
-                  onClick={() => {
-                    setSpaceId(null);
-                    setPlace('');
-                    setOtherPlace(true);
-                  }}
-                  className={chipClass(otherPlace)}
-                >
-                  Outro lugar
-                </button>
-              </div>
-            )}
-            {(!hasSpaces || otherPlace) && (
-              <>
-                <div className="relative">
-                  <MapPin className="w-4 h-4 text-ink-muted absolute left-3 top-1/2 -translate-y-1/2" />
-                  <Input
-                    value={place}
-                    onChange={(e) => setPlace(e.target.value)}
-                    placeholder="Ex: Quadra poliesportiva"
-                    aria-label="Local"
-                    className={cn(FIELD, 'pl-9')}
-                  />
-                </div>
-                {usedPlaces.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {usedPlaces.map((v) => (
-                      <button key={v.id} type="button" aria-pressed={place === v.name} onClick={() => setPlace(v.name)} className={chipClass(place === v.name)}>
-                        {v.name}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
-            {space?.rules && (
-              <p className="flex items-start gap-2 rounded-xl border border-line bg-surface px-3 py-2 text-xs text-ink-muted">
-                <Info className="w-4 h-4 text-brand shrink-0" /> {space.rules}
-              </p>
-            )}
-            {conflicts && conflicts.length > 0 && (
-              <div className="rounded-xl border border-accent/50 bg-accent/10 px-3 py-2 space-y-1" role="alert">
-                <p className="flex items-center gap-2 text-sm font-semibold text-ink">
-                  <AlertTriangle className="w-4 h-4 text-accent shrink-0" /> {space?.name} já tem algo nesse horário
-                </p>
-                {conflicts.map((c) => (
-                  <p key={c.session_id} className="text-xs text-ink-muted pl-6">
-                    {c.title}: {c.start_time.slice(0, 5)} às {c.end_time.slice(0, 5)}
-                  </p>
-                ))}
-              </div>
-            )}
-          </FormStep>
-
-          <FormStep n={5} title={KINDS[kind].capacityLabel}>
-            <div className="flex items-center justify-center gap-6">
-              <button
-                type="button"
-                aria-label="Menos vagas"
-                onClick={() => setSpots((s) => Math.max(1, s - 1))}
-                className="w-11 h-11 rounded-full bg-elevated border border-line flex items-center justify-center text-ink active:scale-95"
-              >
-                <Minus className="w-5 h-5" />
-              </button>
-              <input
-                type="number"
-                min={1}
-                max={500}
-                value={spots}
-                onChange={(e) => setSpots(Math.max(1, Math.min(500, Number(e.target.value) || 1)))}
-                aria-label="Número de vagas"
-                className="type-display w-20 text-center bg-transparent text-ink focus:outline-none"
-              />
-              <button
-                type="button"
-                aria-label="Mais vagas"
-                onClick={() => setSpots((s) => Math.min(500, s + 1))}
-                className="w-11 h-11 rounded-full bg-elevated border border-line flex items-center justify-center text-ink active:scale-95"
-              >
-                <Plus className="w-5 h-5" />
-              </button>
-            </div>
-          </FormStep>
-
-          <FormStep n={6} title="Detalhes" hint="Opcional">
-            <Textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder={KINDS[kind].descriptionPlaceholder}
-              aria-label="Descrição"
-              className="h-24 bg-elevated border-line resize-none"
-            />
-            <label className="flex items-center justify-between gap-3 cursor-pointer pt-1">
-              <span>
-                <span className="block text-sm font-medium text-ink">Aceita menores de idade</span>
-                <span className="block text-xs text-ink-muted">Entram como dependentes, inscritos pelo responsável.</span>
-              </span>
-              <Switch checked={minorsAllowed} onCheckedChange={setMinorsAllowed} />
-            </label>
-            {minorsAllowed && (
-              <label className="block space-y-2">
-                <span className="text-xs text-ink-muted">Idade mínima (opcional)</span>
-                <Input type="number" min={0} max={17} value={minAge} onChange={(e) => setMinAge(e.target.value)} placeholder="Ex: 8" className={FIELD} />
-              </label>
-            )}
-          </FormStep>
-
-          <p className="text-xs text-ink-muted text-center">Só os membros da comunidade veem e se inscrevem. A inscrição é gratuita.</p>
-        </div>
-
-        {/* Publicar, sempre à mão */}
-        <div className="fixed bottom-0 left-0 right-0 z-40 bg-bg/95 backdrop-blur-xl border-t border-line px-6 py-4 pb-safe space-y-1">
-          <Button type="submit" size="lg" className="w-full" disabled={isSaving}>
-            {isSaving ? 'Publicando…' : 'Publicar evento'}
+        <div className="flex-1 px-6 py-6 space-y-3">
+          <Button size="lg" className="w-full shadow-[var(--shadow-cta)]" onClick={share}>
+            <MessageCircle className="w-5 h-5 mr-2" /> Mandar no grupo do WhatsApp
           </Button>
-          <p className="text-xs text-center text-ink-muted min-h-4">{missing ?? 'Tudo certo. Os membros vão ver na agenda.'}</p>
+          <div className="grid grid-cols-2 gap-3">
+            <Button variant="secondary" onClick={() => navigate(`/atividade/${published.id}`, { replace: true })}>
+              <Eye className="w-4 h-4 mr-2" /> Ver evento
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setPublished(null);
+                setValues(null);
+                setBackToReview(false);
+                setScreen('sport');
+              }}
+            >
+              <CalendarPlus className="w-4 h-4 mr-2" /> Criar outro
+            </Button>
+          </div>
         </div>
-      </form>
+      </div>
+    );
+  }
 
-      <ConfirmDialog
-        open={confirmConflict}
-        onOpenChange={setConfirmConflict}
-        title="Espaço ocupado nesse horário"
-        description={`${space?.name ?? 'O espaço'} já tem ${conflicts?.map((c) => `"${c.title}" (${c.start_time.slice(0, 5)} às ${c.end_time.slice(0, 5)})`).join(', ')}. Publicar mesmo assim?`}
-        cancelLabel="Mudar horário"
-        confirmLabel="Publicar mesmo assim"
-        isLoading={isSaving}
-        onConfirm={() => {
-          setConfirmConflict(false);
-          void handleSave(undefined, true);
-        }}
-      />
-    </PageContainer>
+  if (screen === 'review') {
+    return (
+      <>
+        <StepFlow
+          label="Novo evento"
+          title="Confira e publique"
+          subtitle="É assim que o evento vai aparecer para os vizinhos."
+          stepKey="review"
+          onBack={() => go('name')}
+          primary={{ label: 'Publicar evento', onClick: () => void publish(), loading: isSaving }}
+          hint="Depois de publicar, você manda no grupo do WhatsApp."
+        >
+          <EventReview
+            v={v}
+            sportName={sportName}
+            sportSlug={category?.slug}
+            community={communityName}
+            onEdit={(s) => {
+              setBackToReview(true);
+              go(s);
+            }}
+          />
+        </StepFlow>
+        <ConfirmDialog
+          open={confirmConflict}
+          onOpenChange={setConfirmConflict}
+          title="Espaço ocupado nesse horário"
+          description={`${v.place} já tem ${conflicts?.map((c) => `"${c.title}" (${c.start_time.slice(0, 5)} às ${c.end_time.slice(0, 5)})`).join(', ')}. Publicar mesmo assim?`}
+          cancelLabel="Mudar horário"
+          confirmLabel="Publicar mesmo assim"
+          isLoading={isSaving}
+          onConfirm={() => {
+            setConfirmConflict(false);
+            void publish(true);
+          }}
+        />
+      </>
+    );
+  }
+
+  const index = EVENT_STEPS.indexOf(screen);
+  const missing = eventStepMissing(screen, v, now);
+  const next = () => {
+    if (missing) return;
+    if (backToReview || index === EVENT_STEPS.length - 1) go('review');
+    else go(EVENT_STEPS[index + 1]);
+  };
+  const back = () => {
+    if (backToReview) go('review');
+    else if (index === 0) navigate(-1);
+    else go(EVENT_STEPS[index - 1]);
+  };
+
+  return (
+    <StepFlow
+      label={`Novo evento · ${communityName}`}
+      progress={{ step: index + 1, total: EVENT_STEPS.length }}
+      title={COPY[screen].title}
+      subtitle={COPY[screen].subtitle}
+      stepKey={screen}
+      onBack={back}
+      primary={{ label: backToReview ? 'Voltar para a revisão' : index === EVENT_STEPS.length - 1 ? 'Revisar' : 'Continuar', onClick: next, disabled: !!missing }}
+      hint={missing ?? undefined}
+    >
+      {screen === 'sport' && <EventSportStep v={v} update={update} categories={categories ?? []} />}
+      {screen === 'when' && <EventWhenStep v={v} update={update} />}
+      {screen === 'where' && <EventWhereStep v={v} update={update} spaces={spaces ?? []} usedPlaces={usedPlaces} conflicts={conflicts ?? []} />}
+      {screen === 'spots' && <EventSpotsStep v={v} update={update} />}
+      {screen === 'name' && <EventNameStep v={v} update={update} sportName={sportName} />}
+    </StepFlow>
   );
 }

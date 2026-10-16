@@ -1,6 +1,8 @@
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@riff/core/supabase/client';
 import { useProfile } from '@riff/core/hooks/useProfile';
+import { useBlockedIds } from '@riff/core/hooks/useModeration';
 import { todaySP } from '@/hooks/useCommunity';
 
 const ACTIVITY_FIELDS =
@@ -109,10 +111,14 @@ export function useMyCommunities() {
 
 export type MyCommunity = NonNullable<ReturnType<typeof useMyCommunities>['data']>[number];
 
+// teto de segurança: a agenda de uma comunidade não chega perto disso
+const UPCOMING_LIMIT = 200;
+
 /** Próximas atividades das comunidades indicadas (todas as da pessoa, ou uma só). */
-export function useUpcomingActivities(orgIds: string[] | undefined) {
+export function useUpcomingActivities(orgIds: string[] | undefined, { includeBlocked = false } = {}) {
   const { profile } = useProfile();
-  return useQuery({
+  const blocked = useBlockedIds();
+  const query = useQuery({
     queryKey: ['community-agenda', orgIds?.slice().sort().join(','), profile?.id],
     queryFn: async () => {
       if (!orgIds?.length) return [];
@@ -123,7 +129,8 @@ export function useUpcomingActivities(orgIds: string[] | undefined) {
         .in('status', ['active', 'full'])
         .gte('date', todaySP())
         .order('date', { ascending: true })
-        .order('start_time', { ascending: true });
+        .order('start_time', { ascending: true })
+        .limit(UPCOMING_LIMIT);
       if (error) throw error;
       const now = Date.now();
       // hoje: só o que ainda não começou (data e hora de São Paulo, UTC-3)
@@ -134,6 +141,12 @@ export function useUpcomingActivities(orgIds: string[] | undefined) {
     },
     enabled: !!orgIds && !!profile?.id,
   });
+  // quem a pessoa bloqueou não aparece nas listas dela (a gestão vê tudo)
+  const data = useMemo(
+    () => (includeBlocked || !blocked.size ? query.data : query.data?.filter((a) => !blocked.has(a.professional_id))),
+    [query.data, blocked, includeBlocked],
+  );
+  return { ...query, data };
 }
 
 /** Uma atividade (só membros da comunidade enxergam: RLS). */

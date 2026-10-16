@@ -14,3 +14,4 @@ export * from './WeekStrip';
 export * from './AchievementList';
 export * from './ReportDialog';
 export * from './ModerationActions';
+export * from './BlockedPeople';

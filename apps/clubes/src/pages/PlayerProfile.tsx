@@ -4,7 +4,8 @@ import { ptBR } from 'date-fns/locale';
 import { ArrowLeft, EyeOff, Trophy } from 'lucide-react';
 import { useProfile } from '@riff/core/hooks/useProfile';
 import { PageContainer } from '@riff/core/layout/PageContainer';
-import { Avatar, BrandLines, EmptyState } from '@riff/core/domain';
+import { Avatar, BrandLines, EmptyState, ModerationActions } from '@riff/core/domain';
+import { CLUBES_BLOCK } from '@/lib/moderation';
 import { usePlayerProfile } from '@/hooks/useSports';
 import { useCommunity } from '@/hooks/useCommunity';
 import { SportsProfileView, StatsTicket } from '@/components/SportsProfileView';
@@ -67,6 +68,13 @@ export default function PlayerProfile() {
           />
         ) : (
           <SportsProfileView p={p} self={self} />
+        )}
+        {!self && profileId && (
+          <ModerationActions
+            report={{ kind: 'profile', id: profileId }}
+            block={{ profileId, name: p?.name?.split(' ')[0] ?? 'Esta pessoa' }}
+            blockDescription={CLUBES_BLOCK}
+          />
         )}
       </div>
     </PageContainer>

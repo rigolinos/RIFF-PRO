@@ -11,7 +11,7 @@ const STEPS = [
   { icon: KeyRound, title: 'Entre com o convite', text: 'O código do seu condomínio ou clube abre a comunidade.' },
   { icon: CalendarDays, title: 'Veja a agenda', text: 'Aulas, jogos e eventos da comunidade. Inscreva-se num toque.' },
   { icon: Trophy, title: 'Jogue e evolua', text: 'Elogios depois do jogo, conquistas e o ranking do mês.' },
-  { icon: Users, title: 'Inclua a família', text: 'Cadastre dependentes e acompanhe as atividades deles.' },
+  { icon: Users, title: 'Inclua a família', text: 'Cadastre dependentes e acompanhe os eventos deles.' },
 ];
 
 const fadeUp = (delay = 0) => ({ initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.4, delay } });
@@ -41,7 +41,7 @@ const Landing = () => {
               O esporte do seu condomínio, <span className="text-brand">organizado.</span>
             </h1>
             <p className="text-ink-muted mt-3 leading-relaxed max-w-sm">
-              Agenda, inscrições e presença das atividades do seu condomínio ou clube, só para quem é da comunidade.
+              Agenda, inscrições e presença dos eventos do seu condomínio ou clube, só para quem é da comunidade.
             </p>
           </motion.div>
           <motion.div {...fadeUp(0.15)} className="pt-6 space-y-3">
@@ -86,7 +86,7 @@ const Landing = () => {
           ))}
         </ol>
         <p className="flex items-center gap-2 text-xs text-ink-muted px-1 pt-1">
-          <ShieldCheck className="w-4 h-4 text-success shrink-0" /> Só membros veem as atividades e os locais da comunidade.
+          <ShieldCheck className="w-4 h-4 text-success shrink-0" /> Só membros veem os eventos e os locais da comunidade.
         </p>
       </section>
 

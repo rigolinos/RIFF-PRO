@@ -47,15 +47,15 @@ export default function ActivityRoster() {
   const handleClose = async (happened: boolean) => {
     try {
       await close.mutateAsync({ attendance, happened });
-      toast.success(happened ? 'Presença registrada e atividade encerrada.' : 'Atividade cancelada e inscrições canceladas.');
+      toast.success(happened ? 'Chamada feita. Evento encerrado.' : 'Evento cancelado e inscrições canceladas.');
       navigate(`/c/${orgId}`);
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : 'Não foi possível encerrar a atividade.');
+      toast.error(error instanceof Error ? error.message : 'Não foi possível encerrar o evento.');
     }
   };
 
   return (
-    <PageContainer title={session?.title ?? 'Atividade'} showBack withBottomNav={false}>
+    <PageContainer title={session?.title ?? 'Evento'} showBack withBottomNav={false}>
       <div className="px-6 py-6 space-y-6 pb-24">
         {session && (
           <div className="space-y-3">
@@ -141,7 +141,7 @@ export default function ActivityRoster() {
               <p className="text-xs text-ink-muted">A presença pode ser marcada a partir do horário de início.</p>
             )}
             <Button variant="secondary" className="w-full" onClick={() => setConfirmNotHappened(true)} disabled={close.isPending}>
-              {started ? 'A atividade não aconteceu' : 'Cancelar atividade'}
+              {started ? 'O evento não aconteceu' : 'Cancelar evento'}
             </Button>
           </section>
         )}
@@ -151,7 +151,7 @@ export default function ActivityRoster() {
       <ConfirmDialog
         open={confirmNotHappened}
         onOpenChange={setConfirmNotHappened}
-        title={started ? 'A atividade não aconteceu?' : 'Cancelar atividade?'}
+        title={started ? 'O evento não aconteceu?' : 'Cancelar evento?'}
         description="Ela sai da agenda e todas as inscrições são canceladas. Não dá para desfazer."
         cancelLabel="Voltar"
         confirmLabel="Confirmar"

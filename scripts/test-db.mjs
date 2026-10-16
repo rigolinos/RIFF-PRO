@@ -1347,6 +1347,35 @@ const errSummary = (await q('SELECT * FROM public.admin_client_errors(7)')).rows
 ok(errSummary[0]?.message === 'repetido' && errSummary[0].times === 19 && errSummary[0].people === 1 && errSummary.length === 3,
   `equipe Riff vê os erros agrupados pela mensagem (${errSummary.length} grupos)`);
 
+// ── Pagamento: o organizador confirma o Pix antes da atividade (P2 da jornada) ──
+console.log('Confirmar pagamento:');
+await ex("SELECT set_config('request.jwt.claim.sub', '', false)");
+const PAY_O = 'a4a4a4a4-0000-0000-0000-000000000028';
+const PAY_P = 'a5a5a5a5-0000-0000-0000-000000000028';
+const pPayO = await newUser(PAY_O, 'pay-org@teste.dev', 'Organizador Pix', 'professional');
+const pPayP = await newUser(PAY_P, 'pay-part@teste.dev', 'Participante Pix', 'student');
+const paySession = await newSession(pPayO, 5, 'Quadra Pix');
+const payBooking = (await one(`INSERT INTO public.bookings (session_id, student_id, professional_id, amount_total, professional_payout, payment_status, status)
+  VALUES ($1, $2, $3, 50, 50, 'pending', 'pending') RETURNING id`, [paySession, pPayP, pPayO])).id;
+const confirmPaid = (uid) => as('authenticated', uid, `UPDATE public.bookings SET payment_status = 'paid', payment_confirmed_at = now(), status = 'confirmed'
+  WHERE id = $1 RETURNING id`, [payBooking]);
+r = await confirmPaid(PAY_P);
+ok(/student_forbidden_field/.test(r.err ?? ''), 'participante não marca o próprio pagamento como pago');
+r = await confirmPaid(XS);
+ok(!!r.err || r.rows.length === 0, 'conta sem relação não mexe no pagamento');
+r = await as('authenticated', PAY_O, `SELECT b.id FROM public.bookings b JOIN public.sessions s ON s.id = b.session_id
+  WHERE b.professional_id = $1 AND b.payment_status = 'pending' AND b.status IN ('pending', 'confirmed') AND s.status <> 'cancelled'`, [pPayO]);
+ok(r.rows?.length === 1, 'organizador vê o pagamento para confirmar');
+r = await confirmPaid(PAY_O);
+const paidRow = await one('SELECT payment_status, status, payment_confirmed_at FROM public.bookings WHERE id = $1', [payBooking]);
+ok(r.rows?.length === 1 && paidRow.payment_status === 'paid' && paidRow.status === 'confirmed' && paidRow.payment_confirmed_at,
+  'organizador confirma o Pix antes do início da atividade' + (r.err ? ` (${r.err})` : ''));
+r = await as('authenticated', PAY_O, `UPDATE public.bookings SET payment_status = 'pending', payment_confirmed_at = NULL WHERE id = $1 RETURNING id`, [payBooking]);
+ok(r.rows?.length === 1 && (await one('SELECT payment_status s FROM public.bookings WHERE id = $1', [payBooking])).s === 'pending',
+  'organizador desfaz a confirmação');
+r = await as('authenticated', PAY_O, `UPDATE public.bookings SET amount_total = 1 WHERE id = $1`, [payBooking]);
+ok(/forbidden_field_change/.test(r.err ?? ''), 'organizador não muda o valor da reserva');
+
 // ── Superfície do visitante sem login (auditoria de 09/10/2026) ─────────
 // Se uma migration nova abrir algo para quem não está logado, estes testes falham.
 // Para abrir de propósito, atualize a lista aqui e explique no PR.

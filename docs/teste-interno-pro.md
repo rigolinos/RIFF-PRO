@@ -34,32 +34,34 @@ Use duas contas em dois celulares (ou um celular e um computador): uma organiza,
 1. Instalar pelo link do teste interno. O ícone e o nome "Riff Pro" aparecem certos na tela inicial.
 2. Abrir: tela de entrada sem barra de endereço do navegador.
 3. Criar conta com e-mail e senha (8 caracteres, letras e números). Senha fraca é recusada com mensagem clara.
-4. Confirmar o e-mail pelo link recebido. O link abre o app (ou o navegador) e entra na conta.
-5. Aceitar os Termos de Uso e a Política de Privacidade.
-6. Sair e entrar de novo. "Esqueci minha senha" envia o e-mail e a nova senha funciona.
-7. Modo avião e abrir o app: aparece "Você está sem conexão"; ao voltar a internet, "Tentar de novo" abre o app.
+4. Depois de criar a conta aparece "Confirme seu e-mail" com o e-mail digitado. Confirmar pelo link recebido; "Reenviar e-mail" funciona depois de 60 s.
+5. Primeiro acesso de participante: o app pergunta a cidade ("Onde você joga?").
+6. Aceitar os Termos de Uso e a Política de Privacidade.
+7. Sair e entrar de novo. "Esqueci minha senha" envia o e-mail e a nova senha funciona.
+8. Modo avião e abrir o app: aparece "Você está sem conexão"; ao voltar a internet, "Tentar de novo" abre o app.
 
 ### B. Organizador
 
-1. Tocar em organizar: a porta pede nome completo, CPF ou CNPJ, nascimento, celular, área, cidade, apresentação, Pix e o Termo do Organizador.
-2. CPF inválido, menor de 18 e CPF repetido são recusados com mensagem que dá para entender.
-3. Criar uma atividade: tipo, esporte (testar "tennis", "bjj" e um esporte que não existe), data, horário, vagas, preço.
-4. Local: buscar o endereço, escolher da lista, escrever o ponto de encontro.
-5. Publicar. A atividade aparece em Minhas atividades e no perfil público.
-6. Compartilhar: o convite sai com título, data, hora e local; no WhatsApp o link mostra imagem e título.
+1. Com uma conta que só participa, tocar em **Criar** (no meio do menu). O assistente pergunta, uma tela por vez: tipo, esporte (testar "tennis", "bjj" e um esporte que não existe), quando, onde (buscar o endereço e o ponto de encontro), vagas e preço, e o nome (já vem sugerido).
+2. Na revisão, "Alterar" leva ao passo e volta para a revisão.
+3. Ao publicar pela primeira vez, aparece "Falta só o seu cadastro de organizador". O cadastro pede nome completo, CPF ou CNPJ, nascimento, celular, área, cidade, apresentação, Pix e o Termo. CPF inválido, menor de 18 e CPF repetido são recusados com mensagem clara. Depois do cadastro, a revisão volta preenchida e publica com um toque.
+4. Sair no meio do Criar e voltar: aparece "Continuar de onde parei" ou "Começar do zero".
+5. Depois de publicar: tela "Agora chame a galera". "Mandar o convite" sai com título, data, hora e local; no WhatsApp o link mostra imagem e título.
+6. A atividade aparece em Agenda > Organizo e na sua página.
 7. Editar a atividade (horário e vagas) e conferir que o participante vê a mudança.
-8. Quando alguém reservar: ver o participante, confirmar o pagamento.
-9. Depois do horário: fazer a chamada (presente, atrasado, ausente, justificado) e encerrar.
-10. Painel e Ganhos mostram os números da atividade encerrada.
-11. Criar outra atividade e cancelar: quem reservou vê como cancelada.
+8. Quando alguém reservar uma atividade paga: no Início aparece "N pagamentos para confirmar". Em Ganhos, tocar em "Recebi" (dá para desfazer). Confirmar **antes** do horário da atividade.
+9. Depois do horário: no Início aparece "N chamadas para fazer", que leva à aba Chamada. Fazer a chamada (presente, atrasado, ausente, justificado); o código da reserva (#XXXXXX) aparece ao lado de cada nome.
+10. Painel (pelo resumo no Início) e Ganhos mostram os números da atividade encerrada.
+11. Repetir na semana seguinte: abre a revisão com tudo igual e a data +7.
+12. Criar outra atividade e cancelar: quem reservou vê como cancelada.
 
 ### C. Participante
 
 1. Abrir o link do convite sem estar logado: a atividade aparece; ao reservar, pede login e volta para a mesma atividade.
-2. Explorar: buscar pelo nome da atividade, pelo esporte e pelo organizador; usar os filtros.
+2. Início: "Filtrar" abre a gaveta (tipo, esporte, preço); cada filtro ligado vira um chip com "×". Explorar: buscar pelo nome da atividade, pelo esporte e pelo organizador.
 3. Abrir a atividade: "Quem vai", "Onde é", "Como chegar" (abre Google Maps ou Waze).
-4. Reservar. Em atividade paga, a chave Pix do organizador aparece e dá para copiar.
-5. Minhas reservas: a reserva aparece; o ingresso abre com o QR grande.
+4. Reservar uma atividade paga: aparece o QR do Pix com o valor e "Copiar código Pix". "Já fiz o Pix: avisar" abre o WhatsApp do organizador com valor, atividade e dia.
+5. Fechar no meio do Pix. Em Agenda (ou na página da atividade), a reserva pendente tem "Pagar agora" e o Pix volta. O ingresso mostra o seu nome e o código da reserva (sem QR).
 6. Cancelar uma reserva com mais de 4 horas de antecedência; com menos, o app explica por que não dá.
 7. Atividade lotada, cancelada ou encerrada não aceita reserva.
 8. Depois da atividade: avaliar (3 passos). A avaliação aparece no perfil do organizador, sem o seu sobrenome.
@@ -72,7 +74,7 @@ Use duas contas em dois celulares (ou um celular e um computador): uma organiza,
 3. `https://riff-pro.vercel.app/excluir-conta` abre sem login.
 4. Denunciar: no perfil de um organizador, numa atividade e numa avaliação (bandeirinha), escolher o motivo e enviar. Aparece "Denúncia enviada".
 5. Bloquear um organizador: as atividades dele somem do Início e do Explorar, e não dá mais para reservar com ele. Em Perfil > Pessoas bloqueadas, desbloquear e conferir que volta.
-6. Como organizador, em "Inscritos e presença", bloquear um participante: ele não consegue reservar de novo (vê "Esta atividade não está disponível para você").
+6. Como organizador, em "Inscritos e chamada", bloquear um participante: ele não consegue reservar de novo (vê "Esta atividade não está disponível para você").
 
 ### E. Coisas de aparelho
 
