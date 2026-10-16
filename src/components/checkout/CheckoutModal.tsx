@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import QRCode from 'react-qr-code';
 import { Loader2, Calendar, Map } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, parseISO } from 'date-fns';
@@ -10,6 +9,8 @@ import { supabase } from '@riff/core/supabase/client';
 import { BRAND } from '@/brand';
 import { errorMessage } from '@riff/core/lib/utils';
 import { PixPayment } from '@/components/bookings/PixPayment';
+import { bookingCode, TICKET_HINT } from '@/lib/ticket';
+import { useProfile } from '@riff/core/hooks/useProfile';
 import { googleMapsUrl } from '@riff/core/lib/geo';
 import { googleCalendarUrl } from '@riff/core/lib/calendar';
 import { bookingAttribution, type BookingScreen } from '@riff/core/lib/attribution';
@@ -53,6 +54,7 @@ interface CheckoutModalProps {
 
 export const CheckoutModal = ({ session, isOpen, onClose, onSuccess, screen }: CheckoutModalProps) => {
   const { user } = useAuth();
+  const { profile } = useProfile();
 
   // Steps: 'resume' -> 'payment' -> 'ticket'
   const [step, setStep] = useState<'resume' | 'payment' | 'ticket'>('resume');
@@ -263,14 +265,14 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess, screen }: C
                     {dateStr} · {timeStr} · {session.location_name || 'A confirmar'}
                   </p>
 
-                  {/* QR de check-in (o mesmo de Minhas reservas) */}
-                  <div className="w-fit mx-auto my-6 p-2 bg-white rounded-xl" role="img" aria-label="QR de check-in">
-                    <QRCode value={`checkin:${bookingId ?? session.id}`} size={104} level="L" />
+                  {/* Nome e código: é assim que quem organiza acha a pessoa na lista */}
+                  <div className="my-5 rounded-2xl bg-elevated border border-line px-4 py-3">
+                    <p className="type-label">Nome na lista</p>
+                    <p className="type-title text-ink">{profile?.full_name ?? 'Você'}</p>
+                    {bookingId && <p className="text-xs text-ink-muted mt-0.5">Reserva {bookingCode(bookingId)}</p>}
                   </div>
 
-                  <p className="text-ink-muted text-xs font-medium">
-                    Mostre ao organizador na chegada
-                  </p>
+                  <p className="text-ink-muted text-xs">{TICKET_HINT}</p>
                 </div>
 
                 <div className="flex gap-3 mb-4">

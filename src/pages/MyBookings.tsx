@@ -2,9 +2,9 @@ import { useState, useMemo } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { differenceInHours, format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { MapPin, MessageCircle, XCircle, Loader2, CalendarDays, Star, QrCode } from 'lucide-react';
+import { MapPin, MessageCircle, XCircle, Loader2, CalendarDays, Star, QrCode, Ticket } from 'lucide-react';
+import { bookingCode } from '@/lib/ticket';
 import { toast } from 'sonner';
-import QRCode from 'react-qr-code';
 import { PageContainer } from '@riff/core/layout/PageContainer';
 import { HeroHeader } from '@riff/core/layout/HeroHeader';
 import { EmptyState, SportIcon, StatusPill, TicketGrid } from '@riff/core/domain';
@@ -166,7 +166,7 @@ const MyBookings = () => {
           <p className="text-xs text-ink-muted">com {booking.professional?.full_name ?? 'organizador'}</p>
         </Link>
 
-        {/* Ingresso: dia, horário e QR de check-in (toque abre o ingresso grande) */}
+        {/* Ingresso: dia, horário e código da reserva (toque abre o ingresso grande) */}
         <div
           className={`grid grid-cols-[1fr_1fr_auto] items-center divide-x divide-line border-t border-dashed border-line ${!isHistory && !cancelled ? 'cursor-pointer active:bg-elevated' : ''}`}
           {...(!isHistory && !cancelled
@@ -192,11 +192,10 @@ const MyBookings = () => {
             <p className="text-xs text-ink-muted">{booking.session.duration_minutes ? `${booking.session.duration_minutes} min` : ''}</p>
           </div>
           {!isHistory && !cancelled ? (
-            <div className="p-3">
-              <div className="p-1.5 bg-white rounded-xl" aria-hidden="true">
-                <QRCode value={`checkin:${booking.id}`} size={56} level="L" />
-              </div>
-              <p className="text-xs text-brand font-semibold text-center pt-1">Abrir</p>
+            <div className="p-3 text-center min-w-[80px]">
+              <Ticket className="w-5 h-5 text-brand mx-auto" aria-hidden="true" />
+              <p className="text-xs font-semibold text-ink mt-1">{bookingCode(booking.id)}</p>
+              <p className="text-xs text-brand font-semibold">Ingresso</p>
             </div>
           ) : (
             <div className="p-3 text-center min-w-[80px]">
