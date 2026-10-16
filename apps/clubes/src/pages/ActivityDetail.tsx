@@ -118,7 +118,7 @@ export default function ActivityDetail() {
             )}
           </div>
           <div className="flex flex-wrap gap-2 mt-2">
-            <StatusPill text={kind?.chip ?? 'Atividade'} variant="neutral" />
+            <StatusPill text={kind?.chip ?? 'Evento'} variant="neutral" />
             {organizing && <StatusPill text="Você organiza" variant="info" />}
             {activity.myBookingId && <StatusPill text="Inscrito" variant="success" />}
             {closed && <StatusPill text={closed.pill} variant={phase === 'live' ? 'alert' : 'danger'} />}
@@ -312,7 +312,7 @@ export default function ActivityDetail() {
         {closed && !organizing ? (
           <p className="text-sm text-ink-muted text-center">{closed.message}</p>
         ) : !open ? null : organizing ? (
-          <p className="text-xs text-ink-muted text-center">Você organiza esta atividade.</p>
+          <p className="text-xs text-ink-muted text-center">Você organiza este evento.</p>
         ) : activity.myBookingId ? (
           <Button
             variant="secondary"

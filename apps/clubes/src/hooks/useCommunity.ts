@@ -34,14 +34,14 @@ export function useCommunity(orgId: string | undefined) {
 const BOOKING_ERRORS: Record<string, string> = {
   not_member: 'Só membros da comunidade podem se inscrever.',
   session_full: 'As vagas acabaram.',
-  session_started: 'A atividade já começou.',
-  session_unavailable: 'Esta atividade não está mais disponível.',
+  session_started: 'O evento já começou.',
+  session_unavailable: 'Este evento não está mais disponível.',
   already_booked: 'Já existe inscrição.',
-  minors_not_allowed: 'Esta atividade não aceita menores.',
-  below_min_age: 'O dependente ainda não tem a idade mínima da atividade.',
+  minors_not_allowed: 'Este evento não aceita menores.',
+  below_min_age: 'O dependente ainda não tem a idade mínima do evento.',
   dependent_adult: 'Com 18 anos ou mais, a pessoa precisa da própria conta.',
   dependent_not_found: 'Dependente não encontrado.',
-  self_booking: 'Você é quem conduz esta atividade.',
+  self_booking: 'Você é quem conduz este evento.',
 };
 
 /** Inscrever e cancelar (sem pagamento no Clubes v1). */
@@ -68,7 +68,7 @@ export function useAgendaActions() {
         .eq('id', bookingId);
       if (error) {
         if (error.message?.includes('late_cancellation')) {
-          throw new Error('Faltam menos de 4 horas: avise quem conduz a atividade.');
+          throw new Error('Faltam menos de 4 horas: avise quem conduz o evento.');
         }
         throw new Error(errorMessage(error, 'Não foi possível cancelar.'));
       }

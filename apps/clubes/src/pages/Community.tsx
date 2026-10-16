@@ -45,7 +45,7 @@ export default function Community() {
 
         <div className="flex gap-2">
           <Button className="flex-1" onClick={() => navigate(`/c/${orgId}/nova`)}>
-            <Plus className="w-4 h-4 mr-2" /> Criar atividade
+            <Plus className="w-4 h-4 mr-2" /> Criar evento
           </Button>
           {community?.isAdmin && (
             <Button variant="secondary" className="flex-1" onClick={() => navigate(`/c/${orgId}/gestao`)}>
@@ -113,8 +113,8 @@ export default function Community() {
           ) : !shown || shown.length === 0 ? (
             <EmptyState
               icon={CalendarDays}
-              title={spaceFilter ? 'Nada marcado neste espaço' : 'Nenhuma atividade marcada'}
-              description={spaceFilter ? 'O espaço está livre nos próximos dias.' : 'Crie a primeira atividade da comunidade: um jogo, uma aula ou um evento.'}
+              title={spaceFilter ? 'Nada marcado neste espaço' : 'Nenhum evento marcado'}
+              description={spaceFilter ? 'O espaço está livre nos próximos dias.' : 'Crie o primeiro evento da comunidade: um jogo, uma aula ou um encontro.'}
             />
           ) : (
             <div className="-mx-2 bg-surface border border-line rounded-2xl divide-y divide-line overflow-hidden">
