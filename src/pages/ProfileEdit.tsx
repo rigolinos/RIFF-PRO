@@ -42,7 +42,7 @@ import { supabase } from '@riff/core/supabase/client';
 import { uploadAvatar } from '@riff/core/lib/avatar';
 import { BRAND } from '@/brand';
 import { SportsProfileSection } from '@/components/profile/SportsProfileSection';
-import { BlockedPeople } from '@/components/profile/BlockedPeople';
+import { BlockedPeople } from '@riff/core/domain';
 import { ProfileSection } from '@/components/profile/ProfileSection';
 import { useMySportsProfile } from '@/hooks/useSportsProfile';
 

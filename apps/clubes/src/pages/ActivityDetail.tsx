@@ -6,7 +6,8 @@ import { ArrowLeft, Baby, ClipboardCheck, Info, MapPin, Share2, Users } from 'lu
 import { toast } from 'sonner';
 import { useProfile } from '@riff/core/hooks/useProfile';
 import { PageContainer } from '@riff/core/layout/PageContainer';
-import { Avatar, BrandLines, SpotsMeter, StatusPill } from '@riff/core/domain';
+import { Avatar, BrandLines, ModerationActions, SpotsMeter, StatusPill } from '@riff/core/domain';
+import { CLUBES_BLOCK } from '@/lib/moderation';
 import { Button } from '@riff/core/ui/button';
 import { KINDS, type ActivityKind } from '@riff/core/lib/copy';
 import { activityPhase, nowSP, PHASE_LABEL } from '@riff/core/lib/activityTime';
@@ -290,6 +291,14 @@ export default function ActivityDetail() {
               );
             })}
           </section>
+        )}
+
+        {!organizing && (
+          <ModerationActions
+            report={{ kind: 'session', id: activity.id }}
+            block={{ profileId: activity.professional_id, name: activity.professional?.full_name?.split(' ')[0] ?? 'quem organiza' }}
+            blockDescription={CLUBES_BLOCK}
+          />
         )}
       </div>
 

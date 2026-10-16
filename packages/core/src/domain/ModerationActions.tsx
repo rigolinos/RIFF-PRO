@@ -13,13 +13,18 @@ interface ModerationActionsProps {
   report: ReportTarget;
   /** Pessoa que pode ser bloqueada (sem isso, só aparece "Denunciar") */
   block?: { profileId: string; name: string };
+  /** O que o bloqueio faz neste app (o padrão é o texto do Riff Pro) */
+  blockDescription?: string;
   /** Chamado quando a pessoa não está logada */
   onNeedLogin?: () => void;
   className?: string;
 }
 
+const PRO_BLOCK =
+  'Vocês deixam de poder reservar atividades um do outro, e as atividades dessa pessoa somem das suas listas. Ela não é avisada. Você pode desbloquear quando quiser, em Perfil.';
+
 /** Linha discreta com "Denunciar" e "Bloquear", para o rodapé de perfis, atividades e listas */
-export function ModerationActions({ report, block, onNeedLogin, className = '' }: ModerationActionsProps) {
+export function ModerationActions({ report, block, blockDescription = PRO_BLOCK, onNeedLogin, className = '' }: ModerationActionsProps) {
   const [reporting, setReporting] = useState<ReportTarget | null>(null);
   const [confirmBlock, setConfirmBlock] = useState(false);
   const blocked = useBlockedIds();
@@ -64,7 +69,7 @@ export function ModerationActions({ report, block, onNeedLogin, className = '' }
           open={confirmBlock}
           onOpenChange={setConfirmBlock}
           title={`Bloquear ${block.name}?`}
-          description="Vocês deixam de poder reservar atividades um do outro, e as atividades dessa pessoa somem das suas listas. Ela não é avisada. Você pode desbloquear quando quiser, em Perfil."
+          description={blockDescription}
           confirmLabel="Bloquear"
           isDestructive
           isLoading={blockProfile.isPending}
