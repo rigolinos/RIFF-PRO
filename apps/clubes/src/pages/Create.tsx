@@ -1,9 +1,8 @@
 import { Link, Navigate } from 'react-router-dom';
-import { Building2, ChevronRight, KeyRound } from 'lucide-react';
+import { Building2, ChevronRight } from 'lucide-react';
 import { PageContainer } from '@riff/core/layout/PageContainer';
-import { EmptyState } from '@riff/core/domain';
 import { useMyCommunities } from '@/hooks/useActivities';
-import { JoinWithCode } from '@/components/JoinWithCode';
+import { FirstAccess } from '@/components/FirstAccess';
 
 // Botão "Criar" do menu: escolhe a comunidade (ou vai direto, se só houver uma)
 export default function Create() {
@@ -20,16 +19,12 @@ export default function Create() {
           </div>
         ) : !communities || communities.length === 0 ? (
           <>
-            <EmptyState
-              icon={KeyRound}
-              title="Primeiro, entre numa comunidade"
-              description="Os eventos acontecem no seu condomínio ou clube. Use o código de convite que o gestor enviou."
-            />
-            <JoinWithCode defaultOpen />
+            <p className="type-subtitle">Primeiro, entre no grupo do seu condomínio ou clube</p>
+            <FirstAccess />
           </>
         ) : (
           <>
-            <p className="text-ink-muted">Em qual comunidade vai ser?</p>
+            <p className="text-ink-muted">Em qual grupo vai ser?</p>
             <ul className="space-y-3">
               {communities.map((c) => (
                 <li key={c.id}>

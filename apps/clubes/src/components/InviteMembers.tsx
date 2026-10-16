@@ -6,7 +6,7 @@ import { supabase } from '@riff/core/supabase/client';
 import { Button } from '@riff/core/ui/button';
 import { errorMessage } from '@riff/core/lib/utils';
 import { BRAND } from '@/brand';
-import { formatInviteCode } from '@/lib/invite';
+import { formatInviteCode, inviteLink } from '@/lib/invite';
 
 interface InviteMembersProps {
   organizationId: string;
@@ -25,7 +25,7 @@ export function InviteMembers({ organizationId, organizationName, role = 'member
 
   const message = code
     ? `Convite para ${role === 'instructor' ? 'conduzir aulas e eventos na' : 'participar da'} comunidade esportiva de ${organizationName} no ${BRAND.name}. ` +
-      `Crie sua conta em ${window.location.origin} e use o código ${code}.`
+      `Toque no link para entrar: ${inviteLink(code)} (código ${code}).`
     : '';
 
   const handleCreate = async () => {

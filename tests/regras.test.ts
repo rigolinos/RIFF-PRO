@@ -12,6 +12,20 @@ import { activityInvite } from '@/lib/share';
 import { googleCalendarUrl } from '@riff/core/lib/calendar';
 import { paymentNoticeUrl, waPhone } from '@/lib/whatsapp';
 import { bookingCode } from '@/lib/ticket';
+import { formatInviteCode, inviteLink, isInviteCode, normalizeInviteCode } from '../apps/clubes/src/lib/invite';
+
+describe('convite do Clubes por link', () => {
+  it('aceita o código com ou sem hífen, em minúsculas ou com espaços', () => {
+    expect(normalizeInviteCode('abcd1234')).toBe('ABCD-1234');
+    expect(normalizeInviteCode(' ab cd-12 34 ')).toBe('ABCD-1234');
+    expect(isInviteCode('abcd-1234')).toBe(true);
+    expect(isInviteCode('abc-123')).toBe(false);
+    expect(formatInviteCode('ABCD1234')).toBe('ABCD-1234');
+  });
+  it('link do convite com o código no formato certo', () => {
+    expect(inviteLink('abcd1234', 'https://riff-pro-clubes.vercel.app')).toBe('https://riff-pro-clubes.vercel.app/convite/ABCD-1234');
+  });
+});
 
 describe('código da reserva no ingresso', () => {
   it('6 caracteres do id, em maiúsculas, com #', () => {
