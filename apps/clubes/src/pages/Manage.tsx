@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useParams, Navigate } from 'react-router-dom';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { ArrowLeft, CalendarDays, ChevronRight, ClipboardCheck, GraduationCap, MoreVertical, Ticket, Users, X } from 'lucide-react';
+import { ArrowLeft, CalendarDays, CheckCircle2, ChevronRight, ClipboardCheck, GraduationCap, MoreVertical, Ticket, Users, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useProfile } from '@riff/core/hooks/useProfile';
 import { PageContainer } from '@riff/core/layout/PageContainer';
@@ -21,6 +21,7 @@ import { useUpcomingActivities } from '@/hooks/useActivities';
 import { InviteMembers } from '@/components/InviteMembers';
 import { SpacesManager } from '@/components/SpacesManager';
 import { JoinRequests } from '@/components/JoinRequests';
+import { usePendingJoinRequests } from '@/hooks/useCommunityRequests';
 import { formatInviteCode } from '@/lib/invite';
 import { ROLE_LABEL } from '@/lib/roles';
 
@@ -55,6 +56,11 @@ export default function Manage() {
   const [revokedCodes, setRevokedCodes] = useState<string[]>([]);
   const { data: upcoming } = useUpcomingActivities(orgId ? [orgId] : undefined, { includeBlocked: true });
   const { data: pendingClose } = usePendingClose(orgId, true);
+  const { data: joinRequests } = usePendingJoinRequests(orgId, true);
+  const hasJoinRequests = !!joinRequests?.length;
+  // convites que vencem nos próximos 5 dias
+  const [now] = useState(() => Date.now());
+  const expiring = (invites ?? []).filter((i) => i.expires_at && new Date(i.expires_at).getTime() - now < 5 * 86400000);
 
   if (!isLoading && community === null) return <Navigate to="/inicio" replace />;
   if (!isLoading && community && !community.isAdmin) return <Navigate to={`/c/${orgId}`} replace />;
@@ -109,7 +115,7 @@ export default function Manage() {
           <p className="type-label">Gestão</p>
           <h1 className="type-display mt-1 min-h-10">{community?.name ?? ''}</h1>
           <p className="text-sm text-ink-muted mt-1">
-            {community ? `${community.kind === 'club' ? 'Clube' : 'Condomínio'} · ${community.role === 'owner' ? 'você é o responsável' : 'você é gestor'}` : ''}
+            {community ? `${community.kind === 'club' ? 'Clube' : 'Condomínio'} · ${community.role === 'owner' ? 'você é o gestor principal' : 'você é gestor'}` : ''}
           </p>
         </div>
       </section>
@@ -126,22 +132,38 @@ export default function Manage() {
       </div>
 
       <div className="px-6 py-6 space-y-8 pb-24">
-        {pendingClose && pendingClose.length > 0 && (
-          <Link
-            to={`/c/${orgId}`}
-            className="flex items-center gap-3 rounded-2xl border border-accent/40 bg-surface px-4 py-3"
-          >
-            <ClipboardCheck className="w-5 h-5 text-accent shrink-0" />
-            <span className="text-sm text-ink flex-1">
-              Falta fechar a presença de {pendingClose.length} evento{pendingClose.length > 1 ? 's' : ''}
-            </span>
-            <ChevronRight className="w-4 h-4 text-ink-muted" />
-          </Link>
-        )}
-
-        {orgId && <JoinRequests orgId={orgId} />}
-
-        {orgId && <SpacesManager orgId={orgId} />}
+        {/* Para fazer: o que espera o gestor, cada item levando direto à tela certa */}
+        <section className="space-y-3">
+          <h2 className="type-subtitle">Para fazer</h2>
+          {!pendingClose?.length && !expiring.length && !hasJoinRequests && (
+            <p className="flex items-center gap-2 rounded-2xl border border-line bg-surface px-4 py-3 text-sm text-ink-muted">
+              <CheckCircle2 className="w-4 h-4 text-success" /> Tudo em dia.
+            </p>
+          )}
+          {!!pendingClose?.length && (
+            <ul className="bg-surface border border-accent/40 rounded-2xl divide-y divide-line overflow-hidden">
+              {pendingClose.map((s) => (
+                <li key={s.id}>
+                  <Link to={`/c/${orgId}/atividade/${s.id}`} className="flex items-center gap-3 px-4 py-3 active:bg-elevated">
+                    <ClipboardCheck className="w-5 h-5 text-accent shrink-0" />
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-sm font-semibold text-ink truncate">Fazer a chamada: {s.title}</span>
+                      <span className="block text-xs text-ink-muted first-letter:uppercase">{format(parseISO(s.date), "EEEE, d 'de' MMM", { locale: ptBR })} às {s.start_time.slice(0, 5)}</span>
+                    </span>
+                    <ChevronRight className="w-4 h-4 text-ink-muted" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+          {orgId && <JoinRequests orgId={orgId} />}
+          {expiring.length > 0 && (
+            <p className="flex items-center gap-2 rounded-2xl border border-line bg-surface px-4 py-3 text-sm text-ink">
+              <Ticket className="w-4 h-4 text-brand shrink-0" />
+              {expiring.length === 1 ? 'Um convite vence' : `${expiring.length} convites vencem`} nos próximos 5 dias. Gere um novo em Convidar, se ainda precisar.
+            </p>
+          )}
+        </section>
 
         <section className="space-y-3">
           <div>
@@ -184,6 +206,8 @@ export default function Manage() {
             </div>
           )}
         </section>
+
+        {orgId && <SpacesManager orgId={orgId} />}
 
         <section className="space-y-4">
           <h2 className="type-subtitle">Membros{members ? ` (${members.length})` : ''}</h2>

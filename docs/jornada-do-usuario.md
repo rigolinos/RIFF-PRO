@@ -1,5 +1,7 @@
 # Revisão do caminho do usuário: Riff Pro e Riff Clubes
 
+> **Situação em 16/10/2026:** todos os lotes deste plano foram feitos, do Riff Pro (P0 a P5, PRs 58 a 63) e do Riff Clubes (C0 a C3, PRs 64 a 67). Ficou de fora a leitura do ingresso pela câmera, que é um lote próprio. Os números de uso também ficaram de fora: são opcionais e dependem de decisão. **Falta a validação com pessoas** (seção 1): o teste de linha de base não foi feito antes das mudanças, então o primeiro teste com cinco organizadores e cinco participantes vale como referência daqui para a frente. Mudança em relação ao plano: no menu do Clubes, a lista de comunidades se chama "Grupos", porque "Comunidade" não cabe no item.
+
 16/10/2026. Revisão tela por tela, feita a partir do código e do retorno dos testes com usuários (eles se perdem ao criar atividade no Pro, e sentem atrito em outros pontos). Nada foi codado: isto é o diagnóstico e o plano.
 
 ## 1. Como vamos validar
