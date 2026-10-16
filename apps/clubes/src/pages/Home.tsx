@@ -276,7 +276,7 @@ export default function Home() {
 
             {/* Atalhos */}
             <div className="flex flex-wrap justify-center gap-2 px-4">
-              <Shortcut to="/criar" icon={Plus} label="Criar jogo" />
+              <Shortcut to="/criar" icon={Plus} label="Criar evento" />
               {selected?.isAdmin && <Shortcut to={`/c/${selected.id}/gestao`} icon={UserPlus} label="Convidar vizinhos" />}
               <Shortcut to="/dependentes" icon={Baby} label="Dependentes" />
             </div>

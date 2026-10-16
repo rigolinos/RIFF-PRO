@@ -24,7 +24,7 @@ export function InviteMembers({ organizationId, organizationName, role = 'member
   const [isCreating, setIsCreating] = useState(false);
 
   const message = code
-    ? `Convite para ${role === 'instructor' ? 'conduzir atividades na' : 'participar da'} comunidade esportiva de ${organizationName} no ${BRAND.name}. ` +
+    ? `Convite para ${role === 'instructor' ? 'conduzir aulas e eventos na' : 'participar da'} comunidade esportiva de ${organizationName} no ${BRAND.name}. ` +
       `Crie sua conta em ${window.location.origin} e use o código ${code}.`
     : '';
 

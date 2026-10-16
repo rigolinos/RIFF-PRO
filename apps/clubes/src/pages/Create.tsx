@@ -12,7 +12,7 @@ export default function Create() {
   if (!isLoading && communities?.length === 1) return <Navigate to={`/c/${communities[0].id}/nova`} replace />;
 
   return (
-    <PageContainer title="Criar atividade" showBack>
+    <PageContainer title="Criar evento" showBack>
       <div className="px-6 py-6 space-y-6">
         {isLoading ? (
           <div className="flex justify-center py-12">
@@ -23,7 +23,7 @@ export default function Create() {
             <EmptyState
               icon={KeyRound}
               title="Primeiro, entre numa comunidade"
-              description="As atividades acontecem no seu condomínio ou clube. Use o código de convite que o gestor enviou."
+              description="Os eventos acontecem no seu condomínio ou clube. Use o código de convite que o gestor enviou."
             />
             <JoinWithCode defaultOpen />
           </>

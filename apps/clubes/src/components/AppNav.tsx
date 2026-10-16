@@ -5,11 +5,12 @@ import { BottomNavBar, type BottomNavItem } from '@riff/core/layout/BottomNavBar
 // Telas principais do Riff Clubes: o menu aparece só nelas (formulários e
 // detalhes abrem em tela cheia, com "voltar").
 const ITEMS: BottomNavItem[] = [
-  { path: '/inicio', icon: CalendarDays, label: 'Eventos' },
+  { path: '/inicio', icon: CalendarDays, label: 'Início' },
   {
     path: '/comunidades',
     icon: Building2,
-    label: 'Clubes',
+    // "Comunidade" não cabe no menu (61 px por item, texto mínimo de 12 px)
+    label: 'Grupos',
     isActive: (p) => p.startsWith('/comunidades') || /^\/c\/[^/]+$/.test(p),
   },
   { path: '/criar', icon: Plus, label: 'Criar', isFab: true },

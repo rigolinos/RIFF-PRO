@@ -14,10 +14,10 @@ const MANAGE_ERRORS: Record<string, string> = {
 };
 
 const CLOSE_ERRORS: Record<string, string> = {
-  forbidden: 'Só quem conduz a atividade ou o gestor pode fechar a presença.',
-  already_closed: 'Esta atividade já foi encerrada.',
-  session_not_started: 'A atividade ainda não começou.',
-  not_a_community_session: 'Esta atividade não é de uma comunidade.',
+  forbidden: 'Só quem conduz o evento ou o gestor faz a chamada.',
+  already_closed: 'Este evento já foi encerrado.',
+  session_not_started: 'O evento ainda não começou.',
+  not_a_community_session: 'Este evento não é de uma comunidade.',
 };
 
 const translate = (map: Record<string, string>, error: { message?: string }, fallback: string) => {
@@ -152,7 +152,7 @@ export function useCloseActivity(orgId: string | undefined, sessionId: string | 
         p_attendance: Object.entries(attendance).map(([booking_id, status]) => ({ booking_id, status })),
         p_happened: happened,
       });
-      if (error) throw translate(CLOSE_ERRORS, error, 'Não foi possível encerrar a atividade.');
+      if (error) throw translate(CLOSE_ERRORS, error, 'Não foi possível encerrar o evento.');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['community-roster', sessionId] });

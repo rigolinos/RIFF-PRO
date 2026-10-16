@@ -26,7 +26,7 @@ export default function Communities() {
   };
 
   return (
-    <PageContainer title="Clubes e condomínios">
+    <PageContainer title="Seus grupos">
       <div className="px-6 py-6 space-y-6">
         <p className="text-sm text-ink-muted">
           Cada condomínio ou clube tem a própria agenda. Só quem é da comunidade vê e participa.

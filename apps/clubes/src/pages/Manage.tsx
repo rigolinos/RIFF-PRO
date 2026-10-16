@@ -22,8 +22,8 @@ import { InviteMembers } from '@/components/InviteMembers';
 import { SpacesManager } from '@/components/SpacesManager';
 import { JoinRequests } from '@/components/JoinRequests';
 import { formatInviteCode } from '@/lib/invite';
+import { ROLE_LABEL } from '@/lib/roles';
 
-const ROLE_LABEL: Record<string, string> = { owner: 'Responsável', admin: 'Gestor', instructor: 'Instrutor', member: 'Membro' };
 const ROLE_ACTIONS: { action: MemberAction; role: string; label: string }[] = [
   { action: 'make_member', role: 'member', label: 'Tornar membro' },
   { action: 'make_instructor', role: 'instructor', label: 'Tornar instrutor' },
