@@ -11,7 +11,7 @@ import { useProfile } from '@riff/core/hooks/useProfile';
 import { KINDS, type ActivityKind } from '@riff/core/lib/copy';
 import { chipClass } from '@riff/core/lib/chips';
 import { cn } from '@riff/core/lib/utils';
-import { ModeSwitcher } from '@/components/layout/ModeSwitcher';
+import { OrganizerSummary } from '@/components/dashboard/OrganizerSummary';
 import { FEED_PAGE, useFeed } from '@/hooks/useSessions';
 import { Button } from '@riff/core/ui/button';
 import { useBlockedIds } from '@riff/core/hooks/useModeration';
@@ -116,7 +116,6 @@ export const Feed = () => {
     <PageContainer withBottomNav>
       <HeroHeader
         overlap
-        topLeft={<ModeSwitcher />}
         topRight={
           <HeroIconButton label="Buscar atividades e organizadores" onClick={() => navigate('/explore')}>
             <Search className="w-5 h-5" />
@@ -172,6 +171,7 @@ export const Feed = () => {
       </div>
 
       <div className="py-6 space-y-6">
+        {profile?.role === 'professional' && <OrganizerSummary />}
         <ReviewPrompt className="px-4" />
         {isLoadingFeed ? (
           <div className="px-4 space-y-4">

@@ -10,6 +10,7 @@ import {
   MapPin,
   Link as LinkIcon,
   Camera,
+  CalendarPlus,
   ChevronRight,
   FileText,
   LogOut,
@@ -38,12 +39,10 @@ import { Input } from '@riff/core/ui/input';
 import { Textarea } from '@riff/core/ui/textarea';
 import { useProfile } from '@riff/core/hooks/useProfile';
 import { supabase } from '@riff/core/supabase/client';
-import { ModeSwitcher } from '@/components/layout/ModeSwitcher';
 import { uploadAvatar } from '@riff/core/lib/avatar';
 import { BRAND } from '@/brand';
 import { SportsProfileSection } from '@/components/profile/SportsProfileSection';
 import { BlockedPeople } from '@/components/profile/BlockedPeople';
-import { useViewMode } from '@/contexts/ViewModeContext';
 import { useMySportsProfile } from '@/hooks/useSportsProfile';
 
 const PIX_TYPES = [
@@ -57,9 +56,6 @@ export default function ProfileEdit() {
   const { profile, updateProfile, isLoading, isUpdating } = useProfile();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const { viewMode } = useViewMode();
-  // No modo participante, o perfil mostra o lado esportista (só a própria pessoa vê)
-  const sportsMode = viewMode === 'student';
   const { data: sports } = useMySportsProfile();
 
   const { register, handleSubmit, setValue, reset, control } = useForm({
@@ -175,6 +171,9 @@ export default function ProfileEdit() {
   };
 
   const isPro = profile?.role === 'professional';
+  // Participante vê os números de esportista no topo; quem organiza vê os da sua página
+  // (e o perfil esportista embaixo, se também participa)
+  const sportsMode = !isPro;
 
   if (isLoading) {
     return (
@@ -194,7 +193,7 @@ export default function ProfileEdit() {
   return (
     <PageContainer withBottomNav>
       {/* Cabeçalho: foto, nome e papel */}
-      <HeroHeader overlap={sportsMode ? !!sports : isPro} topLeft={<ModeSwitcher />} topRight={<span />} contentClassName="text-center">
+      <HeroHeader overlap={sportsMode ? !!sports : isPro} contentClassName="text-center">
         <div className="flex flex-col items-center gap-2">
           <div className="relative">
             <Avatar src={avatar_url} name={full_name} className="w-24 h-24 ring-4 ring-bg" fallbackClassName="text-3xl" />
@@ -248,7 +247,20 @@ export default function ProfileEdit() {
       )}
 
       <div className="px-4 py-6 space-y-6">
-        {sportsMode && sports && <SportsProfileSection p={sports} />}
+        {sports && (sportsMode || sports.games > 0) && <SportsProfileSection p={sports} />}
+
+        {!isPro && (
+          <Link to="/create-session" className="flex items-center gap-3 rounded-2xl border border-dashed border-brand/60 px-4 py-4 active:bg-surface">
+            <span className="w-10 h-10 rounded-xl bg-brand/15 text-brand flex items-center justify-center shrink-0">
+              <CalendarPlus className="w-5 h-5" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-semibold text-ink">Quer organizar uma atividade?</span>
+              <span className="block text-xs text-ink-muted">Monte a primeira em poucos passos e receba por Pix.</span>
+            </span>
+            <ChevronRight className="w-5 h-5 text-ink-muted shrink-0" />
+          </Link>
+        )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <section className="bg-surface border border-line rounded-2xl p-4 space-y-4">

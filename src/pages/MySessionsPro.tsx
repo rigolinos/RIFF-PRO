@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Users, Loader2, Edit, XCircle, Copy, Share2, ClipboardCheck, CalendarDays, MoreHorizontal, Lock } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { shareActivity } from '@/lib/share';
 import { errorMessage } from '@riff/core/lib/utils';
@@ -19,6 +19,7 @@ import {
 } from '@riff/core/ui/dropdown-menu';
 import { useProSessions } from '@/hooks/useProSessions';
 import { ProSessionRow } from '@/components/cards/ProSessionRow';
+import { AgendaTabs } from '@/components/layout/AgendaTabs';
 
 const MySessionsPro = () => {
   const { sessions, isLoading, isError, error, cancelSession, updateSessionStatus } = useProSessions();
@@ -27,7 +28,9 @@ const MySessionsPro = () => {
   type SessionType = NonNullable<typeof sessions>[0];
   type BookingType = NonNullable<SessionType['bookings']>[0];
 
-  const [tab, setTab] = useState<'upcoming' | 'toClose' | 'done'>('upcoming');
+  // ?aba=chamada abre direto nas atividades que esperam a chamada (vem do resumo do Início)
+  const [params] = useSearchParams();
+  const [tab, setTab] = useState<'upcoming' | 'toClose' | 'done'>(() => (params.get('aba') === 'chamada' ? 'toClose' : 'upcoming'));
   const [toCancel, setToCancel] = useState<SessionType | null>(null);
   const navigate = useNavigate();
 
@@ -144,7 +147,9 @@ const MySessionsPro = () => {
 
   return (
     <PageContainer withBottomNav>
-      <HeroHeader overlap label="Atividades" title="Suas atividades" subtitle="Compartilhe, faça a chamada e repita as que deram certo." />
+      <HeroHeader overlap label="Agenda" title="O que você organiza" subtitle="Compartilhe, faça a chamada e repita as que deram certo.">
+        <AgendaTabs active="organizo" />
+      </HeroHeader>
 
       <TicketGrid
         items={[
