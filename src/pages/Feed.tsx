@@ -6,12 +6,10 @@ import { MapPin, Search } from 'lucide-react';
 
 import { PageContainer } from '@riff/core/layout/PageContainer';
 import { HeroHeader, HeroIconButton } from '@riff/core/layout/HeroHeader';
-import { EmptyState, SportIcon, WeekStrip } from '@riff/core/domain';
+import { EmptyState, WeekStrip } from '@riff/core/domain';
 import { useProfile } from '@riff/core/hooks/useProfile';
-import { KINDS, type ActivityKind } from '@riff/core/lib/copy';
-import { chipClass } from '@riff/core/lib/chips';
-import { cn } from '@riff/core/lib/utils';
 import { OrganizerSummary } from '@/components/dashboard/OrganizerSummary';
+import { FeedFilters, type FeedFilterState } from '@/components/feed/FeedFilters';
 import { FEED_PAGE, useFeed } from '@/hooks/useSessions';
 import { Button } from '@riff/core/ui/button';
 import { useBlockedIds } from '@riff/core/hooks/useModeration';
@@ -70,18 +68,19 @@ export const Feed = () => {
   const { data: categories } = useCategories();
   const blockedIds = useBlockedIds();
 
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [selectedKind, setSelectedKind] = useState<ActivityKind | 'all'>('all');
+  const [filters, setFilters] = useState<FeedFilterState>({ kind: 'all', sport: 'all', price: 'all' });
   const [day, setDay] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     let result = (sessions ?? []) as unknown as SessionWithJoins[];
     // quem a pessoa bloqueou não aparece na lista
     if (blockedIds.size) result = result.filter((s) => !s.professional?.id || !blockedIds.has(s.professional.id));
-    if (selectedCategory !== 'all') result = result.filter((s) => s.category_id === selectedCategory);
-    if (selectedKind !== 'all') result = result.filter((s) => s.kind === selectedKind);
+    if (filters.sport !== 'all') result = result.filter((s) => s.category_id === filters.sport);
+    if (filters.kind !== 'all') result = result.filter((s) => s.kind === filters.kind);
+    if (filters.price === 'free') result = result.filter((s) => Number(s.price_per_slot) === 0);
+    if (filters.price === 'paid') result = result.filter((s) => Number(s.price_per_slot) > 0);
     return result;
-  }, [sessions, selectedCategory, selectedKind, blockedIds]);
+  }, [sessions, filters, blockedIds]);
 
   // Cidade da pessoa primeiro; as outras cidades vêm numa seção abaixo.
   const myCity = normalizeCity(profile?.city);
@@ -106,10 +105,9 @@ export const Feed = () => {
 
   const dayItems = day ? local.filter((s) => s.date === day) : [];
   const firstName = profile?.full_name?.split(' ')[0];
-  const hasFilters = selectedCategory !== 'all' || selectedKind !== 'all';
+  const hasFilters = filters.sport !== 'all' || filters.kind !== 'all' || filters.price !== 'all';
   const clearFilters = () => {
-    setSelectedCategory('all');
-    setSelectedKind('all');
+    setFilters({ kind: 'all', sport: 'all', price: 'all' });
   };
 
   return (
@@ -141,34 +139,8 @@ export const Feed = () => {
 
       <WeekStrip start={today} hasEvents={(d) => onDay(d).length > 0} selected={day} onSelect={setDay} overlap />
 
-      {/* Filtros: tipo e esporte */}
-      <div className="pt-5 space-y-2">
-        <div className="flex overflow-x-auto hide-scrollbar gap-2 px-4">
-          <button type="button" onClick={() => setSelectedKind('all')} className={cn(chipClass(selectedKind === 'all'), 'shrink-0')}>
-            Todos os tipos
-          </button>
-          {(Object.keys(KINDS) as ActivityKind[]).map((k) => (
-            <button key={k} type="button" onClick={() => setSelectedKind(k)} className={cn(chipClass(selectedKind === k), 'shrink-0')}>
-              {KINDS[k].chip}
-            </button>
-          ))}
-        </div>
-        <div className="flex overflow-x-auto hide-scrollbar gap-2 px-4">
-          <button type="button" onClick={() => setSelectedCategory('all')} className={cn(chipClass(selectedCategory === 'all'), 'shrink-0')}>
-            Todos os esportes
-          </button>
-          {categories?.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              onClick={() => setSelectedCategory(c.id)}
-              className={cn(chipClass(selectedCategory === c.id), 'shrink-0 flex items-center gap-1.5')}
-            >
-              <SportIcon slug={c.slug} className="w-4 h-4" /> {c.name}
-            </button>
-          ))}
-        </div>
-      </div>
+      {/* Filtros: um botão que abre a gaveta (tipo, esporte, preço) */}
+      <FeedFilters value={filters} onChange={setFilters} categories={categories ?? []} resultCount={filtered.length} />
 
       <div className="py-6 space-y-6">
         {profile?.role === 'professional' && <OrganizerSummary />}
