@@ -1,36 +1,32 @@
-import { Home, Search, Plus, ClipboardList, User, LayoutDashboard, BookOpen, DollarSign } from 'lucide-react';
+import { Home, Search, Plus, CalendarCheck, User } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { BottomNavBar, type BottomNavItem } from '@riff/core/layout/BottomNavBar';
-import { useViewMode } from '@/contexts/ViewModeContext';
+import { useProfile } from '@riff/core/hooks/useProfile';
 
-const APP_ROUTES = ['/feed', '/explore', '/my-bookings', '/dashboard', '/my-sessions', '/create-session', '/earnings', '/profile'];
+const APP_ROUTES = ['/feed', '/explore', '/my-bookings', '/dashboard', '/my-sessions', '/earnings', '/profile'];
 
-const isProfile = (p: string) => p.startsWith('/profile');
+const startsWithAny = (p: string, list: string[]) => list.some((x) => p === x || p.startsWith(x + '/'));
 
-// Itens de cada modo: organizador (painel, atividades, criar, ganhos, perfil) e participante
-const PRO_ITEMS: BottomNavItem[] = [
-  { path: '/dashboard', icon: LayoutDashboard, label: 'Início' },
-  { path: '/my-sessions', icon: BookOpen, label: 'Atividades' },
-  { path: '/create-session', icon: Plus, label: 'Criar', isFab: true },
-  { path: '/earnings', icon: DollarSign, label: 'Ganhos' },
-  { path: '/profile/edit', icon: User, label: 'Perfil', isActive: isProfile },
-];
-
-const STUDENT_ITEMS: BottomNavItem[] = [
-  { path: '/feed', icon: Home, label: 'Início' },
-  { path: '/explore', icon: Search, label: 'Explorar' },
-  { path: '/my-bookings', icon: ClipboardList, label: 'Reservas' },
-  { path: '/profile/edit', icon: User, label: 'Perfil', isActive: isProfile },
-];
-
+// Um menu só para todos: quem organiza tem o resumo no Início e a aba "Organizo" na Agenda
 export const BottomNav = () => {
   const { pathname } = useLocation();
-  const { viewMode } = useViewMode();
+  const { profile } = useProfile();
 
   // Detalhe e formulários abrem em tela cheia, sem menu
   if (pathname.startsWith('/session/') || pathname.startsWith('/create-session') || pathname.startsWith('/edit-session')) return null;
-  const showNav = APP_ROUTES.some((p) => pathname === p || pathname.startsWith(p + '/'));
-  if (!showNav || !viewMode) return null;
+  if (!startsWithAny(pathname, APP_ROUTES)) return null;
 
-  return <BottomNavBar items={viewMode === 'professional' ? PRO_ITEMS : STUDENT_ITEMS} pathname={pathname} />;
+  const items: BottomNavItem[] = [
+    { path: '/feed', icon: Home, label: 'Início', isActive: (p) => startsWithAny(p, ['/feed', '/dashboard', '/earnings']) },
+    { path: '/explore', icon: Search, label: 'Explorar' },
+    { path: '/create-session', icon: Plus, label: 'Criar', isFab: true },
+    {
+      path: profile?.role === 'professional' ? '/my-sessions' : '/my-bookings',
+      icon: CalendarCheck,
+      label: 'Agenda',
+      isActive: (p) => startsWithAny(p, ['/my-bookings', '/my-sessions']),
+    },
+    { path: '/profile/edit', icon: User, label: 'Perfil', isActive: (p) => p.startsWith('/profile') },
+  ];
+  return <BottomNavBar items={items} pathname={pathname} />;
 };

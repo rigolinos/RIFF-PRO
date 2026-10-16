@@ -18,7 +18,6 @@ import { safeRedirect } from '@riff/core/auth/redirect';
 import { digits, isAdult, maskPhone, maskTaxId, taxIdKind } from '@riff/core/lib/taxId';
 import { LEGAL_DOCUMENTS } from '@riff/core/legal/documents';
 import { supabase } from '@riff/core/supabase/client';
-import { useViewMode } from '@/contexts/ViewModeContext';
 import { organizerErrorMessage, useOrganizerMissing } from '@/hooks/useOrganizer';
 import { BRAND } from '@/brand';
 
@@ -66,7 +65,6 @@ const OnboardingPro = () => {
 function OrganizerForm({ profile, next }: { profile: Profile; next: string }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { setViewMode } = useViewMode();
   const { missing: legalMissing, accept } = useLegalAcceptance();
   const upgrading = profile.role !== 'professional';
   const needsTerms = upgrading || legalMissing.includes('organizer_terms');
@@ -128,7 +126,6 @@ function OrganizerForm({ profile, next }: { profile: Profile; next: string }) {
         queryClient.invalidateQueries({ queryKey: ['organizer-missing'] }),
         queryClient.invalidateQueries({ queryKey: ['legal-acceptances'] }),
       ]);
-      setViewMode('professional');
       toast.success(upgrading ? 'Pronto! Agora você também organiza no Riff.' : 'Cadastro completo. Pode publicar.');
       navigate(next, { replace: true });
     } catch (error: unknown) {

@@ -8,8 +8,6 @@ import { MotionConfig } from 'framer-motion';
 import { ProtectedRoute } from '@riff/core/routing/ProtectedRoute';
 import { PublicRoute } from '@riff/core/routing/PublicRoute';
 import { BottomNav } from '@/components/layout/BottomNav';
-import { ModeBanner } from '@/components/layout/ModeBanner';
-import { ViewModeProvider } from '@/contexts/ViewModeContext';
 import { GlobalErrorBoundary } from '@riff/core/app/GlobalErrorBoundary';
 
 // Pages - Auth & Public
@@ -55,11 +53,9 @@ function App() {
     <GlobalErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
-          <ViewModeProvider>
             <MotionConfig reducedMotion="user" transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}>
               {/* Global UI Components */}
               <SonnerToaster theme="system" position="top-center" />
-              <ModeBanner />
 
             <Suspense fallback={<div className="flex h-screen w-full items-center justify-center"><div className="w-8 h-8 border-4 border-brand border-t-transparent rounded-full animate-spin"></div></div>}>
               <Routes>
@@ -108,7 +104,6 @@ function App() {
             {/* Navigation */}
             <BottomNav />
             </MotionConfig>
-          </ViewModeProvider>
         </BrowserRouter>
       </QueryClientProvider>
     </GlobalErrorBoundary>

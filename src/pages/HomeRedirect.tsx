@@ -1,15 +1,13 @@
 import { Navigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useProfile } from '@riff/core/hooks/useProfile';
-import { useViewMode } from '@/contexts/ViewModeContext';
 
 /**
- * Para onde vai quem acabou de entrar: organizador no Painel (se estiver no modo de
- * organizar), participante sem cidade escolhe a cidade, o resto vai para o Início.
+ * Para onde vai quem acabou de entrar: participante sem cidade escolhe a cidade; o resto
+ * vai para o Início (quem organiza vê ali o resumo e o atalho para o Painel).
  */
 const HomeRedirect = () => {
   const { profile, isLoading } = useProfile();
-  const { viewMode } = useViewMode();
 
   if (isLoading) {
     return (
@@ -18,7 +16,6 @@ const HomeRedirect = () => {
       </div>
     );
   }
-  if (profile?.role === 'professional' && viewMode === 'professional') return <Navigate to="/dashboard" replace />;
   if (profile?.role === 'student' && !profile.city?.trim()) return <Navigate to="/onboarding/student" replace />;
   return <Navigate to="/feed" replace />;
 };

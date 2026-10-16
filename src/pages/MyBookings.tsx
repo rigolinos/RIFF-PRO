@@ -17,6 +17,7 @@ import { useBookings } from '@/hooks/useBookings';
 import { buildWhatsAppUrl } from '@/lib/whatsapp';
 import { useProfile } from '@riff/core/hooks/useProfile';
 import { ReviewPrompt } from '@/components/reviews/ReviewPrompt';
+import { AgendaTabs } from '@/components/layout/AgendaTabs';
 import { canReview } from '@/lib/reviews';
 import { supabase } from '@riff/core/supabase/client';
 
@@ -269,7 +270,9 @@ const MyBookings = () => {
 
   return (
     <PageContainer withBottomNav>
-      <HeroHeader overlap label="Reservas" title="Sua agenda" subtitle="Suas vagas confirmadas, o check-in e o histórico." />
+      <HeroHeader overlap label="Agenda" title="Onde você vai" subtitle="Suas reservas, o ingresso e o histórico.">
+        <AgendaTabs active="vou" />
+      </HeroHeader>
 
       <TicketGrid
         items={[
