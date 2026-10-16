@@ -11,8 +11,8 @@ const Landing = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
 
-  // Quem já entrou vai direto para as atividades
-  if (!loading && user) return <Navigate to="/feed" replace />;
+  // Quem já entrou vai para a tela certa (Painel, cidade ou atividades)
+  if (!loading && user) return <Navigate to="/home" replace />;
 
   return (
     <div className="relative min-h-[100dvh] bg-bg text-ink w-full max-w-[480px] mx-auto overflow-hidden flex flex-col">

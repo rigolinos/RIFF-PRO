@@ -10,6 +10,8 @@ import { supabase } from '@riff/core/supabase/client';
 import { BRAND } from '@/brand';
 import { errorMessage } from '@riff/core/lib/utils';
 import { buildPixPayload } from '@/lib/pix';
+import { googleMapsUrl } from '@riff/core/lib/geo';
+import { googleCalendarUrl } from '@riff/core/lib/calendar';
 import { bookingAttribution, type BookingScreen } from '@riff/core/lib/attribution';
 import { useAuth } from '@riff/core/hooks/useAuth';
 import { useProfile } from '@riff/core/hooks/useProfile';
@@ -177,20 +179,28 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess, screen }: C
     triggerSuccess();
   };
 
+  // Como chegar: ponto exato quando o organizador marcou, senão o endereço escrito
   const generateMapsLink = () => {
-    const q = encodeURIComponent(session.location_address || session.location_name);
-    window.open(`https://www.google.com/maps/search/?api=1&query=${q}`, '_blank');
+    window.open(
+      googleMapsUrl({ latitude: session.latitude, longitude: session.longitude, name: session.location_name, address: session.location_address }),
+      '_blank',
+    );
   };
 
   const generateCalendarLink = () => {
-    // Generate an ICS or Google Calendar link
-    const text = encodeURIComponent(`Atividade: ${session.title}`);
-    const details = encodeURIComponent(`Local: ${session.location_name}\n\nReservado via ${BRAND.name}`);
-    const location = encodeURIComponent(session.location_address || session.location_name);
-    // Simple Google Calendar link
-    
-    // Simplified format for demo
-    window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&details=${details}&location=${location}`, '_blank');
+    window.open(
+      googleCalendarUrl({
+        title: session.title,
+        date: session.date,
+        start_time: session.start_time,
+        duration_minutes: session.duration_minutes,
+        location: [session.location_name, session.location_address].filter(Boolean).join(', '),
+        details: [session.meeting_point ? `Ponto de encontro: ${session.meeting_point}` : null, `Reservado pelo ${BRAND.name}: ${window.location.origin}/session/${session.id}`]
+          .filter(Boolean)
+          .join('\n'),
+      }),
+      '_blank',
+    );
   };
 
   return (
@@ -207,7 +217,7 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess, screen }: C
                 exit={{ opacity: 0, x: 20 }}
               >
                 <DrawerHeader>
-                  <DrawerTitle className="font-display text-xl text-ink">Resumo da Reserva</DrawerTitle>
+                  <DrawerTitle className="font-display text-xl text-ink">Resumo da reserva</DrawerTitle>
                   <DrawerDescription className="text-ink-muted">
                     Revise os detalhes da sua vaga.
                   </DrawerDescription>
@@ -245,7 +255,7 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess, screen }: C
                     disabled={isBooking}
                     className="w-full shadow-[var(--shadow-cta)]"
                   >
-                    {isBooking ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Confirmar Reserva'}
+                    {isBooking ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Confirmar reserva'}
                   </Button>
                   <Button variant="secondary" size="lg" onClick={onClose} disabled={isBooking}>
                     Cancelar
@@ -391,7 +401,7 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess, screen }: C
                     </motion.div>
                   )}
 
-                  <p className="type-label text-brand mb-2">Seu Ingresso</p>
+                  <p className="type-label text-brand mb-2">Seu ingresso</p>
                   <h3 className="type-subtitle text-ink mb-1">{session.title}</h3>
                   <p className="text-ink-muted text-sm">
                     {dateStr} · {timeStr} · {session.location_name || 'A confirmar'}

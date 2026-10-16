@@ -9,6 +9,23 @@ import { plainText, sportExactMatch, sportMatches } from '@riff/core/lib/sportSe
 import { googleMapsUrl, hasCoordinates, wazeUrl } from '@riff/core/lib/geo';
 import { moderationError, REPORT_REASONS } from '@riff/core/lib/moderation';
 import { activityInvite } from '@/lib/share';
+import { googleCalendarUrl } from '@riff/core/lib/calendar';
+
+describe('adicionar ao Google Agenda', () => {
+  it('leva dia, horário de início e fim no fuso de Brasília', () => {
+    const url = new URL(googleCalendarUrl({ title: 'Treino', date: '2026-10-13', start_time: '18:00:00', duration_minutes: 90, location: 'Orla' }));
+    expect(url.searchParams.get('dates')).toBe('20261013T180000/20261013T193000');
+    expect(url.searchParams.get('ctz')).toBe('America/Sao_Paulo');
+    expect(url.searchParams.get('text')).toBe('Treino');
+    expect(url.searchParams.get('location')).toBe('Orla');
+  });
+  it('atividade que vira a meia-noite e duração padrão de 60 min', () => {
+    expect(new URL(googleCalendarUrl({ title: 'X', date: '2026-10-13', start_time: '23:30', duration_minutes: 60 })).searchParams.get('dates')).toBe(
+      '20261013T233000/20261014T003000',
+    );
+    expect(new URL(googleCalendarUrl({ title: 'X', date: '2026-10-13', start_time: '08:00' })).searchParams.get('dates')).toBe('20261013T080000/20261013T090000');
+  });
+});
 
 describe('CPF e CNPJ (porta de organizador)', () => {
   it('aceita CPF e CNPJ válidos, com ou sem máscara', () => {

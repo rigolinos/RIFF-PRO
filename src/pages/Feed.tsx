@@ -118,7 +118,7 @@ export const Feed = () => {
         overlap
         topLeft={<ModeSwitcher />}
         topRight={
-          <HeroIconButton label="Buscar organizadores" onClick={() => navigate('/explore')}>
+          <HeroIconButton label="Buscar atividades e organizadores" onClick={() => navigate('/explore')}>
             <Search className="w-5 h-5" />
           </HeroIconButton>
         }
@@ -194,7 +194,7 @@ export const Feed = () => {
               icon={Search}
               title="Nenhuma atividade encontrada"
               description={hasFilters ? 'Não achamos nada com esses filtros por agora.' : 'Ainda não há atividades publicadas na sua região.'}
-              action={hasFilters ? { label: 'Limpar filtros', onClick: clearFilters } : { label: 'Buscar organizadores', onClick: () => navigate('/explore') }}
+              action={hasFilters ? { label: 'Limpar filtros', onClick: clearFilters } : { label: 'Buscar atividades', onClick: () => navigate('/explore') }}
             />
           </div>
         ) : (

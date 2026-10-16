@@ -22,7 +22,7 @@ const CreateSession = () => {
       } catch {
         // armazenamento indisponível (aba anônima etc.): nada a limpar
       }
-      toast.success('Atividade criada com sucesso! 🎉');
+      toast.success('Atividade publicada.');
       navigate('/my-sessions');
     } catch (error: unknown) {
       toast.error(organizerErrorMessage(error, errorMessage(error, 'Erro ao criar atividade.')));

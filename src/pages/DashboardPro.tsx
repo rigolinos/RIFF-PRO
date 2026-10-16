@@ -116,7 +116,7 @@ export default function DashboardPro() {
             ? `Hoje você tem ${todaySessions.length} atividade${todaySessions.length > 1 ? 's' : ''}.`
             : nextSession
               ? `Próxima: ${nextSession.title}, ${format(parseISO(nextSession.date), "EEEE, d 'de' MMM", { locale: ptBR })} às ${nextSession.start_time.substring(0, 5)}.`
-              : 'Crie uma atividade e compartilhe seu link.'
+              : 'Crie uma atividade e compartilhe sua página.'
         }
       />
 
@@ -171,7 +171,7 @@ export default function DashboardPro() {
                   highlight
                   action={
                     <Button variant="secondary" size="sm" className="w-full" onClick={() => navigate(`/session/${session.id}/attendance`)}>
-                      <ClipboardCheck className="w-4 h-4 mr-2" /> Inscritos e presença
+                      <ClipboardCheck className="w-4 h-4 mr-2" /> Inscritos e chamada
                     </Button>
                   }
                 />
@@ -180,11 +180,11 @@ export default function DashboardPro() {
           )}
         </section>
 
-        {/* Link público */}
+        {/* Sua página (link público) */}
         <section className="relative overflow-hidden bg-surface rounded-2xl p-5 border border-brand/40">
           <BrandLines className="absolute inset-y-0 right-0 h-full w-1/2 opacity-60" />
           <div className="relative">
-            <p className="type-label text-brand">Seu link público</p>
+            <p className="type-label text-brand">Sua página</p>
             <h3 className="type-subtitle mt-1">Coloque na bio e receba reservas</h3>
             <p className="text-sm text-ink-muted mt-1 max-w-[260px]">Quem abre vê suas próximas atividades e reserva direto.</p>
             <div className="flex gap-2 mt-4">
