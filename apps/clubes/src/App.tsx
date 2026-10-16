@@ -13,6 +13,7 @@ const Login = lazy(() => import('@/pages/Login'));
 const Signup = lazy(() => import('@/pages/Signup'));
 const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
 const ConfirmEmail = lazy(() => import('@/pages/ConfirmEmail'));
+const InviteLanding = lazy(() => import('@/pages/InviteLanding'));
 const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
 const LegalPage = lazy(() => import('@/pages/LegalPage'));
 const AcceptTerms = lazy(() => import('@/pages/AcceptTerms'));
@@ -58,6 +59,7 @@ export default function App() {
                 <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
                 <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
                 <Route path="/confirme-email" element={<PublicRoute><ConfirmEmail /></PublicRoute>} />
+                <Route path="/convite/:codigo" element={<InviteLanding />} />
                 <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
                 <Route path="/termos" element={<LegalPage />} />
                 <Route path="/privacidade" element={<LegalPage />} />

@@ -1,48 +1,26 @@
 import { useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import { KeyRound } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase } from '@riff/core/supabase/client';
 import { Button } from '@riff/core/ui/button';
 import { Input } from '@riff/core/ui/input';
-import { errorMessage } from '@riff/core/lib/utils';
+import { useJoinCommunity } from '@/hooks/useJoinCommunity';
 
-const MESSAGES: Record<string, string> = {
-  invalid_code: 'Código não encontrado. Confira com o seu condomínio ou clube.',
-  expired: 'Este convite venceu. Peça um código novo ao gestor.',
-  exhausted: 'Este convite já foi usado. Peça um código novo ao gestor.',
-  removed: 'Seu acesso a esta comunidade foi encerrado pelo gestor.',
-  unauthenticated: 'Entre na sua conta para usar o convite.',
-};
-
-// Morador digita o código do convite e entra na comunidade (join_organization)
+// Morador digita o código do convite e entra no grupo (join_organization)
 export function JoinWithCode({ defaultOpen = false }: { defaultOpen?: boolean }) {
-  const queryClient = useQueryClient();
   const [open, setOpen] = useState(defaultOpen);
   const [code, setCode] = useState('');
-  const [isJoining, setIsJoining] = useState(false);
+  const join = useJoinCommunity();
 
   const handleJoin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsJoining(true);
-    try {
-      const { data, error } = await supabase.rpc('join_organization', { p_code: code });
-      if (error) throw error;
-      const result = data as { success: boolean; code: string; name?: string };
-      if (!result.success) {
-        toast.error(MESSAGES[result.code] ?? 'Não foi possível usar o código.');
-        return;
-      }
-      toast.success(result.code === 'already_member' ? `Você já faz parte de: ${result.name}.` : `Pronto! Agora você faz parte de: ${result.name}.`);
-      setCode('');
-      setOpen(false);
-      queryClient.invalidateQueries({ queryKey: ['communities'] });
-      queryClient.invalidateQueries({ queryKey: ['community'] });
-    } catch (error: unknown) {
-      toast.error(errorMessage(error, 'Não foi possível usar o código.'));
-    } finally {
-      setIsJoining(false);
+    const result = await join.mutateAsync(code);
+    if (!result.ok) {
+      toast.error(result.message);
+      return;
     }
+    toast.success(result.message);
+    setCode('');
+    setOpen(false);
   };
 
   if (!open) {
@@ -71,8 +49,8 @@ export function JoinWithCode({ defaultOpen = false }: { defaultOpen?: boolean })
         <Button type="button" variant="secondary" className="flex-1" onClick={() => setOpen(false)}>
           Cancelar
         </Button>
-        <Button type="submit" className="flex-1" disabled={isJoining || code.replace(/[^A-Za-z0-9]/g, '').length < 8}>
-          {isJoining ? 'Entrando...' : 'Entrar'}
+        <Button type="submit" className="flex-1" disabled={join.isPending || code.replace(/[^A-Za-z0-9]/g, '').length < 8}>
+          {join.isPending ? 'Entrando...' : 'Entrar'}
         </Button>
       </div>
     </form>
