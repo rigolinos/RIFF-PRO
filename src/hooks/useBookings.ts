@@ -21,7 +21,7 @@ export function useBookings() {
           review:reviews(id),
           session:sessions(
             id, title, date, start_time, status, location_name, location_address, latitude, longitude, meeting_point,
-            price_per_slot, category_id, duration_minutes,
+            price_per_slot, category_id, duration_minutes, city,
             category:categories(name, emoji, slug)
           ),
           professional:profiles!bookings_professional_id_fkey(

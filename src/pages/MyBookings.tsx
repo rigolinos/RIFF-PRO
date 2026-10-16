@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { differenceInHours, format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { MapPin, MessageCircle, XCircle, Loader2, CalendarDays, Star } from 'lucide-react';
+import { MapPin, MessageCircle, XCircle, Loader2, CalendarDays, Star, QrCode } from 'lucide-react';
 import { toast } from 'sonner';
 import QRCode from 'react-qr-code';
 import { PageContainer } from '@riff/core/layout/PageContainer';
@@ -12,6 +12,7 @@ import { ConfirmDialog } from '@riff/core/domain/ConfirmDialog';
 import { formatBRL } from '@riff/core/lib/money';
 import { googleMapsUrl } from '@riff/core/lib/geo';
 import { TicketSheet, type TicketBooking } from '@/components/bookings/TicketSheet';
+import { PaySheet } from '@/components/bookings/PaySheet';
 import { useBookings } from '@/hooks/useBookings';
 import { buildWhatsAppUrl } from '@/lib/whatsapp';
 import { useProfile } from '@riff/core/hooks/useProfile';
@@ -36,6 +37,8 @@ const MyBookings = () => {
     if (params.get('ingresso')) setParams({}, { replace: true });
   };
   const [tab, setTab] = useState<'upcoming' | 'history'>('upcoming');
+  // "Pagar agora" de uma reserva que ficou aguardando o Pix
+  const [paying, setPaying] = useState<BookingType | null>(null);
   const navigate = useNavigate();
 
   // Split bookings between upcoming and history
@@ -215,6 +218,18 @@ const MyBookings = () => {
           <span className="text-brand font-semibold">Como chegar</span>
         </button>
 
+        {!isHistory && booking.payment_status === 'pending' && Number(booking.amount_total ?? 0) > 0 && (
+          <div className="border-t border-line p-3 pb-0">
+            <button
+              type="button"
+              onClick={() => setPaying(booking)}
+              className="w-full h-11 rounded-xl bg-brand text-brand-ink font-semibold text-sm flex items-center justify-center gap-2 active:scale-[.98]"
+            >
+              <QrCode className="w-4 h-4" /> Pagar agora · {formatBRL(booking.amount_total)}
+            </button>
+          </div>
+        )}
+
         {!isHistory ? (
           <div className="border-t border-line p-3 flex gap-2">
             <button
@@ -296,6 +311,24 @@ const MyBookings = () => {
           <div className="space-y-3">{list.map((b) => renderBookingCard(b, tab === 'history'))}</div>
         )}
       </div>
+
+      <PaySheet
+        booking={
+          paying
+            ? {
+                id: paying.id,
+                activity: {
+                  title: paying.session.title,
+                  date: paying.session.date,
+                  start_time: paying.session.start_time,
+                  city: paying.session.city,
+                  price: Number(paying.amount_total ?? 0),
+                },
+              }
+            : null
+        }
+        onClose={() => setPaying(null)}
+      />
 
       <TicketSheet booking={(bookings?.find((b) => b.id === ticketId) as TicketBooking | undefined) ?? null} onClose={closeTicket} />
 

@@ -18,6 +18,7 @@ import { InsightsCard } from '@/components/dashboard/InsightsCard';
 import { useProfessionalInsights } from '@/hooks/useProfessionalInsights';
 import { ModeSwitcher } from '@/components/layout/ModeSwitcher';
 import { ProSessionRow } from '@/components/cards/ProSessionRow';
+import { PendingPayments } from '@/components/payments/PendingPayments';
 
 const SHARED_KEY = 'riff-link-shared';
 const readShared = () => {
@@ -139,6 +140,8 @@ export default function DashboardPro() {
 
       <div className="px-4 py-6 flex-1 flex flex-col space-y-6 pb-32">
         {profile && !profile.pix_key && <PixMissingBanner />}
+
+        <PendingPayments limit={3} />
 
         <GettingStarted profile={profile} totalSessions={metrics.total_sessions} hasSharedLink={hasSharedLink} onShare={handleShare} />
 
