@@ -10,6 +10,7 @@ import { EmptyState, TicketGrid } from '@riff/core/domain';
 import { formatBRL } from '@riff/core/lib/money';
 import { supabase } from '@riff/core/supabase/client';
 import { useProfile } from '@riff/core/hooks/useProfile';
+import { PendingPayments } from '@/components/payments/PendingPayments';
 
 export default function Earnings() {
   const { profile } = useProfile();
@@ -29,6 +30,8 @@ export default function Earnings() {
         `)
         .eq('professional_id', profile.id)
         .eq('product', 'pro')
+        // reserva cancelada não é dinheiro a receber
+        .in('status', ['pending', 'confirmed', 'completed'])
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -65,7 +68,8 @@ export default function Earnings() {
       />
 
       <div className="px-4 py-6 flex-1 flex flex-col space-y-3">
-        <h2 className="type-label px-2">Extrato</h2>
+        <PendingPayments hideWhenEmpty={false} />
+        <h2 className="type-label px-2 pt-3">Extrato</h2>
         {isLoading ? (
           <div className="flex justify-center py-12">
             <Loader2 className="w-8 h-8 text-brand animate-spin" />
@@ -96,7 +100,7 @@ export default function Earnings() {
                   <div className="text-right shrink-0">
                     <p className={`text-sm font-bold font-display ${isPaid ? 'text-success' : 'text-ink'}`}>{formatBRL(price)}</p>
                     <p className="text-xs text-ink-muted">
-                      {isPaid ? 'Pix recebido' : 'Pendente'} · {format(parseISO(t.created_at || ''), 'dd MMM', { locale: ptBR })}
+                      {isPaid ? 'Pix recebido' : 'A confirmar'} · {format(parseISO(t.created_at || ''), 'dd MMM', { locale: ptBR })}
                     </p>
                   </div>
                 </li>

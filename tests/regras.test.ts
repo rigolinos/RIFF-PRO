@@ -10,6 +10,19 @@ import { googleMapsUrl, hasCoordinates, wazeUrl } from '@riff/core/lib/geo';
 import { moderationError, REPORT_REASONS } from '@riff/core/lib/moderation';
 import { activityInvite } from '@/lib/share';
 import { googleCalendarUrl } from '@riff/core/lib/calendar';
+import { paymentNoticeUrl, waPhone } from '@/lib/whatsapp';
+
+describe('aviso de Pix no WhatsApp', () => {
+  it('celular com DDI do Brasil, sem duplicar', () => {
+    expect(waPhone('(51) 99999-8888')).toBe('5551999998888');
+    expect(waPhone('+55 51 99999-8888')).toBe('5551999998888');
+  });
+  it('mensagem com valor, atividade e dia, para quem organiza achar o pagamento', () => {
+    const url = new URL(paymentNoticeUrl({ phone: '51999998888', studentName: 'Ana', proName: 'Bruno', title: 'Treino', when: 'sáb, 17 de out às 08:00', amount: 'R$ 30,00' }));
+    expect(url.pathname).toBe('/5551999998888');
+    expect(url.searchParams.get('text')).toBe('Oi, Bruno! Aqui é Ana. Fiz o Pix de R$ 30,00 da minha reserva em "Treino" (sáb, 17 de out às 08:00). Segue o comprovante.');
+  });
+});
 
 describe('adicionar ao Google Agenda', () => {
   it('leva dia, horário de início e fim no fuso de Brasília', () => {

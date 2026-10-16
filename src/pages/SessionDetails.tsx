@@ -16,6 +16,7 @@ import { KINDS, type ActivityKind } from '@riff/core/lib/copy';
 import { activityPhase, nowSP, PHASE_LABEL } from '@riff/core/lib/activityTime';
 import { googleMapsUrl, hasCoordinates, wazeUrl } from '@riff/core/lib/geo';
 import { CheckoutModal } from '@/components/checkout/CheckoutModal';
+import { PaySheet } from '@/components/bookings/PaySheet';
 import { useProParticipants } from '@/hooks/useSportsProfile';
 import { shareActivity } from '@/lib/share';
 
@@ -25,6 +26,7 @@ const SessionDetails = () => {
   const { user } = useAuth();
   const { profile } = useProfile();
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [isPaying, setIsPaying] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: session, isLoading, error } = useQuery({
@@ -306,9 +308,20 @@ const SessionDetails = () => {
             </Button>
           </div>
         ) : myBooking ? (
-          <Button size="lg" variant="secondary" className="w-full" onClick={() => navigate(`/my-bookings?ingresso=${myBooking.id}`)}>
-            <Ticket className="w-4 h-4 mr-2" /> Ver minha reserva
-          </Button>
+          myBooking.payment_status === 'pending' && Number(session.price_per_slot) > 0 ? (
+            <div className="flex gap-2">
+              <Button size="lg" variant="secondary" className="flex-1" onClick={() => navigate(`/my-bookings?ingresso=${myBooking.id}`)}>
+                <Ticket className="w-4 h-4 mr-2" /> Reserva
+              </Button>
+              <Button size="lg" className="flex-1 shadow-[var(--shadow-cta)]" onClick={() => setIsPaying(true)}>
+                Pagar agora
+              </Button>
+            </div>
+          ) : (
+            <Button size="lg" variant="secondary" className="w-full" onClick={() => navigate(`/my-bookings?ingresso=${myBooking.id}`)}>
+              <Ticket className="w-4 h-4 mr-2" /> Ver minha reserva
+            </Button>
+          )
         ) : closed ? (
           <div className="space-y-2">
             <p className="text-sm text-ink-muted text-center">{closed.message}</p>
@@ -333,6 +346,18 @@ const SessionDetails = () => {
           </div>
         )}
       </StickyActions>
+
+      <PaySheet
+        booking={
+          isPaying && myBooking
+            ? {
+                id: myBooking.id,
+                activity: { title: session.title, date: session.date, start_time: session.start_time, city: session.city, price: Number(session.price_per_slot) },
+              }
+            : null
+        }
+        onClose={() => setIsPaying(false)}
+      />
 
       {isCheckoutOpen && (
         <CheckoutModal
