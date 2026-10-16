@@ -16,6 +16,7 @@ import { StickyActions } from '@riff/core/layout/StickyActions';
 import { useProSessions } from '@/hooks/useProSessions';
 import { useProfile } from '@riff/core/hooks/useProfile';
 import { errorMessage } from '@riff/core/lib/utils';
+import { bookingCode } from '@/lib/ticket';
 
 type AttendanceStatus = 'present' | 'late' | 'absent' | 'excused';
 
@@ -151,14 +152,14 @@ export default function SessionAttendance() {
       }
 
       if (followUps.length > 0) {
-        toast.warning(`Atividade encerrada, mas não salvamos: ${followUps.join(' e ')}. Tente ajustar em seguida.`);
+        toast.warning(`Chamada salva, mas não salvamos: ${followUps.join(' e ')}. Tente ajustar em seguida.`);
       } else {
-        toast.success('Atividade encerrada!');
+        toast.success('Chamada feita. Atividade encerrada.');
       }
       refresh();
       navigate('/my-sessions');
     } catch (error: unknown) {
-      toast.error(errorMessage(error, 'Erro ao encerrar atividade.'));
+      toast.error(errorMessage(error, 'Não foi possível salvar a chamada.'));
     } finally {
       setIsClosing(false);
     }
@@ -193,7 +194,7 @@ export default function SessionAttendance() {
   }
 
   const dateLabel = format(parseISO(session.date), "EEEE, d 'de' MMMM", { locale: ptBR });
-  const title = canClose ? 'Encerrar atividade' : session.status === 'completed' ? 'Presença' : 'Participantes';
+  const title = canClose || session.status === 'completed' ? 'Chamada' : 'Inscritos';
 
   return (
     <div className={`min-h-screen bg-bg ${canClose ? 'pb-40' : 'pb-12'}`}>
@@ -210,14 +211,14 @@ export default function SessionAttendance() {
       <div className="px-4 py-6 space-y-4">
         {isOpen && !hasStarted && (
           <p className="text-sm text-ink-muted bg-surface border border-line rounded-2xl p-4">
-            Você poderá registrar a presença e encerrar a atividade depois do horário de início.
+            A chamada abre no horário de início da atividade.
           </p>
         )}
         {session.status === 'cancelled' && (
           <p className="text-sm text-ink-muted bg-surface border border-line rounded-2xl p-4">Esta atividade foi cancelada.</p>
         )}
         {session.status === 'completed' && bookings.length > 0 && (
-          <p className="text-sm text-ink-muted">Atividade encerrada. Você ainda pode corrigir a presença de cada pessoa.</p>
+          <p className="text-sm text-ink-muted">Chamada feita. Você ainda pode corrigir a presença de cada pessoa.</p>
         )}
 
         {bookings.length === 0 ? (
@@ -235,7 +236,7 @@ export default function SessionAttendance() {
                     <div className="flex-1 min-w-0">
                       <h3 className="type-subtitle truncate">{name}</h3>
                       <p className="type-label mt-0.5">
-                        {b.payment_status === 'free' ? 'Gratuito' : b.payment_status === 'paid' ? 'Pago' : 'Pagamento pendente'}
+                        {bookingCode(b.id)} · {b.payment_status === 'free' ? 'Gratuito' : b.payment_status === 'paid' ? 'Pago' : 'Pagamento pendente'}
                       </p>
                     </div>
                     <ModerationActions

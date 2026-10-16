@@ -73,7 +73,7 @@ export const KINDS: Record<ActivityKind, {
   },
   other: {
     label: 'Outro',
-    chip: 'Atividade',
+    chip: 'Outro',
     description: 'Não achou o seu? Descreva no título e na descrição que a gente ajusta.',
     example: '',
     icon: 'Sparkles',

@@ -10,6 +10,7 @@ import {
   MapPin,
   Link as LinkIcon,
   Camera,
+  CalendarPlus,
   ChevronRight,
   FileText,
   LogOut,
@@ -38,12 +39,11 @@ import { Input } from '@riff/core/ui/input';
 import { Textarea } from '@riff/core/ui/textarea';
 import { useProfile } from '@riff/core/hooks/useProfile';
 import { supabase } from '@riff/core/supabase/client';
-import { ModeSwitcher } from '@/components/layout/ModeSwitcher';
 import { uploadAvatar } from '@riff/core/lib/avatar';
 import { BRAND } from '@/brand';
 import { SportsProfileSection } from '@/components/profile/SportsProfileSection';
 import { BlockedPeople } from '@riff/core/domain';
-import { useViewMode } from '@/contexts/ViewModeContext';
+import { ProfileSection } from '@/components/profile/ProfileSection';
 import { useMySportsProfile } from '@/hooks/useSportsProfile';
 
 const PIX_TYPES = [
@@ -57,9 +57,6 @@ export default function ProfileEdit() {
   const { profile, updateProfile, isLoading, isUpdating } = useProfile();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const { viewMode } = useViewMode();
-  // No modo participante, o perfil mostra o lado esportista (só a própria pessoa vê)
-  const sportsMode = viewMode === 'student';
   const { data: sports } = useMySportsProfile();
 
   const { register, handleSubmit, setValue, reset, control } = useForm({
@@ -99,7 +96,7 @@ export default function ProfileEdit() {
     }
   }, [profile, reset]);
 
-  // Vindo do painel ("Cadastrar Pix"): rola até WhatsApp e Pix depois que o perfil carrega
+  // Vindo do painel ("Cadastrar Pix"): abre e rola até WhatsApp e Pix depois que o perfil carrega
   useEffect(() => {
     if (profile && window.location.hash === '#pix') {
       document.getElementById('pix')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -175,6 +172,9 @@ export default function ProfileEdit() {
   };
 
   const isPro = profile?.role === 'professional';
+  // Participante vê os números de esportista no topo; quem organiza vê os da sua página
+  // (e o perfil esportista embaixo, se também participa)
+  const sportsMode = !isPro;
 
   if (isLoading) {
     return (
@@ -194,7 +194,7 @@ export default function ProfileEdit() {
   return (
     <PageContainer withBottomNav>
       {/* Cabeçalho: foto, nome e papel */}
-      <HeroHeader overlap={sportsMode ? !!sports : isPro} topLeft={<ModeSwitcher />} topRight={<span />} contentClassName="text-center">
+      <HeroHeader overlap={sportsMode ? !!sports : isPro} contentClassName="text-center">
         <div className="flex flex-col items-center gap-2">
           <div className="relative">
             <Avatar src={avatar_url} name={full_name} className="w-24 h-24 ring-4 ring-bg" fallbackClassName="text-3xl" />
@@ -221,7 +221,7 @@ export default function ProfileEdit() {
           </p>
           {isPro && slug && (
             <Link to={`/@${slug}`} className="text-xs font-semibold text-brand underline underline-offset-4">
-              Ver minha vitrine ({BRAND.domain}/@{slug})
+              Ver minha página ({BRAND.domain}/@{slug})
             </Link>
           )}
         </div>
@@ -248,11 +248,23 @@ export default function ProfileEdit() {
       )}
 
       <div className="px-4 py-6 space-y-6">
-        {sportsMode && sports && <SportsProfileSection p={sports} />}
+        {sports && (sportsMode || sports.games > 0) && <SportsProfileSection p={sports} />}
+
+        {!isPro && (
+          <Link to="/create-session" className="flex items-center gap-3 rounded-2xl border border-dashed border-brand/60 px-4 py-4 active:bg-surface">
+            <span className="w-10 h-10 rounded-xl bg-brand/15 text-brand flex items-center justify-center shrink-0">
+              <CalendarPlus className="w-5 h-5" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-semibold text-ink">Quer organizar uma atividade?</span>
+              <span className="block text-xs text-ink-muted">Monte a primeira em poucos passos e receba por Pix.</span>
+            </span>
+            <ChevronRight className="w-5 h-5 text-ink-muted shrink-0" />
+          </Link>
+        )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <section className="bg-surface border border-line rounded-2xl p-4 space-y-4">
-            <h2 className="type-label">Seus dados</h2>
+          <ProfileSection title="Seus dados" summary={[full_name, profile?.city].filter(Boolean).join(' · ') || 'Nome, celular, Instagram e cidade'}>
             <label className="block space-y-2">
               <span className={LABEL}>Nome completo</span>
               <Input {...register('full_name')} placeholder="Seu nome" className={FIELD} />
@@ -283,21 +295,19 @@ export default function ProfileEdit() {
                 <Input {...register('state')} placeholder="SP" maxLength={2} className={`${FIELD} uppercase`} />
               </label>
             </div>
-          </section>
+          </ProfileSection>
 
           {!isPro ? (
-            <section className="bg-surface border border-line rounded-2xl p-4 space-y-2">
-              <h2 className="type-label">Sobre você (opcional)</h2>
+            <ProfileSection title="Sobre você" summary="Opcional: seus objetivos com o esporte">
               <Textarea
                 {...register('bio')}
                 placeholder="Seus objetivos: Ex: gosto de esportes ao ar livre e quero melhorar o condicionamento."
                 className="bg-elevated border-line h-24 resize-none"
               />
-            </section>
+            </ProfileSection>
           ) : (
             <>
-              <section className="bg-surface border border-line rounded-2xl p-4 space-y-4">
-                <h2 className="type-label">Sua vitrine</h2>
+              <ProfileSection title="Sua página" summary={slug ? `${BRAND.domain}/@${slug}` : 'Endereço e apresentação'}>
                 <label className="block space-y-2">
                   <span className={LABEL}>
                     <LinkIcon className="w-3.5 h-3.5" /> Link da bio
@@ -312,10 +322,9 @@ export default function ProfileEdit() {
                   <span className={LABEL}>Bio e metodologia</span>
                   <Textarea {...register('bio')} placeholder="Como você trabalha? Qual seu diferencial?" className="bg-elevated border-line h-24 resize-none" />
                 </label>
-              </section>
+              </ProfileSection>
 
-              <section id="pix" className="bg-surface border border-line rounded-2xl p-4 space-y-4 scroll-mt-24">
-                <h2 className="type-label">Recebimento</h2>
+              <ProfileSection id="pix" title="Recebimento" summary={profile?.pix_key ? 'Chave Pix e WhatsApp cadastrados' : 'Falta cadastrar a chave Pix'}>
                 <label className="block space-y-2">
                   <span className={LABEL}>
                     <MessageCircle className="w-3.5 h-3.5" /> WhatsApp para reservas
@@ -339,7 +348,7 @@ export default function ProfileEdit() {
                   <Input {...register('pix_key')} placeholder="Sua chave" className={FIELD} />
                   <span className="block text-xs text-ink-muted">Aparece para quem reserva, junto do QR do Pix com o valor certo.</span>
                 </label>
-              </section>
+              </ProfileSection>
             </>
           )}
 
@@ -351,7 +360,7 @@ export default function ProfileEdit() {
         <BlockedPeople />
 
         <section className="space-y-2">
-          <h2 className="type-label px-2">Conta</h2>
+          <h2 className="type-label px-2">Privacidade e conta</h2>
           <div className="bg-surface border border-line rounded-2xl divide-y divide-line">
             {[
               { path: '/termos', title: 'Termos de Uso', icon: FileText },

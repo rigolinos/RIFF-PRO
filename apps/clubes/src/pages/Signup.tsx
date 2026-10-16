@@ -10,6 +10,7 @@ import { Button } from '@riff/core/ui/button';
 import { Input } from '@riff/core/ui/input';
 import { authErrorMessage } from '@riff/core/lib/authErrors';
 import { safeRedirect } from '@riff/core/auth/redirect';
+import { rememberSignupEmail } from '@riff/core/auth/signupEmail';
 import { PASSWORD_HINT, PASSWORD_MIN, passwordProblem } from '@riff/core/lib/password';
 import { BRAND } from '@/brand';
 
@@ -36,8 +37,8 @@ const Signup = () => {
       toast.error(authErrorMessage(error, 'Não foi possível criar a conta. Tente de novo.'));
       return;
     }
-    const redirect = safeRedirect(params.get('redirect'), '');
-    navigate('/login?registered=true' + (redirect ? `&redirect=${encodeURIComponent(redirect)}` : ''));
+    rememberSignupEmail(email);
+    navigate('/confirme-email', { state: { email: email.trim().toLowerCase(), redirect: safeRedirect(params.get('redirect'), '') } });
   };
 
   return (

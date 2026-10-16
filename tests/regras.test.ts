@@ -9,6 +9,43 @@ import { plainText, sportExactMatch, sportMatches } from '@riff/core/lib/sportSe
 import { googleMapsUrl, hasCoordinates, wazeUrl } from '@riff/core/lib/geo';
 import { moderationError, REPORT_REASONS } from '@riff/core/lib/moderation';
 import { activityInvite } from '@/lib/share';
+import { googleCalendarUrl } from '@riff/core/lib/calendar';
+import { paymentNoticeUrl, waPhone } from '@/lib/whatsapp';
+import { bookingCode } from '@/lib/ticket';
+
+describe('código da reserva no ingresso', () => {
+  it('6 caracteres do id, em maiúsculas, com #', () => {
+    expect(bookingCode('3f9a2c10-77aa-4b1c-9d2e-000000000001')).toBe('#3F9A2C');
+  });
+});
+
+describe('aviso de Pix no WhatsApp', () => {
+  it('celular com DDI do Brasil, sem duplicar', () => {
+    expect(waPhone('(51) 99999-8888')).toBe('5551999998888');
+    expect(waPhone('+55 51 99999-8888')).toBe('5551999998888');
+  });
+  it('mensagem com valor, atividade e dia, para quem organiza achar o pagamento', () => {
+    const url = new URL(paymentNoticeUrl({ phone: '51999998888', studentName: 'Ana', proName: 'Bruno', title: 'Treino', when: 'sáb, 17 de out às 08:00', amount: 'R$ 30,00' }));
+    expect(url.pathname).toBe('/5551999998888');
+    expect(url.searchParams.get('text')).toBe('Oi, Bruno! Aqui é Ana. Fiz o Pix de R$ 30,00 da minha reserva em "Treino" (sáb, 17 de out às 08:00). Segue o comprovante.');
+  });
+});
+
+describe('adicionar ao Google Agenda', () => {
+  it('leva dia, horário de início e fim no fuso de Brasília', () => {
+    const url = new URL(googleCalendarUrl({ title: 'Treino', date: '2026-10-13', start_time: '18:00:00', duration_minutes: 90, location: 'Orla' }));
+    expect(url.searchParams.get('dates')).toBe('20261013T180000/20261013T193000');
+    expect(url.searchParams.get('ctz')).toBe('America/Sao_Paulo');
+    expect(url.searchParams.get('text')).toBe('Treino');
+    expect(url.searchParams.get('location')).toBe('Orla');
+  });
+  it('atividade que vira a meia-noite e duração padrão de 60 min', () => {
+    expect(new URL(googleCalendarUrl({ title: 'X', date: '2026-10-13', start_time: '23:30', duration_minutes: 60 })).searchParams.get('dates')).toBe(
+      '20261013T233000/20261014T003000',
+    );
+    expect(new URL(googleCalendarUrl({ title: 'X', date: '2026-10-13', start_time: '08:00' })).searchParams.get('dates')).toBe('20261013T080000/20261013T090000');
+  });
+});
 
 describe('CPF e CNPJ (porta de organizador)', () => {
   it('aceita CPF e CNPJ válidos, com ou sem máscara', () => {

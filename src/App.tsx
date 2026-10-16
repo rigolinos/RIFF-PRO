@@ -8,8 +8,6 @@ import { MotionConfig } from 'framer-motion';
 import { ProtectedRoute } from '@riff/core/routing/ProtectedRoute';
 import { PublicRoute } from '@riff/core/routing/PublicRoute';
 import { BottomNav } from '@/components/layout/BottomNav';
-import { ModeBanner } from '@/components/layout/ModeBanner';
-import { ViewModeProvider } from '@/contexts/ViewModeContext';
 import { GlobalErrorBoundary } from '@riff/core/app/GlobalErrorBoundary';
 
 // Pages - Auth & Public
@@ -17,10 +15,12 @@ const Landing = lazy(() => import('@/pages/Landing'));
 const Login = lazy(() => import('@/pages/Login'));
 const Signup = lazy(() => import('@/pages/Signup'));
 const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
+const ConfirmEmail = lazy(() => import('@/pages/ConfirmEmail'));
 const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
 const LegalPage = lazy(() => import('@/pages/LegalPage'));
 const AcceptTerms = lazy(() => import('@/pages/AcceptTerms'));
+const HomeRedirect = lazy(() => import('@/pages/HomeRedirect'));
 const DeleteAccountInfo = lazy(() => import('@/pages/DeleteAccountInfo'));
 
 // Pages - App Core
@@ -54,11 +54,9 @@ function App() {
     <GlobalErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
-          <ViewModeProvider>
             <MotionConfig reducedMotion="user" transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}>
               {/* Global UI Components */}
               <SonnerToaster theme="system" position="top-center" />
-              <ModeBanner />
 
             <Suspense fallback={<div className="flex h-screen w-full items-center justify-center"><div className="w-8 h-8 border-4 border-brand border-t-transparent rounded-full animate-spin"></div></div>}>
               <Routes>
@@ -67,11 +65,13 @@ function App() {
               <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
               <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
               <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
+              <Route path="/confirme-email" element={<PublicRoute><ConfirmEmail /></PublicRoute>} />
               <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
               <Route path="/termos" element={<LegalPage />} />
               <Route path="/termos-organizador" element={<LegalPage />} />
               <Route path="/privacidade" element={<LegalPage />} />
               <Route path="/excluir-conta" element={<DeleteAccountInfo />} />
+              <Route path="/home" element={<ProtectedRoute><HomeRedirect /></ProtectedRoute>} />
               <Route path="/aceite" element={<ProtectedRoute skipLegal><AcceptTerms /></ProtectedRoute>} />
               
               {/* Public Profiles & Sessions */}
@@ -106,7 +106,6 @@ function App() {
             {/* Navigation */}
             <BottomNav />
             </MotionConfig>
-          </ViewModeProvider>
         </BrowserRouter>
       </QueryClientProvider>
     </GlobalErrorBoundary>

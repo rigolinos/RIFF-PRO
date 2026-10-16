@@ -20,10 +20,10 @@ interface ModerationActionsProps {
   className?: string;
 }
 
-/** Linha discreta com "Denunciar" e "Bloquear", para o rodapé de perfis, atividades e listas */
 const PRO_BLOCK =
   'Vocês deixam de poder reservar atividades um do outro, e as atividades dessa pessoa somem das suas listas. Ela não é avisada. Você pode desbloquear quando quiser, em Perfil.';
 
+/** Linha discreta com "Denunciar" e "Bloquear", para o rodapé de perfis, atividades e listas */
 export function ModerationActions({ report, block, blockDescription = PRO_BLOCK, onNeedLogin, className = '' }: ModerationActionsProps) {
   const [reporting, setReporting] = useState<ReportTarget | null>(null);
   const [confirmBlock, setConfirmBlock] = useState(false);

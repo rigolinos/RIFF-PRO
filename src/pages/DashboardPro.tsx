@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Link2, Share2, Calendar, Loader2, CheckCircle2, RefreshCw, ClipboardCheck } from 'lucide-react';
+import { Link2, Share2, Calendar, Loader2, CheckCircle2, ClipboardCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { PageContainer } from '@riff/core/layout/PageContainer';
 import { HeroHeader } from '@riff/core/layout/HeroHeader';
@@ -12,12 +12,11 @@ import { Button } from '@riff/core/ui/button';
 import { BrandLines, EmptyState, TicketGrid } from '@riff/core/domain';
 import { formatBRL } from '@riff/core/lib/money';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
-import { useViewMode } from '@/contexts/ViewModeContext';
 import { GettingStarted, PixMissingBanner } from '@/components/dashboard/GettingStarted';
 import { InsightsCard } from '@/components/dashboard/InsightsCard';
 import { useProfessionalInsights } from '@/hooks/useProfessionalInsights';
-import { ModeSwitcher } from '@/components/layout/ModeSwitcher';
 import { ProSessionRow } from '@/components/cards/ProSessionRow';
+import { PendingPayments } from '@/components/payments/PendingPayments';
 
 const SHARED_KEY = 'riff-link-shared';
 const readShared = () => {
@@ -35,26 +34,11 @@ export default function DashboardPro() {
   const [copied, setCopied] = useState(false);
   const [hasSharedLink, setHasSharedLink] = useState(readShared);
   const navigate = useNavigate();
-  const { setViewMode } = useViewMode();
-
-
-  const switchToParticipant = (
-    <button
-      type="button"
-      onClick={() => {
-        setViewMode('student');
-        navigate('/feed');
-      }}
-      className="flex items-center gap-1.5 h-8 px-3 rounded-full bg-bg/50 backdrop-blur-sm border border-line text-xs font-semibold text-ink"
-    >
-      <RefreshCw className="w-3.5 h-3.5" /> Participante
-    </button>
-  );
 
   if (isLoading) {
     return (
       <PageContainer withBottomNav>
-        <HeroHeader topLeft={<ModeSwitcher />} topRight={switchToParticipant} label="Painel do organizador" />
+        <HeroHeader showBack label="Painel do organizador" />
         <div className="flex-1 flex items-center justify-center py-16">
           <Loader2 className="w-8 h-8 text-brand animate-spin" />
         </div>
@@ -107,8 +91,7 @@ export default function DashboardPro() {
     <PageContainer withBottomNav>
       <HeroHeader
         overlap
-        topLeft={<ModeSwitcher />}
-        topRight={switchToParticipant}
+        showBack
         label="Painel do organizador"
         title={`Olá${firstName ? `, ${firstName}` : ''}!`}
         subtitle={
@@ -116,7 +99,7 @@ export default function DashboardPro() {
             ? `Hoje você tem ${todaySessions.length} atividade${todaySessions.length > 1 ? 's' : ''}.`
             : nextSession
               ? `Próxima: ${nextSession.title}, ${format(parseISO(nextSession.date), "EEEE, d 'de' MMM", { locale: ptBR })} às ${nextSession.start_time.substring(0, 5)}.`
-              : 'Crie uma atividade e compartilhe seu link.'
+              : 'Crie uma atividade e compartilhe sua página.'
         }
       />
 
@@ -139,6 +122,8 @@ export default function DashboardPro() {
 
       <div className="px-4 py-6 flex-1 flex flex-col space-y-6 pb-32">
         {profile && !profile.pix_key && <PixMissingBanner />}
+
+        <PendingPayments limit={3} />
 
         <GettingStarted profile={profile} totalSessions={metrics.total_sessions} hasSharedLink={hasSharedLink} onShare={handleShare} />
 
@@ -171,7 +156,7 @@ export default function DashboardPro() {
                   highlight
                   action={
                     <Button variant="secondary" size="sm" className="w-full" onClick={() => navigate(`/session/${session.id}/attendance`)}>
-                      <ClipboardCheck className="w-4 h-4 mr-2" /> Inscritos e presença
+                      <ClipboardCheck className="w-4 h-4 mr-2" /> Inscritos e chamada
                     </Button>
                   }
                 />
@@ -180,11 +165,11 @@ export default function DashboardPro() {
           )}
         </section>
 
-        {/* Link público */}
+        {/* Sua página (link público) */}
         <section className="relative overflow-hidden bg-surface rounded-2xl p-5 border border-brand/40">
           <BrandLines className="absolute inset-y-0 right-0 h-full w-1/2 opacity-60" />
           <div className="relative">
-            <p className="type-label text-brand">Seu link público</p>
+            <p className="type-label text-brand">Sua página</p>
             <h3 className="type-subtitle mt-1">Coloque na bio e receba reservas</h3>
             <p className="text-sm text-ink-muted mt-1 max-w-[260px]">Quem abre vê suas próximas atividades e reserva direto.</p>
             <div className="flex gap-2 mt-4">

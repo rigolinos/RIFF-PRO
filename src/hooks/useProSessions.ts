@@ -18,6 +18,7 @@ export function useProSessions() {
           id, title, description, date, start_time, duration_minutes,
           location_name, location_address, max_participants, current_participants,
           price_per_slot, status, session_type, category_id, kind, city,
+          sport_other, venue_id, latitude, longitude, meeting_point, what_to_bring, cover_image_url, skill_level,
           category:categories(name, emoji, slug),
           bookings(
             id, status, payment_status, amount_total, checked_in, created_at,
@@ -35,28 +36,6 @@ export function useProSessions() {
       return data;
     },
     enabled: !!profile?.id,
-  });
-
-  // Confirm payment — check affected rows
-  const confirmPayment = useMutation({
-    mutationFn: async ({ bookingId, status }: { bookingId: string, status: 'pending' | 'paid' }) => {
-      const { data, error } = await supabase
-        .from('bookings')
-        .update({
-          payment_status: status,
-          payment_confirmed_at: status === 'paid' ? new Date().toISOString() : null,
-        })
-        .eq('id', bookingId)
-        .select('id');
-
-      if (error) throw error;
-      if (!data || data.length === 0) {
-        throw new Error('Não foi possível confirmar o pagamento. Verifique se a reserva ainda está ativa.');
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sessions', 'pro'] });
-    },
   });
 
   // Cancel session via RPC
@@ -134,7 +113,6 @@ export function useProSessions() {
     isLoading: proSessionsQuery.isLoading,
     isError: proSessionsQuery.isError,
     error: proSessionsQuery.error,
-    confirmPayment: confirmPayment.mutateAsync,
     cancelSession: cancelSession.mutateAsync,
     closeSession: closeSession.mutateAsync,
     updateSessionStatus: updateSessionStatus.mutateAsync,

@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import QRCode from 'react-qr-code';
-import { Copy, CheckCircle2, MessageCircle, Loader2, Calendar, Map } from 'lucide-react';
+import { Loader2, Calendar, Map } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -9,10 +8,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@riff/core/supabase/client';
 import { BRAND } from '@/brand';
 import { errorMessage } from '@riff/core/lib/utils';
-import { buildPixPayload } from '@/lib/pix';
+import { PixPayment } from '@/components/bookings/PixPayment';
+import { bookingCode, TICKET_HINT } from '@/lib/ticket';
+import { useProfile } from '@riff/core/hooks/useProfile';
+import { googleMapsUrl } from '@riff/core/lib/geo';
+import { googleCalendarUrl } from '@riff/core/lib/calendar';
 import { bookingAttribution, type BookingScreen } from '@riff/core/lib/attribution';
 import { useAuth } from '@riff/core/hooks/useAuth';
-import { useProfile } from '@riff/core/hooks/useProfile';
 import {
   Drawer,
   DrawerContent,
@@ -36,13 +38,6 @@ const ERROR_MESSAGES: Record<string, string> = {
   already_booked: 'Você já reservou esta atividade.',
 };
 
-interface PaymentInfo {
-  pix_key: string | null;
-  pix_key_type: string | null;
-  whatsapp_number: string | null;
-  pro_name: string | null;
-}
-
 import type { Tables } from '@riff/core/supabase/types';
 
 interface CheckoutModalProps {
@@ -59,13 +54,11 @@ interface CheckoutModalProps {
 
 export const CheckoutModal = ({ session, isOpen, onClose, onSuccess, screen }: CheckoutModalProps) => {
   const { user } = useAuth();
-  const { profile: studentProfile } = useProfile();
+  const { profile } = useProfile();
 
   // Steps: 'resume' -> 'payment' -> 'ticket'
   const [step, setStep] = useState<'resume' | 'payment' | 'ticket'>('resume');
   const [isBooking, setIsBooking] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [paymentInfo, setPaymentInfo] = useState<PaymentInfo | null>(null);
   const [showArrowAnimation, setShowArrowAnimation] = useState(false);
   const [bookingId, setBookingId] = useState<string | null>(null);
 
@@ -74,15 +67,6 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess, screen }: C
   if (!session) return null;
 
   const isFree = session.price_per_slot === 0;
-  const pixPayload = paymentInfo?.pix_key
-    ? buildPixPayload({
-        key: paymentInfo.pix_key,
-        keyType: paymentInfo.pix_key_type,
-        amount: session.price_per_slot,
-        name: paymentInfo.pro_name,
-        city: session.city,
-      })
-    : null;
   const dateStr = format(parseISO(session.date), "EEE, d 'de' MMM", { locale: ptBR });
   const timeStr = session.start_time.substring(0, 5);
 
@@ -119,12 +103,8 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess, screen }: C
         return;
       }
 
-      // Fetch payment info securely via RPC
+      // Atividade paga: o Pix vem em seguida (o bloco de pagamento busca a chave de quem organiza)
       if (!isFree && response.booking_id) {
-        const { data: pInfo } = await supabase.rpc('get_booking_payment_info', {
-          p_booking_id: response.booking_id,
-        });
-        setPaymentInfo(pInfo as unknown as PaymentInfo);
         setStep('payment');
       } else {
         triggerSuccess();
@@ -143,54 +123,28 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess, screen }: C
     // The arrow animation plays once when entering the ticket step
   };
 
-  const handleCopyPix = () => {
-    if (!pixPayload) {
-      toast.error('Chave Pix não encontrada.');
-      return;
-    }
-
-    navigator.clipboard.writeText(pixPayload);
-    setCopied(true);
-    toast.success('Pix copia e cola copiado!');
-    setTimeout(() => setCopied(false), 3000);
-  };
-
-  const handleWhatsApp = () => {
-    const proPhone = paymentInfo?.whatsapp_number;
-    if (!proPhone) {
-      toast.error('O organizador não cadastrou o WhatsApp.');
-      triggerSuccess();
-      return;
-    }
-
-    const cleanPhone = proPhone.replace(/\D/g, '');
-    const finalPhone = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
-    const studentName = studentProfile?.full_name?.split(' ')[0] || 'Participante';
-    const proName = paymentInfo?.pro_name?.split(' ')[0];
-    const text = encodeURIComponent(
-      `${proName ? `Olá ${proName}!` : 'Olá!'} Aqui é o(a) ${studentName}. ` +
-      `Acabei de reservar a atividade "${session.title}" pelo ${BRAND.name}. ` +
-      `Segue o comprovante do Pix!`
-    );
-
-    window.open(`https://wa.me/${finalPhone}?text=${text}`, '_blank');
-    triggerSuccess();
-  };
-
+  // Como chegar: ponto exato quando o organizador marcou, senão o endereço escrito
   const generateMapsLink = () => {
-    const q = encodeURIComponent(session.location_address || session.location_name);
-    window.open(`https://www.google.com/maps/search/?api=1&query=${q}`, '_blank');
+    window.open(
+      googleMapsUrl({ latitude: session.latitude, longitude: session.longitude, name: session.location_name, address: session.location_address }),
+      '_blank',
+    );
   };
 
   const generateCalendarLink = () => {
-    // Generate an ICS or Google Calendar link
-    const text = encodeURIComponent(`Atividade: ${session.title}`);
-    const details = encodeURIComponent(`Local: ${session.location_name}\n\nReservado via ${BRAND.name}`);
-    const location = encodeURIComponent(session.location_address || session.location_name);
-    // Simple Google Calendar link
-    
-    // Simplified format for demo
-    window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&details=${details}&location=${location}`, '_blank');
+    window.open(
+      googleCalendarUrl({
+        title: session.title,
+        date: session.date,
+        start_time: session.start_time,
+        duration_minutes: session.duration_minutes,
+        location: [session.location_name, session.location_address].filter(Boolean).join(', '),
+        details: [session.meeting_point ? `Ponto de encontro: ${session.meeting_point}` : null, `Reservado pelo ${BRAND.name}: ${window.location.origin}/session/${session.id}`]
+          .filter(Boolean)
+          .join('\n'),
+      }),
+      '_blank',
+    );
   };
 
   return (
@@ -207,7 +161,7 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess, screen }: C
                 exit={{ opacity: 0, x: 20 }}
               >
                 <DrawerHeader>
-                  <DrawerTitle className="font-display text-xl text-ink">Resumo da Reserva</DrawerTitle>
+                  <DrawerTitle className="font-display text-xl text-ink">Resumo da reserva</DrawerTitle>
                   <DrawerDescription className="text-ink-muted">
                     Revise os detalhes da sua vaga.
                   </DrawerDescription>
@@ -245,7 +199,7 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess, screen }: C
                     disabled={isBooking}
                     className="w-full shadow-[var(--shadow-cta)]"
                   >
-                    {isBooking ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Confirmar Reserva'}
+                    {isBooking ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Confirmar reserva'}
                   </Button>
                   <Button variant="secondary" size="lg" onClick={onClose} disabled={isBooking}>
                     Cancelar
@@ -254,110 +208,24 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess, screen }: C
               </motion.div>
             )}
 
-            {step === 'payment' && paymentInfo?.pix_key && (
-              <motion.div 
-                key="payment"
-                initial={{ opacity: 0, x: -20 }} 
-                animate={{ opacity: 1, x: 0 }} 
-                exit={{ opacity: 0, x: 20 }}
-              >
-                <DrawerHeader className="pb-2">
-                  <DrawerTitle className="font-display text-xl text-ink">Pagamento via Pix</DrawerTitle>
-                  <DrawerDescription className="text-ink-muted">
-                    Sua vaga está pré-reservada. Efetue o pagamento.
-                  </DrawerDescription>
-                </DrawerHeader>
-
-                <div className="p-6 space-y-6">
-                  <div className="bg-surface border border-brand/30 rounded-2xl p-6 text-center">
-                    <p className="text-sm text-ink-muted font-medium mb-1">Faça o Pix de</p>
-                    <p className="font-display font-bold text-3xl text-ink mb-6">
-                      R$ {session.price_per_slot.toFixed(2).replace('.', ',')}
-                    </p>
-
-                    <div className="flex justify-center mb-6">
-                      <div className="p-3 bg-white rounded-xl shadow-sm">
-                        <QRCode 
-                          value={pixPayload ?? ''} 
-                          size={160} 
-                          bgColor="#FFFFFF"
-                          fgColor="#000000"
-                          level="M"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <p className="text-xs text-ink-muted font-medium text-left ml-1">Pix copia e cola (valor já incluso):</p>
-                      <div className="flex gap-2">
-                        <div className="h-12 bg-elevated rounded-xl px-4 flex items-center flex-1 font-mono text-sm border border-line truncate select-all text-ink">
-                          {pixPayload}
-                        </div>
-                        <Button
-                          variant="primary"
-                          onClick={handleCopyPix}
-                          className="h-12 w-12 shrink-0 p-0"
-                        >
-                          {copied ? <CheckCircle2 className="w-5 h-5 text-bg" /> : <Copy className="w-5 h-5 text-bg" />}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <p className="text-sm text-center text-ink-muted font-medium">
-                      Após o pagamento, avise o organizador:
-                    </p>
-                    <Button
-                      onClick={handleWhatsApp}
-                      className="w-full h-14 bg-success hover:brightness-105 text-bg font-semibold text-lg rounded-xl gap-2 border-0"
-                    >
-                      <MessageCircle className="w-6 h-6" />
-                      Enviar Comprovante
-                    </Button>
-                  </div>
-                  
-                  <div className="text-center">
-                    <button 
-                      onClick={triggerSuccess}
-                      className="text-sm text-ink-muted hover:text-ink underline underline-offset-4"
-                    >
-                      Já paguei / Pagar depois
-                    </button>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {step === 'payment' && !paymentInfo?.pix_key && (
+            {step === 'payment' && bookingId && (
               <motion.div
-                key="payment-no-pix"
+                key="payment"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
+                className="px-6 pb-6"
               >
-                <DrawerHeader className="pb-2">
-                  <DrawerTitle className="font-display text-xl text-ink">Vaga pré-reservada</DrawerTitle>
-                  <DrawerDescription className="text-ink-muted">
-                    O organizador ainda não cadastrou a chave Pix. Combine o pagamento de{' '}
-                    R$ {session.price_per_slot.toFixed(2).replace('.', ',')} direto com ele.
-                  </DrawerDescription>
+                <DrawerHeader className="px-0 pb-2">
+                  <DrawerTitle className="font-display text-xl text-ink">Vaga pré-reservada: falta o Pix</DrawerTitle>
+                  <DrawerDescription className="text-ink-muted">O pagamento vai direto para quem organiza.</DrawerDescription>
                 </DrawerHeader>
-
-                <div className="p-6 space-y-3">
-                  {paymentInfo?.whatsapp_number && (
-                    <Button
-                      onClick={handleWhatsApp}
-                      className="w-full h-14 bg-success hover:brightness-105 text-bg font-semibold text-lg rounded-xl gap-2 border-0"
-                    >
-                      <MessageCircle className="w-6 h-6" />
-                      Falar com o organizador
-                    </Button>
-                  )}
-                  <Button onClick={triggerSuccess} variant="outline" className="w-full h-12 rounded-xl">
-                    Entendi
-                  </Button>
-                </div>
+                <PixPayment
+                  bookingId={bookingId}
+                  activity={{ title: session.title, date: session.date, start_time: session.start_time, city: session.city, price: session.price_per_slot }}
+                  onNotified={triggerSuccess}
+                  onLater={triggerSuccess}
+                />
               </motion.div>
             )}
 
@@ -391,20 +259,20 @@ export const CheckoutModal = ({ session, isOpen, onClose, onSuccess, screen }: C
                     </motion.div>
                   )}
 
-                  <p className="type-label text-brand mb-2">Seu Ingresso</p>
+                  <p className="type-label text-brand mb-2">Seu ingresso</p>
                   <h3 className="type-subtitle text-ink mb-1">{session.title}</h3>
                   <p className="text-ink-muted text-sm">
                     {dateStr} · {timeStr} · {session.location_name || 'A confirmar'}
                   </p>
 
-                  {/* QR de check-in (o mesmo de Minhas reservas) */}
-                  <div className="w-fit mx-auto my-6 p-2 bg-white rounded-xl" role="img" aria-label="QR de check-in">
-                    <QRCode value={`checkin:${bookingId ?? session.id}`} size={104} level="L" />
+                  {/* Nome e código: é assim que quem organiza acha a pessoa na lista */}
+                  <div className="my-5 rounded-2xl bg-elevated border border-line px-4 py-3">
+                    <p className="type-label">Nome na lista</p>
+                    <p className="type-title text-ink">{profile?.full_name ?? 'Você'}</p>
+                    {bookingId && <p className="text-xs text-ink-muted mt-0.5">Reserva {bookingCode(bookingId)}</p>}
                   </div>
 
-                  <p className="text-ink-muted text-xs font-medium">
-                    Mostre ao organizador na chegada
-                  </p>
+                  <p className="text-ink-muted text-xs">{TICKET_HINT}</p>
                 </div>
 
                 <div className="flex gap-3 mb-4">
