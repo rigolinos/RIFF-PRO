@@ -24,7 +24,8 @@ export function ModeSwitcher() {
 
   const handleBecomePro = () => {
     setIsOpen(false);
-    navigate("/onboarding/pro");
+    // monta a primeira atividade antes; o cadastro de organizador vem na hora de publicar
+    navigate("/create-session");
   };
 
   return (
