@@ -154,7 +154,7 @@ function OrganizerForm({ profile, next }: { profile: Profile; next: string }) {
         }
       >
         <div className="space-y-4 flex-1">
-          <Field label="Nome completo" htmlFor="ob-name" hint="Como aparece na sua vitrine.">
+          <Field label="Nome completo" htmlFor="ob-name" hint="Como aparece na sua página.">
             <Input id="ob-name" autoComplete="name" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Nome e sobrenome" className={FIELD_CLASS} />
           </Field>
           <Field
@@ -212,7 +212,7 @@ function OrganizerForm({ profile, next }: { profile: Profile; next: string }) {
       <AuthShell
         {...shellBase}
         onBack={() => setStep(1)}
-        label="Sua vitrine"
+        label="Sua página"
         title="O que você organiza?"
         subtitle="É isso que aparece para quem vai reservar."
       >

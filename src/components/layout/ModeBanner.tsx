@@ -26,14 +26,14 @@ export const ModeBanner = () => {
       >
         <div className="flex items-center gap-2 font-medium text-xs sm:text-sm">
           <Briefcase className="w-4 h-4" />
-          <span>Você está no Modo Participante</span>
+          <span>Você está participando</span>
         </div>
         
         <button 
           onClick={handleSwitchBack}
           className="flex items-center gap-1.5 text-xs sm:text-sm font-bold bg-black/10 hover:bg-black/20 px-3 py-1.5 rounded-full transition-colors"
         >
-          Voltar ao Dashboard <ArrowRight className="w-3.5 h-3.5" />
+          Voltar ao painel <ArrowRight className="w-3.5 h-3.5" />
         </button>
       </motion.div>
     </AnimatePresence>

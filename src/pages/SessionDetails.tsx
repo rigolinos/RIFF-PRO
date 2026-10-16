@@ -302,7 +302,7 @@ const SessionDetails = () => {
               </Button>
             )}
             <Button className="flex-1" onClick={() => navigate(`/session/${session.id}/attendance`)}>
-              <ClipboardCheck className="w-4 h-4 mr-2" /> Inscritos e presença
+              <ClipboardCheck className="w-4 h-4 mr-2" /> Inscritos e chamada
             </Button>
           </div>
         ) : myBooking ? (

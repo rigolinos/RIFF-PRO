@@ -18,6 +18,7 @@ export function useProSessions() {
           id, title, description, date, start_time, duration_minutes,
           location_name, location_address, max_participants, current_participants,
           price_per_slot, status, session_type, category_id, kind, city,
+          sport_other, venue_id, latitude, longitude, meeting_point, what_to_bring, cover_image_url, skill_level,
           category:categories(name, emoji, slug),
           bookings(
             id, status, payment_status, amount_total, checked_in, created_at,

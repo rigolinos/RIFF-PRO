@@ -67,6 +67,7 @@ const MySessionsPro = () => {
     setIsDuplicating(session.id);
     try {
       const nextWeekDate = format(addDays(parseISO(session.date), 7), 'yyyy-MM-dd');
+      // copia tudo o que a pessoa preencheu; só a data muda
       await createSession({
         category_id: session.category_id,
         kind: session.kind,
@@ -74,11 +75,19 @@ const MySessionsPro = () => {
         title: session.title,
         description: session.description,
         session_type: session.session_type,
+        skill_level: session.skill_level,
         date: nextWeekDate,
         start_time: session.start_time,
         duration_minutes: session.duration_minutes,
         location_name: session.location_name,
         location_address: session.location_address,
+        venue_id: session.venue_id,
+        latitude: session.latitude,
+        longitude: session.longitude,
+        meeting_point: session.meeting_point,
+        what_to_bring: session.what_to_bring,
+        cover_image_url: session.cover_image_url,
+        ...(session.sport_other ? { sport_other: session.sport_other } : {}),
         max_participants: session.max_participants,
         price_per_slot: session.price_per_slot,
         status: 'active',
@@ -140,7 +149,7 @@ const MySessionsPro = () => {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="bg-elevated border-line">
             <DropdownMenuItem onSelect={() => navigate(`/session/${session.id}/attendance`)}>
-              <Users className="w-4 h-4 mr-2" /> Inscritos e presença
+              <Users className="w-4 h-4 mr-2" /> Inscritos e chamada
             </DropdownMenuItem>
             <DropdownMenuItem onSelect={() => handleDuplicateSession(session)}>
               <Copy className="w-4 h-4 mr-2" /> Repetir na semana seguinte
@@ -171,7 +180,7 @@ const MySessionsPro = () => {
 
   const TABS = [
     { key: 'upcoming' as const, label: 'Próximas', n: upcoming.length },
-    { key: 'toClose' as const, label: 'Fechar', n: toClose.length },
+    { key: 'toClose' as const, label: 'Chamada', n: toClose.length },
     { key: 'done' as const, label: 'Passadas', n: done.length },
   ];
 
@@ -182,7 +191,7 @@ const MySessionsPro = () => {
       <TicketGrid
         items={[
           { label: 'Próximas', value: upcoming.length },
-          { label: 'Fechar presença', value: <span className={toClose.length ? 'text-accent' : ''}>{toClose.length}</span> },
+          { label: 'Chamada a fazer', value: <span className={toClose.length ? 'text-accent' : ''}>{toClose.length}</span> },
           { label: 'Passadas', value: done.length },
         ]}
       />

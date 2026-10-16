@@ -221,7 +221,7 @@ export default function ProfileEdit() {
           </p>
           {isPro && slug && (
             <Link to={`/@${slug}`} className="text-xs font-semibold text-brand underline underline-offset-4">
-              Ver minha vitrine ({BRAND.domain}/@{slug})
+              Ver minha página ({BRAND.domain}/@{slug})
             </Link>
           )}
         </div>
@@ -297,7 +297,7 @@ export default function ProfileEdit() {
           ) : (
             <>
               <section className="bg-surface border border-line rounded-2xl p-4 space-y-4">
-                <h2 className="type-label">Sua vitrine</h2>
+                <h2 className="type-label">Sua página</h2>
                 <label className="block space-y-2">
                   <span className={LABEL}>
                     <LinkIcon className="w-3.5 h-3.5" /> Link da bio
