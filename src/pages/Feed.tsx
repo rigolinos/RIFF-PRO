@@ -18,6 +18,7 @@ import { SessionRow } from '@/components/cards/SessionRow';
 import { ReviewPrompt } from '@/components/reviews/ReviewPrompt';
 import { SessionCardSkeleton } from '@/components/skeletons/SessionCardSkeleton';
 import type { SessionWithJoins } from '@/types/session';
+import { formatCity } from '@riff/core/lib/city';
 
 // Compara cidades sem acento, caixa ou espaços ("Porto alegre" = "Porto Alegre").
 const normalizeCity = (city?: string | null) =>
@@ -121,7 +122,7 @@ export const Feed = () => {
         }
         label={
           <span className="flex items-center gap-1">
-            <MapPin className="w-3.5 h-3.5" /> {profile?.city || 'Sua cidade'}
+            <MapPin className="w-3.5 h-3.5" /> {formatCity(profile?.city) || 'Sua cidade'}
           </span>
         }
         title={`Olá${firstName ? `, ${firstName}` : ''}!`}
@@ -172,7 +173,7 @@ export const Feed = () => {
         ) : (
           <>
             {local.length === 0 && myCity && (
-              <p className="px-6 text-sm text-ink-muted">Ainda não há atividades em {profile?.city}. Veja o que está rolando em outras cidades.</p>
+              <p className="px-6 text-sm text-ink-muted">Ainda não há atividades em {formatCity(profile?.city)}. Veja o que está rolando em outras cidades.</p>
             )}
             {todayItems.length > 0 && (
               <Section title="Hoje" count={todayItems.length}>

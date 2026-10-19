@@ -10,6 +10,7 @@ import { cn } from '@riff/core/lib/utils';
 import { useCommunity, todaySP } from '@/hooks/useCommunity';
 import { useRanking, type RankingRow } from '@/hooks/useSports';
 import { POINTS } from '@/lib/sports';
+import { useGoBack } from '@riff/core/routing/useGoBack';
 
 const monthStart = (d: Date) => format(d, 'yyyy-MM-01');
 
@@ -44,6 +45,7 @@ function PodiumSpot({ row, place, orgId }: { row: RankingRow | undefined; place:
 export default function Ranking() {
   const { orgId } = useParams<{ orgId: string }>();
   const navigate = useNavigate();
+  const goBack = useGoBack();
   const { profile } = useProfile();
   const { data: community } = useCommunity(orgId);
   const today = parseISO(todaySP());
@@ -63,7 +65,7 @@ export default function Ranking() {
           <div className="h-16 flex items-center">
             <button
               type="button"
-              onClick={() => navigate(-1)}
+              onClick={() => goBack()}
               aria-label="Voltar"
               className="w-10 h-10 -ml-2 rounded-full bg-bg/50 backdrop-blur-sm flex items-center justify-center text-ink active:scale-95"
             >

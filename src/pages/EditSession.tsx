@@ -6,11 +6,13 @@ import { EmptyState } from '@riff/core/domain';
 import { SessionWizard } from '@/components/forms/SessionWizard';
 import { useSessions, useSessionById } from '@/hooks/useSessions';
 import { valuesFromSession } from '@/lib/sessionForm';
+import { useGoBack } from '@riff/core/routing/useGoBack';
 
 // Editar atividade: o mesmo assistente da criação, aberto na revisão
 const EditSession = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const goBack = useGoBack();
   const { updateSession, isUpdating } = useSessions();
   const { data: session, isLoading } = useSessionById(id || '');
 
@@ -50,7 +52,7 @@ const EditSession = () => {
           toast.error(errorMessage(error, 'Não foi possível salvar as alterações.'));
         }
       }}
-      onExit={() => navigate(-1)}
+      onExit={() => goBack()}
       isSubmitting={isUpdating}
     />
   );

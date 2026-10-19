@@ -12,6 +12,15 @@ import { activityInvite } from '@/lib/share';
 import { googleCalendarUrl } from '@riff/core/lib/calendar';
 import { paymentNoticeUrl, waPhone } from '@/lib/whatsapp';
 import { bookingCode } from '@/lib/ticket';
+import { formatCity } from '@riff/core/lib/city';
+
+describe('nome da cidade', () => {
+  it('maiúscula em cada palavra, menos de/da/do/e no meio', () => {
+    expect(formatCity('porto alegre')).toBe('Porto Alegre');
+    expect(formatCity('  RIO DE   janeiro ')).toBe('Rio de Janeiro');
+    expect(formatCity(null)).toBe('');
+  });
+});
 import { formatInviteCode, inviteLink, isInviteCode, normalizeInviteCode } from '../apps/clubes/src/lib/invite';
 
 describe('convite do Clubes por link', () => {

@@ -19,10 +19,12 @@ import { CheckoutModal } from '@/components/checkout/CheckoutModal';
 import { PaySheet } from '@/components/bookings/PaySheet';
 import { useProParticipants } from '@/hooks/useSportsProfile';
 import { shareActivity } from '@/lib/share';
+import { useGoBack } from '@riff/core/routing/useGoBack';
 
 const SessionDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const goBack = useGoBack();
   const { user } = useAuth();
   const { profile } = useProfile();
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
@@ -83,7 +85,7 @@ const SessionDetails = () => {
       <div className="min-h-screen bg-bg flex flex-col items-center justify-center p-6 text-center">
         <h2 className="type-title mb-2">Atividade não encontrada</h2>
         <p className="text-ink-muted mb-6">Esta atividade pode ter sido cancelada ou removida.</p>
-        <Button onClick={() => navigate(-1)} variant="secondary">
+        <Button onClick={() => goBack()} variant="secondary">
           Voltar
         </Button>
       </div>

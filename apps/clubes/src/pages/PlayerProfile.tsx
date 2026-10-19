@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ArrowLeft, EyeOff, Trophy } from 'lucide-react';
@@ -9,11 +9,12 @@ import { CLUBES_BLOCK } from '@/lib/moderation';
 import { usePlayerProfile } from '@/hooks/useSports';
 import { useCommunity } from '@/hooks/useCommunity';
 import { SportsProfileView, StatsTicket } from '@/components/SportsProfileView';
+import { useGoBack } from '@riff/core/routing/useGoBack';
 
 // Perfil esportista de um vizinho, só com os números desta comunidade
 export default function PlayerProfile() {
   const { orgId, profileId } = useParams<{ orgId: string; profileId: string }>();
-  const navigate = useNavigate();
+  const goBack = useGoBack();
   const { profile: me } = useProfile();
   const { data: community } = useCommunity(orgId);
   const { data: p, isLoading } = usePlayerProfile(profileId, orgId);
@@ -28,7 +29,7 @@ export default function PlayerProfile() {
           <div className="h-16 flex items-center">
             <button
               type="button"
-              onClick={() => navigate(-1)}
+              onClick={() => goBack()}
               aria-label="Voltar"
               className="w-10 h-10 -ml-2 rounded-full bg-bg/50 backdrop-blur-sm flex items-center justify-center text-ink active:scale-95"
             >

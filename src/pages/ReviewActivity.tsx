@@ -14,11 +14,12 @@ import { ACHIEVEMENTS, nextAchievement } from '@riff/core/lib/achievements';
 import { useBookings } from '@/hooks/useBookings';
 import { useMySportsProfile, useSubmitProReview } from '@/hooks/useSportsProfile';
 import { canReview, ORGANIZER_TAGS, RATING_LABELS } from '@/lib/reviews';
+import { useGoBack } from '@riff/core/routing/useGoBack';
 
 type Booking = NonNullable<ReturnType<typeof useBookings>['bookings']>[number];
 
 function Shell({ step, children }: { step: number; children: React.ReactNode }) {
-  const navigate = useNavigate();
+  const goBack = useGoBack();
   return (
     <PageContainer withBottomNav={false}>
       <section className="relative overflow-hidden bg-surface border-b border-line pb-6">
@@ -27,7 +28,7 @@ function Shell({ step, children }: { step: number; children: React.ReactNode }) 
           <div className="h-16 flex items-center justify-between">
             <button
               type="button"
-              onClick={() => navigate(-1)}
+              onClick={() => goBack()}
               aria-label="Voltar"
               className="w-10 h-10 -ml-2 rounded-full bg-bg/50 backdrop-blur-sm flex items-center justify-center text-ink active:scale-95"
             >

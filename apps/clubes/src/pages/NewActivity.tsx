@@ -17,6 +17,7 @@ import { useCommunity } from '@/hooks/useCommunity';
 import { useSpaceConflicts, useSpaces } from '@/hooks/useSpaces';
 import { EVENT_STEPS, emptyEvent, eventInvite, eventStepMissing, firstEventMissing, type EventStep, type EventValues } from '@/lib/eventForm';
 import { EventNameStep, EventReview, EventSportStep, EventSpotsStep, EventWhenStep, EventWhereStep } from '@/components/event/EventSteps';
+import { useGoBack } from '@riff/core/routing/useGoBack';
 
 type Screen = EventStep | 'review';
 
@@ -32,6 +33,7 @@ const COPY: Record<EventStep, { title: string; subtitle?: string }> = {
 export default function NewActivity() {
   const { orgId } = useParams<{ orgId: string }>();
   const navigate = useNavigate();
+  const goBack = useGoBack();
   const queryClient = useQueryClient();
   const { profile } = useProfile();
   const { data: community, isLoading } = useCommunity(orgId);
@@ -234,7 +236,7 @@ export default function NewActivity() {
   };
   const back = () => {
     if (backToReview) go('review');
-    else if (index === 0) navigate(-1);
+    else if (index === 0) goBack();
     else go(EVENT_STEPS[index - 1]);
   };
 

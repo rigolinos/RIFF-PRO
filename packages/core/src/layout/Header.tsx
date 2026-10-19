@@ -1,6 +1,6 @@
-import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { cn } from '@riff/core/lib/utils';
+import { useGoBack } from '@riff/core/routing/useGoBack';
 
 interface HeaderProps {
   title?: React.ReactNode;
@@ -19,13 +19,13 @@ export const Header = ({
   className,
   transparent = false
 }: HeaderProps) => {
-  const navigate = useNavigate();
+  const goBack = useGoBack();
 
   const handleBack = () => {
     if (onBack) {
       onBack();
     } else {
-      navigate(-1);
+      goBack();
     }
   };
 

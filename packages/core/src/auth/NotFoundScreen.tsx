@@ -1,10 +1,12 @@
 import { useNavigate } from 'react-router-dom';
 import { AuthShell } from '@riff/core/layout/AuthShell';
 import { Button } from '@riff/core/ui/button';
+import { useGoBack } from '@riff/core/routing/useGoBack';
 
 /** Página não encontrada (igual nos dois apps). */
 export function NotFoundScreen({ product }: { product: string }) {
   const navigate = useNavigate();
+  const goBack = useGoBack();
   return (
     <AuthShell
       product={product}
@@ -16,7 +18,7 @@ export function NotFoundScreen({ product }: { product: string }) {
         <Button size="lg" className="w-full" onClick={() => navigate('/')}>
           Voltar ao início
         </Button>
-        <Button variant="secondary" className="w-full" onClick={() => navigate(-1)}>
+        <Button variant="secondary" className="w-full" onClick={() => goBack()}>
           Voltar para a página anterior
         </Button>
       </div>

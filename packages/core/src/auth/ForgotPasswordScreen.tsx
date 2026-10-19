@@ -9,10 +9,12 @@ import { FIELD_CLASS } from '@riff/core/lib/fields';
 import { Button } from '@riff/core/ui/button';
 import { Input } from '@riff/core/ui/input';
 import { authErrorMessage } from '@riff/core/lib/authErrors';
+import { useGoBack } from '@riff/core/routing/useGoBack';
 
 /** Recuperar a senha por e-mail (igual nos dois apps). */
 export function ForgotPasswordScreen({ product }: { product: string }) {
   const navigate = useNavigate();
+  const goBack = useGoBack();
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -57,7 +59,7 @@ export function ForgotPasswordScreen({ product }: { product: string }) {
       label="Senha"
       title="Esqueceu a senha?"
       subtitle="Sem problema. Informe o e-mail da conta e enviamos um link para criar uma nova."
-      onBack={() => navigate(-1)}
+      onBack={() => goBack()}
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <Field label="E-mail da conta" htmlFor="forgot-email">

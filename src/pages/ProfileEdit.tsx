@@ -45,6 +45,7 @@ import { SportsProfileSection } from '@/components/profile/SportsProfileSection'
 import { BlockedPeople } from '@riff/core/domain';
 import { ProfileSection } from '@/components/profile/ProfileSection';
 import { useMySportsProfile } from '@/hooks/useSportsProfile';
+import { formatCity } from '@riff/core/lib/city';
 
 const PIX_TYPES = [
   { value: 'cpf', label: 'CPF ou CNPJ' },
@@ -217,7 +218,7 @@ export default function ProfileEdit() {
           <h1 className="type-title mt-1">{full_name || 'Seu nome'}</h1>
           <p className="text-xs text-ink-muted">
             {isPro ? 'Organizador' : 'Participante'}
-            {profile?.city ? ` · ${profile.city}` : ''}
+            {profile?.city ? ` · ${formatCity(profile.city)}` : ''}
           </p>
           {isPro && slug && (
             <Link to={`/@${slug}`} className="text-xs font-semibold text-brand underline underline-offset-4">

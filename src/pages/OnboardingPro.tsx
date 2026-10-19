@@ -20,6 +20,7 @@ import { LEGAL_DOCUMENTS } from '@riff/core/legal/documents';
 import { supabase } from '@riff/core/supabase/client';
 import { organizerErrorMessage, useOrganizerMissing } from '@/hooks/useOrganizer';
 import { BRAND } from '@/brand';
+import { useGoBack } from '@riff/core/routing/useGoBack';
 
 // Valores aceitos pelo banco (profiles_professional_type_check)
 const TYPES = [
@@ -64,6 +65,7 @@ const OnboardingPro = () => {
 
 function OrganizerForm({ profile, next }: { profile: Profile; next: string }) {
   const navigate = useNavigate();
+  const goBack = useGoBack();
   const queryClient = useQueryClient();
   const { missing: legalMissing, accept } = useLegalAcceptance();
   const upgrading = profile.role !== 'professional';
@@ -141,7 +143,7 @@ function OrganizerForm({ profile, next }: { profile: Profile; next: string }) {
     return (
       <AuthShell
         {...shellBase}
-        onBack={() => navigate(-1)}
+        onBack={() => goBack()}
         label={upgrading ? 'Quero organizar' : 'Cadastro de organizador'}
         title={upgrading ? `Bora organizar${firstName ? `, ${firstName}` : ''}?` : 'Complete seu cadastro'}
         subtitle={

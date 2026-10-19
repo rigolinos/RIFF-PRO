@@ -10,6 +10,7 @@ import { PublishedScreen } from '@/components/forms/PublishedScreen';
 import { useSessionById, useSessions } from '@/hooks/useSessions';
 import { organizerErrorMessage, useOrganizerMissing } from '@/hooks/useOrganizer';
 import { clearDraft, readDraft, valuesFromSession } from '@/lib/sessionForm';
+import { useGoBack } from '@riff/core/routing/useGoBack';
 
 type Published = { id: string; title: string; date: string; start_time: string; location_name: string | null };
 
@@ -29,6 +30,7 @@ const Spinner = () => (
  */
 const CreateSession = () => {
   const navigate = useNavigate();
+  const goBack = useGoBack();
   const [params, setParams] = useSearchParams();
   const repeatId = params.get('repetir') ?? '';
   const { profile } = useProfile();
@@ -95,7 +97,7 @@ const CreateSession = () => {
         offerDraft={!repeating && !afterDoorDraft}
         isOrganizer={profile?.role === 'professional' && !needsDoor}
         onSubmit={handleSubmit}
-        onExit={() => navigate(-1)}
+        onExit={() => goBack()}
         isSubmitting={isCreating}
       />
       <ConfirmDialog
