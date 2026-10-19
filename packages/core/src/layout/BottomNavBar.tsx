@@ -10,6 +10,10 @@ export interface BottomNavItem {
   isFab?: boolean;
   /** Item ativo; por padrão, caminho igual ou começando por `path/` */
   isActive?: (pathname: string) => boolean;
+  /** Número de coisas esperando a pessoa (some quando é 0) */
+  badge?: number;
+  /** Foto no lugar do ícone (Perfil) */
+  avatarUrl?: string | null;
 }
 
 /**
@@ -52,7 +56,25 @@ export function BottomNavBar({ items, pathname }: { items: BottomNavItem[]; path
                   active ? 'bg-brand-soft text-bg font-semibold' : 'text-ink-muted hover:text-ink hover:bg-elevated',
                 )}
               >
-                <item.icon size={22} strokeWidth={active ? 2 : 1.75} />
+                <span className="relative">
+                  {item.avatarUrl ? (
+                    <img
+                      src={item.avatarUrl}
+                      alt=""
+                      className={cn('w-[22px] h-[22px] rounded-full object-cover', active ? 'ring-2 ring-bg' : 'ring-1 ring-line')}
+                    />
+                  ) : (
+                    <item.icon size={22} strokeWidth={active ? 2.25 : 1.75} />
+                  )}
+                  {!!item.badge && (
+                    <span
+                      className="absolute -top-1.5 -right-2.5 min-w-[18px] h-[18px] px-1 rounded-full bg-accent text-brand-ink text-[0.75rem] leading-[18px] font-bold text-center"
+                      aria-label={`${item.badge} pendente${item.badge > 1 ? 's' : ''}`}
+                    >
+                      {item.badge > 9 ? '9+' : item.badge}
+                    </span>
+                  )}
+                </span>
                 {/* rótulo do menu fica em 12 px (padrão de barra de navegação), mesmo com o texto do app maior */}
                 <span className="text-[0.75rem] leading-4 whitespace-nowrap">{item.label}</span>
               </Link>
