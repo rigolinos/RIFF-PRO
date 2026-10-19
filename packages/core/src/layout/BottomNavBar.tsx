@@ -36,7 +36,7 @@ export function BottomNavBar({ items, pathname }: { items: BottomNavItem[]; path
                     className="w-14 h-14 bg-brand hover:brightness-105 text-brand-ink rounded-full flex flex-col items-center justify-center shadow-[var(--shadow-cta)] active:scale-95 transition-all"
                   >
                     <item.icon size={24} strokeWidth={2.5} />
-                    <span className="text-xs font-bold mt-0.5">{item.label}</span>
+                    <span className="text-[0.75rem] leading-4 font-bold mt-0.5">{item.label}</span>
                   </Link>
                 </div>
               );
@@ -53,7 +53,8 @@ export function BottomNavBar({ items, pathname }: { items: BottomNavItem[]; path
                 )}
               >
                 <item.icon size={22} strokeWidth={active ? 2 : 1.75} />
-                <span className="text-xs whitespace-nowrap">{item.label}</span>
+                {/* rótulo do menu fica em 12 px (padrão de barra de navegação), mesmo com o texto do app maior */}
+                <span className="text-[0.75rem] leading-4 whitespace-nowrap">{item.label}</span>
               </Link>
             );
           })}
