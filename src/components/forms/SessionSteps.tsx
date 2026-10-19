@@ -19,7 +19,8 @@ import { uploadImage } from '@riff/core/lib/avatar';
 import { suggestActivityTitle } from '@riff/core/lib/activityTitle';
 import { useCategories } from '@/hooks/useCategories';
 import { useMyVenues } from '@/hooks/useMyVenues';
-import { DURATIONS, PRICES, QUICK_TIMES, durationLabel, todaySP, type SessionValues, type StepId } from '@/lib/sessionForm';
+import { DURATIONS, PRICES, QUICK_TIMES, durationLabel, organizerPlays, todaySP, type SessionValues, type StepId } from '@/lib/sessionForm';
+import { Switch } from '@riff/core/ui/switch';
 
 export type StepProps = {
   v: SessionValues;
@@ -297,7 +298,7 @@ export function WhereStep({ v, update }: StepProps) {
 }
 
 /** Passo 5: vagas e preço, com o que acontece com o pagamento */
-export function SpotsStep({ v, update, priceLocked, isOrganizer }: StepProps & { priceLocked: boolean; isOrganizer: boolean }) {
+export function SpotsStep({ v, update, priceLocked, isOrganizer, askPlays = false }: StepProps & { priceLocked: boolean; isOrganizer: boolean; askPlays?: boolean }) {
   const { profile } = useProfile();
   const kind = KINDS[v.kind];
   const spots = v.max_participants;
@@ -327,6 +328,18 @@ export function SpotsStep({ v, update, priceLocked, isOrganizer }: StepProps & {
           </button>
         </div>
       </section>
+
+      {askPlays && (
+        <label className="flex items-center justify-between gap-3 bg-surface border border-line rounded-2xl p-4 cursor-pointer">
+          <span>
+            <span className="block text-sm font-semibold text-ink">Você também vai jogar?</span>
+            <span className="block text-xs text-ink-muted mt-0.5">
+              {organizerPlays(v) ? `Você aparece em "Quem vai" e ocupa 1 das ${spots} vagas.` : 'Você só organiza: as vagas são todas para os participantes.'}
+            </span>
+          </span>
+          <Switch checked={organizerPlays(v)} onCheckedChange={(on) => update({ organizer_plays: on })} aria-label="Você também vai jogar?" />
+        </label>
+      )}
 
       <section className="space-y-3 bg-surface border border-line rounded-2xl p-4">
         <p className="text-sm font-semibold text-ink">Preço por vaga</p>
@@ -446,7 +459,7 @@ export function NameStep({ v, update, sportName }: StepProps & { sportName: stri
 }
 
 /** Revisão: a prévia do ingresso e cada resposta com "Alterar" */
-export function ReviewStep({ v, sportName, sportSlug, onEdit }: { v: SessionValues; sportName: string; sportSlug?: string | null; onEdit: (step: StepId) => void }) {
+export function ReviewStep({ v, sportName, sportSlug, onEdit, showPlays = false }: { v: SessionValues; sportName: string; sportSlug?: string | null; onEdit: (step: StepId) => void; showPlays?: boolean }) {
   const rows: { step: StepId; label: string; value: React.ReactNode }[] = [
     { step: 'kind', label: 'Tipo', value: KINDS[v.kind].label },
     { step: 'sport', label: 'Esporte', value: sportName || '—' },
@@ -471,7 +484,7 @@ export function ReviewStep({ v, sportName, sportSlug, onEdit }: { v: SessionValu
         </>
       ),
     },
-    { step: 'spots', label: 'Vagas e preço', value: `${v.max_participants} vaga${v.max_participants === 1 ? '' : 's'} · ${v.price_per_slot > 0 ? formatBRL(v.price_per_slot) : 'Grátis'}` },
+    { step: 'spots', label: 'Vagas e preço', value: `${v.max_participants} vaga${v.max_participants === 1 ? '' : 's'}${showPlays && organizerPlays(v) ? ' (com você)' : ''} · ${v.price_per_slot > 0 ? formatBRL(v.price_per_slot) : 'Grátis'}` },
     {
       step: 'name',
       label: 'Nome e detalhes',

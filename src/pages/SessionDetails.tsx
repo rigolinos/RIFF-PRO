@@ -20,6 +20,8 @@ import { PaySheet } from '@/components/bookings/PaySheet';
 import { useProParticipants } from '@/hooks/useSportsProfile';
 import { shareActivity } from '@/lib/share';
 import { useGoBack } from '@riff/core/routing/useGoBack';
+import { Switch } from '@riff/core/ui/switch';
+import { toast } from 'sonner';
 
 const SessionDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -67,6 +69,22 @@ const SessionDetails = () => {
     },
     enabled: !!id && !!profile?.id,
   });
+
+  // Quem organiza também joga (reserva gratuita na própria atividade, set_organizer_plays)
+  const [togglingPlays, setTogglingPlays] = useState(false);
+  const togglePlays = async (on: boolean) => {
+    setTogglingPlays(true);
+    const { data, error } = await supabase.rpc('set_organizer_plays', { p_session: id!, p_plays: on });
+    setTogglingPlays(false);
+    const code = (data as { code?: string } | null)?.code;
+    if (error || !(data as { success?: boolean } | null)?.success) {
+      toast.error(code === 'session_full' ? 'A atividade está lotada: abra uma vaga para você jogar.' : 'Não foi possível mudar agora. Tente de novo.');
+      return;
+    }
+    toast.success(on ? 'Pronto: você está na lista de quem vai.' : 'Você saiu da lista. A vaga ficou livre.');
+    void queryClient.invalidateQueries({ queryKey: ['session', id] });
+    void queryClient.invalidateQueries({ queryKey: ['pro-participants', id] });
+  };
 
   // Quem vai: fotos e nomes só para quem reservou e quem organiza
   const { data: going } = useProParticipants(id);
@@ -134,7 +152,8 @@ const SessionDetails = () => {
           <StatusPill text={kind?.chip ?? 'Atividade'} variant="neutral" />
           {closed && <StatusPill text={closed.pill} variant={phase === 'live' ? 'alert' : 'danger'} />}
           {isOrganizer && <StatusPill text="Você organiza" variant="info" />}
-          {myBooking && (
+          {isOrganizer && myBooking && <StatusPill text="Você joga" variant="success" />}
+          {myBooking && !isOrganizer && (
             <StatusPill text={myBooking.payment_status === 'pending' ? 'Aguardando pagamento' : 'Reserva confirmada'} variant={myBooking.payment_status === 'pending' ? 'alert' : 'success'} />
           )}
         </div>
@@ -175,6 +194,16 @@ const SessionDetails = () => {
             )}
           </div>
           <SpotsMeter current={current} max={max || 1} />
+          {/* quem organiza decide se também joga: entra em "Quem vai" e ocupa uma vaga */}
+          {isOrganizer && !closed && (
+            <label className="flex items-center justify-between gap-3 border-t border-line pt-3 cursor-pointer">
+              <span>
+                <span className="block text-sm font-semibold text-ink">Vou jogar também</span>
+                <span className="block text-xs text-ink-muted">{myBooking ? 'Você está em "Quem vai" e ocupa 1 vaga.' : 'Ligue para entrar em "Quem vai" e ocupar 1 vaga.'}</span>
+              </span>
+              <Switch checked={!!myBooking} disabled={togglingPlays} onCheckedChange={(on) => void togglePlays(on)} aria-label="Vou jogar também" />
+            </label>
+          )}
           {going && going.count > 0 && (
             <div className="border-t border-line pt-3 space-y-2">
               <p className="type-label">Quem vai</p>

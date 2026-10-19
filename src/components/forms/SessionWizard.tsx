@@ -12,6 +12,7 @@ import {
   draftHasContent,
   emptyValues,
   firstMissingStep,
+  organizerPlays,
   readDraft,
   stepMissing,
   toSessionInsert,
@@ -49,7 +50,7 @@ interface SessionWizardProps {
   original?: { title: string; date: string; start_time: string; location_name: string; participants: number };
   hadSportOther?: boolean;
   isOrganizer: boolean;
-  onSubmit: (data: Omit<TablesInsert<'sessions'>, 'professional_id'>) => Promise<void>;
+  onSubmit: (data: Omit<TablesInsert<'sessions'>, 'professional_id'>, opts: { organizerPlays: boolean }) => Promise<void>;
   onExit: () => void;
   isSubmitting: boolean;
 }
@@ -163,7 +164,7 @@ export function SessionWizard({
       }
       // guarda o rascunho já na revisão: se precisar do cadastro de organizador, volta aqui
       if (!editing) writeDraft({ values, step: 'review' });
-      await onSubmit(toSessionInsert(values, { editing, hadSportOther }));
+      await onSubmit(toSessionInsert(values, { editing, hadSportOther }), { organizerPlays: organizerPlays(values) });
     };
 
     const notify = () => {
@@ -187,6 +188,7 @@ export function SessionWizard({
           v={values}
           sportName={sportName}
           sportSlug={category?.slug}
+          showPlays={!editing}
           onEdit={(s) => {
             setBackToReview(true);
             go(s);
@@ -237,7 +239,7 @@ export function SessionWizard({
       {screen === 'sport' && <SportStep v={values} update={update} />}
       {screen === 'when' && <WhenStep v={values} update={update} />}
       {screen === 'where' && <WhereStep v={values} update={update} />}
-      {screen === 'spots' && <SpotsStep v={values} update={update} priceLocked={hasParticipants} isOrganizer={isOrganizer} />}
+      {screen === 'spots' && <SpotsStep v={values} update={update} priceLocked={hasParticipants} isOrganizer={isOrganizer} askPlays={!editing} />}
       {screen === 'name' && <NameStep v={values} update={update} sportName={sportName} />}
     </StepFlow>
   );

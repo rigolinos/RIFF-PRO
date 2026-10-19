@@ -1,6 +1,6 @@
 // Criar evento no Riff Clubes: o que falta em cada passo e o convite para o grupo.
 import { describe, expect, it } from 'vitest';
-import { emptyEvent, eventInvite, eventStepMissing, firstEventMissing, type EventValues } from '../apps/clubes/src/lib/eventForm';
+import { emptyEvent, eventInvite, eventOrganizerPlays, eventStepMissing, firstEventMissing, type EventValues } from '../apps/clubes/src/lib/eventForm';
 
 const NOW = '2026-10-16T10:00';
 const full = (): EventValues => ({
@@ -32,6 +32,11 @@ describe('criar evento no Clubes', () => {
   it('não marca no passado e aponta o primeiro passo incompleto', () => {
     expect(eventStepMissing('when', { ...full(), date: '2026-10-16', time: '08:00' }, NOW)).toBe('Esse horário já passou. Escolha outro.');
     expect(firstEventMissing({ ...full(), place: '  ' }, NOW)).toBe('where');
+  });
+  it('quem cria joga por padrão em jogo, não em aula', () => {
+    expect(eventOrganizerPlays(full())).toBe(true);
+    expect(eventOrganizerPlays({ ...full(), kind: 'class' })).toBe(false);
+    expect(eventOrganizerPlays({ ...full(), organizer_plays: false })).toBe(false);
   });
   it('convite para o grupo do WhatsApp', () => {
     expect(eventInvite({ title: 'Racha', when: 'sábado, 17 de out às 09:00', place: 'Quadra', community: 'Condomínio Jardim', url: 'https://x/atividade/1' })).toBe(

@@ -1376,6 +1376,44 @@ ok(r.rows?.length === 1 && (await one('SELECT payment_status s FROM public.booki
 r = await as('authenticated', PAY_O, `UPDATE public.bookings SET amount_total = 1 WHERE id = $1`, [payBooking]);
 ok(/forbidden_field_change/.test(r.err ?? ''), 'organizador não muda o valor da reserva');
 
+// ── Organizador que também joga (migration 0029) ─────────────────────────
+console.log('Organizador que também joga:');
+await ex("SELECT set_config('request.jwt.claim.sub', '', false)");
+const playSession = await newSession(pPayO, 6, 'Quadra Racha');
+await q('UPDATE public.sessions SET max_participants = 2 WHERE id = $1', [playSession]);
+const plays = (uid, on) => as('authenticated', uid, 'SELECT public.set_organizer_plays($1, $2) AS r', [playSession, on]);
+const seats = async () => (await one('SELECT current_participants n, status FROM public.sessions WHERE id = $1', [playSession]));
+r = await plays(PAY_P, true);
+ok(r.rows?.[0]?.r?.code === 'forbidden', 'só quem organiza marca que vai jogar');
+r = await plays(PAY_O, true);
+let st = await seats();
+const selfBooking = await one('SELECT status, payment_status, amount_total FROM public.bookings WHERE session_id = $1 AND student_id = $2', [playSession, pPayO]);
+ok(r.rows?.[0]?.r?.success && st.n === 1 && selfBooking?.status === 'confirmed' && selfBooking.payment_status === 'free' && Number(selfBooking.amount_total) === 0,
+  'organizador que joga ganha uma reserva gratuita e ocupa uma vaga' + (r.err ? ` (${r.err})` : ''));
+r = await plays(PAY_O, true);
+ok(r.rows?.[0]?.r?.code === 'playing' && (await seats()).n === 1, 'marcar de novo não ocupa outra vaga');
+r = await as('authenticated', PAY_P, 'SELECT public.create_booking($1) AS r', [playSession]);
+st = await seats();
+ok(r.rows?.[0]?.r?.success && st.n === 2 && st.status === 'full', 'com o organizador jogando, a atividade de 2 vagas lota com mais uma pessoa');
+r = await plays(PAY_O, false);
+st = await seats();
+ok(r.rows?.[0]?.r?.code === 'not_playing' && st.n === 1 && st.status === 'active', 'desmarcar devolve a vaga e reabre a atividade');
+r = await plays(PAY_O, true);
+ok(r.rows?.[0]?.r?.success && (await seats()).n === 2, 'voltar a jogar reaproveita a reserva cancelada');
+r = await as('authenticated', PAY_O, 'SELECT public.get_professional_dashboard() AS d');
+ok(r.rows?.[0]?.d?.unique_students === 1, `painel não conta o próprio organizador como participante (${r.rows?.[0]?.d?.unique_students})`);
+await q("UPDATE public.sessions SET date = current_date - 1 WHERE id = $1", [playSession]);
+r = await plays(PAY_O, false);
+ok(r.rows?.[0]?.r?.code === 'session_unavailable', 'depois do início não muda mais');
+// atividade terminada: a reserva gratuita do organizador passaria na regra de avaliação, se não fosse a dele
+await q("UPDATE public.bookings SET payment_status = 'paid', status = 'confirmed' WHERE session_id = $1 AND student_id = $2", [playSession, pPayP]);
+const selfId = (await one('SELECT id FROM public.bookings WHERE session_id = $1 AND student_id = $2', [playSession, pPayO])).id;
+r = await as('authenticated', PAY_P, `INSERT INTO public.reviews (booking_id, session_id, professional_id, reviewer_id, rating)
+  SELECT id, session_id, professional_id, student_id, 5 FROM public.bookings WHERE session_id = $1 AND student_id = $2 RETURNING id`, [playSession, pPayP]);
+ok(!r.err && r.rows.length === 1, 'participante avalia normalmente depois do fim' + (r.err ? ` (${r.err})` : ''));
+r = await as('authenticated', PAY_O, `INSERT INTO public.reviews (booking_id, session_id, professional_id, reviewer_id, rating) VALUES ($1, $2, $3, $3, 5)`, [selfId, playSession, pPayO]);
+ok(!!r.err, 'organizador não avalia a si mesmo');
+
 // ── Superfície do visitante sem login (auditoria de 09/10/2026) ─────────
 // Se uma migration nova abrir algo para quem não está logado, estes testes falham.
 // Para abrir de propósito, atualize a lista aqui e explique no PR.

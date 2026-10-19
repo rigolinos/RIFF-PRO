@@ -24,10 +24,16 @@ export type SessionValues = {
   venue_id: string | null;
   max_participants: number;
   price_per_slot: number;
+  /** Quem organiza também vai jogar (null = segue o padrão do tipo) */
+  organizer_plays: boolean | null;
   /** Campos sem pergunta no assistente, mantidos ao editar ou repetir */
   session_type: string | null;
   skill_level: string | null;
 };
+
+/** Em jogo e evento quem organiza costuma participar; em aula e campeonato, não */
+export const playsByDefault = (kind: ActivityKind) => kind === 'match' || kind === 'event';
+export const organizerPlays = (v: SessionValues) => v.organizer_plays ?? playsByDefault(v.kind);
 
 export type StepId = 'kind' | 'sport' | 'when' | 'where' | 'spots' | 'name';
 export const STEPS: StepId[] = ['kind', 'sport', 'when', 'where', 'spots', 'name'];
@@ -59,6 +65,7 @@ export const emptyValues = (): SessionValues => ({
   venue_id: null,
   max_participants: 10,
   price_per_slot: 0,
+  organizer_plays: null,
   session_type: null,
   skill_level: null,
 });
@@ -85,6 +92,7 @@ export function valuesFromSession(s: Tables<'sessions'>, opts: { nextWeek?: bool
     venue_id: s.venue_id ?? null,
     max_participants: s.max_participants ?? 10,
     price_per_slot: Number(s.price_per_slot ?? 0),
+    organizer_plays: null,
     session_type: s.session_type ?? null,
     skill_level: s.skill_level ?? null,
   };

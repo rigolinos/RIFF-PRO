@@ -2,7 +2,7 @@
 // repetir uma semana depois e o que vai para o banco.
 import { describe, expect, it } from 'vitest';
 import { dayPeriod, suggestActivityTitle } from '@riff/core/lib/activityTitle';
-import { emptyValues, firstMissingStep, stepMissing, toSessionInsert, valuesFromSession, type SessionValues } from '@/lib/sessionForm';
+import { emptyValues, firstMissingStep, organizerPlays, stepMissing, toSessionInsert, valuesFromSession, type SessionValues } from '@/lib/sessionForm';
 import type { Tables } from '@riff/core/supabase/types';
 
 const NOW = '2026-10-16T10:00';
@@ -50,6 +50,20 @@ describe('o que falta em cada passo', () => {
   it('vagas e preço', () => {
     expect(stepMissing('spots', { ...full(), max_participants: 0 }, NOW)).toBe('Informe quantas vagas a atividade tem.');
     expect(stepMissing('spots', { ...full(), price_per_slot: -1 }, NOW)).toBe('O preço não pode ser negativo.');
+  });
+});
+
+describe('organizador que também joga', () => {
+  it('padrão: joga em jogo e evento; não joga em aula e campeonato; a escolha da pessoa vale mais', () => {
+    expect(organizerPlays({ ...full(), kind: 'match' })).toBe(true);
+    expect(organizerPlays({ ...full(), kind: 'event' })).toBe(true);
+    expect(organizerPlays({ ...full(), kind: 'class' })).toBe(false);
+    expect(organizerPlays({ ...full(), kind: 'tournament' })).toBe(false);
+    expect(organizerPlays({ ...full(), kind: 'match', organizer_plays: false })).toBe(false);
+    expect(organizerPlays({ ...full(), kind: 'class', organizer_plays: true })).toBe(true);
+  });
+  it('não vai para a tabela de atividades (é uma reserva do organizador)', () => {
+    expect('organizer_plays' in toSessionInsert({ ...full(), organizer_plays: true }, { editing: false, hadSportOther: false })).toBe(false);
   });
 });
 

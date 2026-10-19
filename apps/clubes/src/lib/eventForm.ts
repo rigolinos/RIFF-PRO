@@ -17,6 +17,8 @@ export type EventValues = {
   /** null = ainda não respondeu "crianças e adolescentes podem participar?" */
   minors_allowed: boolean | null;
   min_age: string;
+  /** quem cria também vai jogar (null = segue o padrão do tipo) */
+  organizer_plays: boolean | null;
 };
 
 export type EventStep = 'sport' | 'when' | 'where' | 'spots' | 'name';
@@ -41,7 +43,11 @@ export const emptyEvent = (kind: ActivityKind): EventValues => ({
   spots: 10,
   minors_allowed: null,
   min_age: '',
+  organizer_plays: null,
 });
+
+/** Em jogo e evento quem cria costuma jogar; em aula e campeonato, não */
+export const eventOrganizerPlays = (v: EventValues) => v.organizer_plays ?? (v.kind === 'match' || v.kind === 'event');
 
 /** O que falta para seguir do passo (null = pode seguir). `now` no formato de nowSP(). */
 export function eventStepMissing(step: EventStep, v: EventValues, now: string): string | null {
