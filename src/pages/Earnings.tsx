@@ -30,8 +30,10 @@ export default function Earnings() {
         `)
         .eq('professional_id', profile.id)
         .eq('product', 'pro')
-        // reserva cancelada não é dinheiro a receber
+        // reserva cancelada não é dinheiro a receber; reserva grátis (inclusive a do organizador que joga) não é pagamento
         .in('status', ['pending', 'confirmed', 'completed'])
+        .in('payment_status', ['paid', 'pending'])
+        .neq('student_id', profile.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;

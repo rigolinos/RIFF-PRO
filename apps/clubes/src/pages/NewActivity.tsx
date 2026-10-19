@@ -15,7 +15,7 @@ import { suggestActivityTitle } from '@riff/core/lib/activityTitle';
 import { errorMessage } from '@riff/core/lib/utils';
 import { useCommunity } from '@/hooks/useCommunity';
 import { useSpaceConflicts, useSpaces } from '@/hooks/useSpaces';
-import { EVENT_STEPS, emptyEvent, eventInvite, eventStepMissing, firstEventMissing, type EventStep, type EventValues } from '@/lib/eventForm';
+import { EVENT_STEPS, emptyEvent, eventInvite, eventOrganizerPlays, eventStepMissing, firstEventMissing, type EventStep, type EventValues } from '@/lib/eventForm';
 import { EventNameStep, EventReview, EventSportStep, EventSpotsStep, EventWhenStep, EventWhereStep } from '@/components/event/EventSteps';
 import { useGoBack } from '@riff/core/routing/useGoBack';
 
@@ -129,6 +129,11 @@ export default function NewActivity() {
         .select('id')
         .single();
       if (error) throw error;
+      // quem cria também joga: reserva gratuita no próprio evento (set_organizer_plays)
+      if (eventOrganizerPlays(v)) {
+        const { error: playErr } = await supabase.rpc('set_organizer_plays', { p_session: created.id, p_plays: true });
+        if (playErr) toast.warning('Evento publicado, mas não deu para pôr você em "Quem vai". Tente na página do evento.');
+      }
       void queryClient.invalidateQueries({ queryKey: ['community-agenda'] });
       void queryClient.invalidateQueries({ queryKey: ['community-venues', orgId] });
       setPublished({ id: created.id, title: v.title.trim(), date: v.date, time: v.time, place: v.place.trim() });

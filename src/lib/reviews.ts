@@ -13,6 +13,8 @@ export const ORGANIZER_TAGS: { tag: string; label: string; icon: LucideIcon }[] 
 export const RATING_LABELS = ['', 'Ruim', 'Fraco', 'Ok', 'Muito bom', 'Excelente'];
 
 type ReviewableBooking = {
+  student_id?: string | null;
+  professional_id?: string | null;
   status: string | null;
   payment_status: string | null;
   attendance_status?: string | null;
@@ -29,6 +31,8 @@ export const sessionEnd = (s: ReviewableBooking['session']) =>
 /** Mesma regra do banco (política student_create_review_verified, migration 20261027000016) */
 export function canReview(b: ReviewableBooking, now: number) {
   if (reviewed(b.review) || b.session.status === 'cancelled') return false;
+  // reserva do próprio organizador (quando ele também joga): ninguém avalia a si mesmo
+  if (b.student_id && b.student_id === b.professional_id) return false;
   if (sessionEnd(b.session).getTime() > now) return false;
   if (b.status === 'completed') return true;
   return (

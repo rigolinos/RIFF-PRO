@@ -11,6 +11,7 @@ import { useSessionById, useSessions } from '@/hooks/useSessions';
 import { organizerErrorMessage, useOrganizerMissing } from '@/hooks/useOrganizer';
 import { clearDraft, readDraft, valuesFromSession } from '@/lib/sessionForm';
 import { useGoBack } from '@riff/core/routing/useGoBack';
+import { supabase } from '@riff/core/supabase/client';
 
 type Published = { id: string; title: string; date: string; start_time: string; location_name: string | null };
 
@@ -45,7 +46,7 @@ const CreateSession = () => {
 
   const needsDoor = !!missing && missing.length > 0;
 
-  const handleSubmit = async (data: Parameters<typeof createSession>[0]) => {
+  const handleSubmit = async (data: Parameters<typeof createSession>[0], opts: { organizerPlays: boolean }) => {
     if (needsDoor) {
       setAskDoor(true);
       return;
@@ -53,6 +54,10 @@ const CreateSession = () => {
     try {
       const created = await createSession(data);
       clearDraft();
+      if (opts.organizerPlays) {
+        const { error } = await supabase.rpc('set_organizer_plays', { p_session: created.id, p_plays: true });
+        if (error) toast.warning('Atividade publicada, mas não deu para marcar que você joga. Marque na página da atividade.');
+      }
       setPublished({ id: created.id, title: created.title, date: created.date, start_time: created.start_time, location_name: created.location_name });
     } catch (error: unknown) {
       toast.error(organizerErrorMessage(error, errorMessage(error, 'Não foi possível publicar a atividade.')));

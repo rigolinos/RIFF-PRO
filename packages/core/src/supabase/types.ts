@@ -1783,6 +1783,10 @@ export type Database = {
         Args: { p_date: string; p_minutes: number; p_time: string }
         Returns: string
       }
+      set_organizer_plays: {
+        Args: { p_plays: boolean; p_session: string }
+        Returns: Json
+      }
       short_name: { Args: { p_full: string }; Returns: string }
       space_conflicts: {
         Args: {

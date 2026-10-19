@@ -12,7 +12,8 @@ import { sportExactMatch, sportMatches } from '@riff/core/lib/sportSearch';
 import { suggestActivityTitle } from '@riff/core/lib/activityTitle';
 import { todaySP } from '@/hooks/useCommunity';
 import { spaceKind } from '@/lib/spaces';
-import { DURATIONS, QUICK_TIMES, durationLabel, type EventStep, type EventValues } from '@/lib/eventForm';
+import { DURATIONS, QUICK_TIMES, durationLabel, eventOrganizerPlays, type EventStep, type EventValues } from '@/lib/eventForm';
+import { Switch } from '@riff/core/ui/switch';
 
 export type EventStepProps = { v: EventValues; update: (patch: Partial<EventValues>) => void };
 type Category = { id: string; name: string; slug: string | null };
@@ -255,6 +256,16 @@ export function EventSpotsStep({ v, update }: EventStepProps) {
         </div>
       </section>
 
+      <label className="flex items-center justify-between gap-3 bg-surface border border-line rounded-2xl p-4 cursor-pointer">
+        <span>
+          <span className="block text-sm font-semibold text-ink">Você também vai jogar?</span>
+          <span className="block text-xs text-ink-muted mt-0.5">
+            {eventOrganizerPlays(v) ? `Você aparece em "Quem vai" e ocupa 1 das ${v.spots} vagas.` : 'Você só organiza: as vagas são todas para os vizinhos.'}
+          </span>
+        </span>
+        <Switch checked={eventOrganizerPlays(v)} onCheckedChange={(on) => update({ organizer_plays: on })} aria-label="Você também vai jogar?" />
+      </label>
+
       <section className="space-y-2">
         <p className="text-sm font-semibold text-ink px-1">Crianças e adolescentes podem participar?</p>
         <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Menores de idade">
@@ -323,7 +334,7 @@ export function EventReview({ v, sportName, sportSlug, community, onEdit }: { v:
     {
       step: 'spots',
       label: 'Vagas e menores',
-      value: `${v.spots} vaga${v.spots === 1 ? '' : 's'} · ${v.minors_allowed ? `aceita menores${v.min_age ? ` a partir de ${v.min_age} anos` : ''}` : 'só adultos'}`,
+      value: `${v.spots} vaga${v.spots === 1 ? '' : 's'}${eventOrganizerPlays(v) ? ' (com você)' : ''} · ${v.minors_allowed ? `aceita menores${v.min_age ? ` a partir de ${v.min_age} anos` : ''}` : 'só adultos'}`,
     },
     { step: 'name', label: 'Nome', value: v.title.trim() || '—' },
   ];
