@@ -1783,6 +1783,10 @@ export type Database = {
         Args: { p_date: string; p_minutes: number; p_time: string }
         Returns: string
       }
+      set_organizer_plays: {
+        Args: { p_plays: boolean; p_session: string }
+        Returns: Json
+      }
       short_name: { Args: { p_full: string }; Returns: string }
       space_conflicts: {
         Args: {
@@ -1826,7 +1830,6 @@ export type Database = {
       }
       tax_id_kind: { Args: { p_value: string }; Returns: string }
       unblock_profile: { Args: { p_profile: string }; Returns: undefined }
-      set_organizer_plays: { Args: { p_plays: boolean; p_session: string }; Returns: Json }
     }
     Enums: {
       [_ in never]: never
