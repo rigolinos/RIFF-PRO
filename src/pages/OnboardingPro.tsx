@@ -21,6 +21,7 @@ import { supabase } from '@riff/core/supabase/client';
 import { organizerErrorMessage, useOrganizerMissing } from '@/hooks/useOrganizer';
 import { BRAND } from '@/brand';
 import { useGoBack } from '@riff/core/routing/useGoBack';
+import { claimPageAddress } from '@/lib/pageAddress';
 
 // Valores aceitos pelo banco (profiles_professional_type_check)
 const TYPES = [
@@ -123,6 +124,8 @@ function OrganizerForm({ profile, next }: { profile: Profile; next: string }) {
         p_pix_key: pixKey.trim(),
       });
       if (error) throw error;
+      // a página já sai com endereço a partir do nome (em vez do id)
+      if (!profile.public_slug) await claimPageAddress(profile.id, fullName);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['profile'] }),
         queryClient.invalidateQueries({ queryKey: ['organizer-missing'] }),

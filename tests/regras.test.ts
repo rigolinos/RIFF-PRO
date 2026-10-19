@@ -13,6 +13,21 @@ import { googleCalendarUrl } from '@riff/core/lib/calendar';
 import { paymentNoticeUrl, waPhone } from '@/lib/whatsapp';
 import { bookingCode } from '@/lib/ticket';
 import { formatCity } from '@riff/core/lib/city';
+import { slugCandidates, slugFromName } from '@riff/core/lib/slug';
+
+describe('endereço da página do organizador', () => {
+  it('primeiro e último nome, sem acento nem símbolo', () => {
+    expect(slugFromName('Rodrigo rigo da Fonseca')).toBe('rodrigo-fonseca');
+    expect(slugFromName('  Ana  Paula Souza ')).toBe('ana-souza');
+    expect(slugFromName('João')).toBe('joao');
+    expect(slugFromName("Maria D'Ávila")).toBe('maria-avila');
+    expect(slugFromName('')).toBe('');
+  });
+  it('alternativas quando o endereço já tem dono', () => {
+    expect(slugCandidates('ana-souza', 3)).toEqual(['ana-souza', 'ana-souza-2', 'ana-souza-3']);
+    expect(slugCandidates('')).toEqual([]);
+  });
+});
 
 describe('nome da cidade', () => {
   it('maiúscula em cada palavra, menos de/da/do/e no meio', () => {

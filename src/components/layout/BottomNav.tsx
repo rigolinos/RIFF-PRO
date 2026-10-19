@@ -2,6 +2,8 @@ import { Home, Search, Plus, CalendarCheck, User } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { BottomNavBar, type BottomNavItem } from '@riff/core/layout/BottomNavBar';
 import { useProfile } from '@riff/core/hooks/useProfile';
+import { usePendingPayments } from '@/hooks/usePayments';
+import { useCallsToDo, useMyPaymentsToMake } from '@/hooks/useOrganizerTodo';
 
 const APP_ROUTES = ['/feed', '/explore', '/my-bookings', '/dashboard', '/my-sessions', '/earnings', '/profile'];
 
@@ -11,6 +13,11 @@ const startsWithAny = (p: string, list: string[]) => list.some((x) => p === x ||
 export const BottomNav = () => {
   const { pathname } = useLocation();
   const { profile } = useProfile();
+  // sinal na Agenda: Pix para pagar (quem reserva) e, para quem organiza, Pix para confirmar e chamadas
+  const { data: toPay } = useMyPaymentsToMake();
+  const { data: toConfirm } = usePendingPayments();
+  const { data: calls } = useCallsToDo();
+  const agendaBadge = (toPay ?? 0) + (toConfirm?.length ?? 0) + (calls ?? 0);
 
   // Detalhe e formulários abrem em tela cheia, sem menu
   if (pathname.startsWith('/session/') || pathname.startsWith('/create-session') || pathname.startsWith('/edit-session')) return null;
@@ -25,8 +32,9 @@ export const BottomNav = () => {
       icon: CalendarCheck,
       label: 'Agenda',
       isActive: (p) => startsWithAny(p, ['/my-bookings', '/my-sessions']),
+      badge: agendaBadge,
     },
-    { path: '/profile/edit', icon: User, label: 'Perfil', isActive: (p) => p.startsWith('/profile') },
+    { path: '/profile/edit', icon: User, label: 'Perfil', isActive: (p) => p.startsWith('/profile'), avatarUrl: profile?.avatar_url },
   ];
   return <BottomNavBar items={items} pathname={pathname} />;
 };

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Star, CheckCircle2, AlertCircle, Share2, AtSign, Flag } from 'lucide-react';
+import { Star, CheckCircle2, AlertCircle, Share2, AtSign, Flag, Sparkles } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { toast } from 'sonner';
 import { BRAND } from '@/brand';
@@ -70,6 +70,7 @@ export default function ProfessionalProfile() {
   type Review = { id: string; rating: number; comment: string | null; reviewer?: { full_name?: string | null; avatar_url?: string | null } | null };
 
   const isMine = me?.id === profile.id;
+  const isNewOrganizer = !(profile.total_reviews ?? 0) && !(profile.total_sessions_given ?? 0);
   const isBlocked = blockedIds.has(profile.id);
   const needLogin = user ? undefined : () => navigate(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
 
@@ -157,6 +158,19 @@ export default function ProfessionalProfile() {
         </div>
       </HeroHeader>
 
+      {/* Organizador novo: em vez de três zeros (que parecem fracasso para quem visita), o aviso de que é novo */}
+      {isNewOrganizer ? (
+        <TicketGrid
+          items={[
+            {
+              icon: Sparkles,
+              label: 'Novo no Riff',
+              value: <span className="text-base font-semibold">Primeiras atividades chegando</span>,
+              sub: 'As avaliações aparecem depois das primeiras atividades.',
+            },
+          ]}
+        />
+      ) : (
       <TicketGrid
         items={[
           {
@@ -168,6 +182,7 @@ export default function ProfessionalProfile() {
           { label: 'Participantes', value: profile.total_students_served || 0, sub: 'atendidos' },
         ]}
       />
+      )}
 
       <div className="py-6 space-y-6">
         {profile.bio && (
@@ -184,7 +199,24 @@ export default function ProfessionalProfile() {
           </div>
           {sessions.length === 0 ? (
             <div className="px-4">
-              <EmptyState title="Nenhuma atividade programada" description="Volte mais tarde ou siga no Instagram para saber das próximas." />
+              {/* sem atividade marcada: nunca um beco sem saída */}
+              <EmptyState
+                title={isMine ? 'Você ainda não tem atividade marcada' : 'Nenhuma atividade marcada agora'}
+                description={
+                  isMine
+                    ? 'Crie a próxima: ela aparece aqui e no Início de quem está na sua cidade.'
+                    : profile.instagram_handle
+                      ? 'Siga no Instagram para saber da próxima, ou veja outras atividades perto de você.'
+                      : 'Veja outras atividades perto de você enquanto a próxima não sai.'
+                }
+                action={
+                  isMine
+                    ? { label: 'Criar atividade', onClick: () => navigate('/create-session') }
+                    : profile.instagram_handle
+                      ? { label: 'Seguir no Instagram', onClick: () => window.open(`https://instagram.com/${profile.instagram_handle!.replace(/^@/, '')}`, '_blank') }
+                      : { label: 'Ver outras atividades', onClick: () => navigate('/explore') }
+                }
+              />
             </div>
           ) : (
             <div className="mx-4 bg-surface border border-line rounded-2xl divide-y divide-line overflow-hidden">

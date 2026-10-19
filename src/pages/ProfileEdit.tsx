@@ -46,6 +46,7 @@ import { BlockedPeople } from '@riff/core/domain';
 import { ProfileSection } from '@/components/profile/ProfileSection';
 import { useMySportsProfile } from '@/hooks/useSportsProfile';
 import { formatCity } from '@riff/core/lib/city';
+import { slugFromName } from '@riff/core/lib/slug';
 
 const PIX_TYPES = [
   { value: 'cpf', label: 'CPF ou CNPJ' },
@@ -78,6 +79,7 @@ export default function ProfileEdit() {
   const avatar_url = useWatch({ control, name: 'avatar_url' });
   const full_name = useWatch({ control, name: 'full_name' });
   const pix_key_type = useWatch({ control, name: 'pix_key_type' });
+  const public_slug = useWatch({ control, name: 'public_slug' });
 
   useEffect(() => {
     if (profile) {
@@ -133,11 +135,17 @@ export default function ProfileEdit() {
       if (data.instagram_handle && data.instagram_handle.startsWith('@')) {
         data.instagram_handle = data.instagram_handle.substring(1);
       }
+      // endereço da página: só letras, números e hífen; vazio vira "sem endereço" (a página usa o id)
+      if ('public_slug' in data) {
+        const clean = (data.public_slug ?? '').toLowerCase().replace(/^@/, '').replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+        data.public_slug = clean || null;
+      }
 
       await updateProfile(data);
       toast.success('Perfil atualizado com sucesso!');
-    } catch {
-      toast.error('Erro ao atualizar perfil.');
+    } catch (error: unknown) {
+      const taken = /duplicate|23505|public_slug/i.test(errorMessage(error, ''));
+      toast.error(taken ? 'Esse endereço da página já tem dono. Tente outro.' : 'Erro ao atualizar perfil.');
     }
   };
 
@@ -317,6 +325,15 @@ export default function ProfileEdit() {
                     <span className="h-12 bg-bg border border-r-0 border-line px-3 rounded-l-md text-sm text-ink-muted flex items-center">@</span>
                     <Input {...register('public_slug')} placeholder="seunome" className={`${FIELD} rounded-l-none lowercase`} />
                   </div>
+                  {!public_slug && slugFromName(full_name) && (
+                    <button
+                      type="button"
+                      onClick={() => setValue('public_slug', slugFromName(full_name), { shouldDirty: true })}
+                      className="h-9 px-3 rounded-full bg-brand/10 border border-brand/30 text-brand text-xs font-medium"
+                    >
+                      Usar @{slugFromName(full_name)}
+                    </button>
+                  )}
                   <span className="block text-xs text-ink-muted">Coloque na bio do Instagram: quem abre vê suas atividades e reserva.</span>
                 </label>
                 <label className="block space-y-2">

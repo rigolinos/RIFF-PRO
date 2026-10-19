@@ -1,37 +1,10 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { useQuery } from '@tanstack/react-query';
 import { ChevronRight, ClipboardCheck, LayoutDashboard, Wallet } from 'lucide-react';
-import { supabase } from '@riff/core/supabase/client';
-import { useProfile } from '@riff/core/hooks/useProfile';
-import { activityPhase, nowSP } from '@riff/core/lib/activityTime';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import { usePendingPayments } from '@/hooks/usePayments';
-
-const todaySP = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(new Date());
-
-/** Atividades que já terminaram e esperam a chamada */
-function useCallsToDo() {
-  const { profile } = useProfile();
-  const [now] = useState(nowSP);
-  return useQuery({
-    queryKey: ['sessions', 'pro', 'calls-to-do', profile?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('sessions')
-        .select('id, date, start_time, duration_minutes, status')
-        .eq('professional_id', profile!.id)
-        .eq('product', 'pro')
-        .in('status', ['active', 'full'])
-        .lte('date', todaySP());
-      if (error) throw error;
-      return (data ?? []).filter((s) => activityPhase(s, now) === 'ended').length;
-    },
-    enabled: profile?.role === 'professional',
-  });
-}
+import { useCallsToDo } from '@/hooks/useOrganizerTodo';
 
 /** No Início de quem organiza: o que tem hoje, o que espera ação e o atalho para o Painel */
 export function OrganizerSummary() {
