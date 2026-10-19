@@ -17,6 +17,7 @@ import { useAuth } from '@riff/core/hooks/useAuth';
 import { useProfile } from '@riff/core/hooks/useProfile';
 import { useBlockedIds } from '@riff/core/hooks/useModeration';
 import type { SessionWithJoins } from '@/types/session';
+import { formatCity } from '@riff/core/lib/city';
 
 export default function ProfessionalProfile() {
   const { slug, handle } = useParams<{ slug?: string, handle?: string }>();
@@ -130,7 +131,7 @@ export default function ProfessionalProfile() {
           </div>
           <h1 className="type-title leading-tight">{profile.full_name}</h1>
           <p className="text-xs text-ink-muted">
-            {[profile.credential_number ? `${profile.credential_type ?? ''} ${profile.credential_number}`.trim() : null, profile.city]
+            {[profile.credential_number ? `${profile.credential_type ?? ''} ${profile.credential_number}`.trim() : null, formatCity(profile.city)]
               .filter(Boolean)
               .join(' · ') || 'Organizador'}
           </p>

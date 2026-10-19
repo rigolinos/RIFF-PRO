@@ -7,6 +7,7 @@ import { KINDS, type ActivityKind } from '@riff/core/lib/copy';
 import { cn } from '@riff/core/lib/utils';
 import { formatBRL } from '@riff/core/lib/money';
 import type { SessionWithJoins } from '@/types/session';
+import { formatCity } from '@riff/core/lib/city';
 
 interface SessionRowProps {
   session: SessionWithJoins;
@@ -59,7 +60,7 @@ export function SessionRow({ session, showDay = false, highlight = false, showCi
         </p>
         <p className="text-xs text-ink-muted truncate">
           {session.location_name || 'Local a confirmar'}
-          {showCity && session.city ? ` · ${session.city}` : ''}
+          {showCity && session.city ? ` · ${formatCity(session.city)}` : ''}
         </p>
         <div className="flex items-center gap-2 pt-0.5">
           <div className="flex-1 h-1 rounded-full bg-elevated overflow-hidden" aria-hidden="true">

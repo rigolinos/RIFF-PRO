@@ -1,4 +1,4 @@
-﻿import { Star } from 'lucide-react';
+import { Star } from 'lucide-react';
 import { cn } from '@riff/core/lib/utils';
 import { Badge } from '@riff/core/ui/badge';
 
@@ -14,7 +14,7 @@ export function RatingBadge({ rating, count, className, showCount = true }: Rati
 
   if (isNew) {
     return (
-      <Badge variant="pill" className={cn("flex items-center gap-1 bg-surface border-line text-ink-muted", className)}>
+      <Badge variant="pill" className={cn("inline-flex w-fit items-center gap-1 bg-surface border-line text-ink-muted", className)}>
         <Star className="w-3 h-3 fill-slate text-slate" />
         <span className="font-semibold">Novo</span>
       </Badge>
@@ -24,7 +24,7 @@ export function RatingBadge({ rating, count, className, showCount = true }: Rati
   const formattedRating = Number(rating).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 
   return (
-    <Badge variant="pill" className={cn("flex items-center gap-1", className)}>
+    <Badge variant="pill" className={cn("inline-flex w-fit items-center gap-1", className)}>
       <Star className="w-3 h-3 fill-brand text-brand" />
       <span className="font-semibold tabular-nums text-ink">{formattedRating}</span>
       {showCount && <span className="text-ink-muted ml-0.5">({count})</span>}

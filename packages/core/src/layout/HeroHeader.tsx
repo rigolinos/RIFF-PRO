@@ -1,14 +1,14 @@
-import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { cn } from '@riff/core/lib/utils';
 import { BrandLines } from '@riff/core/domain/BrandLines';
+import { useGoBack } from '@riff/core/routing/useGoBack';
 
 interface HeroHeaderProps {
   /** Rótulo pequeno acima do título (ex.: "Novo evento", "Ranking") */
   label?: React.ReactNode;
   title?: React.ReactNode;
   subtitle?: React.ReactNode;
-  /** Botão de voltar no canto (navigate(-1) ou onBack) */
+  /** Botão de voltar no canto (useGoBack ou onBack) */
   showBack?: boolean;
   onBack?: () => void;
   /** Ação no canto direito do topo (ex.: compartilhar, avatar) */
@@ -44,7 +44,7 @@ export function HeroHeader({
   className,
   contentClassName,
 }: HeroHeaderProps) {
-  const navigate = useNavigate();
+  const goBack = useGoBack();
   const hasTop = showBack || topLeft || topRight;
 
   return (
@@ -68,7 +68,7 @@ export function HeroHeader({
               (showBack ? (
                 <button
                   type="button"
-                  onClick={() => (onBack ? onBack() : navigate(-1))}
+                  onClick={() => (onBack ? onBack() : goBack())}
                   aria-label="Voltar"
                   className="w-10 h-10 -ml-2 rounded-full bg-bg/50 backdrop-blur-sm flex items-center justify-center text-ink active:scale-95"
                 >

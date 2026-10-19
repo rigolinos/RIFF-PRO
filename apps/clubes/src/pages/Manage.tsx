@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate, useParams, Navigate } from 'react-router-dom';
+import { Link, useParams, Navigate } from 'react-router-dom';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ArrowLeft, CalendarDays, CheckCircle2, ChevronRight, ClipboardCheck, GraduationCap, MoreVertical, Ticket, Users, X } from 'lucide-react';
@@ -24,6 +24,7 @@ import { JoinRequests } from '@/components/JoinRequests';
 import { usePendingJoinRequests } from '@/hooks/useCommunityRequests';
 import { formatInviteCode } from '@/lib/invite';
 import { ROLE_LABEL } from '@/lib/roles';
+import { useGoBack } from '@riff/core/routing/useGoBack';
 
 const ROLE_ACTIONS: { action: MemberAction; role: string; label: string }[] = [
   { action: 'make_member', role: 'member', label: 'Tornar membro' },
@@ -46,7 +47,7 @@ const Spinner = () => (
 
 export default function Manage() {
   const { orgId } = useParams<{ orgId: string }>();
-  const navigate = useNavigate();
+  const goBack = useGoBack();
   const { profile } = useProfile();
   const { data: community, isLoading } = useCommunity(orgId);
   const { data: members, isLoading: isLoadingMembers } = useMembers(orgId);
@@ -105,7 +106,7 @@ export default function Manage() {
           <div className="h-16 flex items-center">
             <button
               type="button"
-              onClick={() => navigate(-1)}
+              onClick={() => goBack()}
               aria-label="Voltar"
               className="w-10 h-10 -ml-2 rounded-full bg-bg/50 backdrop-blur-sm flex items-center justify-center text-ink active:scale-95"
             >

@@ -17,10 +17,12 @@ import { useDependents, ageOn } from '@/hooks/useDependents';
 import { SportIcon } from '@riff/core/domain/SportIcon';
 import { WhoIsGoing } from '@/components/WhoIsGoing';
 import { kidsLabel } from '@/lib/people';
+import { useGoBack } from '@riff/core/routing/useGoBack';
 
 export default function ActivityDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const goBack = useGoBack();
   const { profile } = useProfile();
   const { data: activity, isLoading } = useActivity(id);
   const orgId = activity?.organization_id ?? undefined;
@@ -100,7 +102,7 @@ export default function ActivityDetail() {
           <div className="h-16 flex items-center justify-between">
             <button
               type="button"
-              onClick={() => navigate(-1)}
+              onClick={() => goBack()}
               aria-label="Voltar"
               className="w-10 h-10 -ml-2 rounded-full bg-bg/50 backdrop-blur-sm flex items-center justify-center text-ink active:scale-95"
             >
